@@ -1,4 +1,4 @@
-import { useLocation, Link, useNavigate, To } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const menu = [
 	{
@@ -27,7 +27,6 @@ const NavBar = () => {
 	const location = useLocation();
 
 	const navigate = useNavigate();
-	const handleNavigate = (to: To) => navigate(to);
 
 	return (
 		<div className="w-1/5 h-screen bg-bg-dark">
@@ -35,12 +34,17 @@ const NavBar = () => {
 			<div className="p-6">
 				{menu.map(m => (
 					<div
-						className={`flex items-center px-3 py-1 rounded bg-[#ffffff] cursor-pointer my-2 ${
+						className={`flex items-center px-3 py-1 rounded bg-[#ffffff] cursor-pointer my-2 h-10 ${
 							location.pathname == m.path ? 'bg-opacity-10' : 'bg-opacity-0'
 						}`}
 						onClick={() => navigate(m.path)}
+						key={m.name}
 					>
-						<img src="pages/home.svg" width={30} height={30} />
+						<img
+							src={`pages/${m.name.toLowerCase().split(' ').join('_')}.svg`}
+							width={30}
+							height={30}
+						/>
 						<p
 							className={`pl-2 ${
 								location.pathname == m.path
