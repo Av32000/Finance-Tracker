@@ -1,6 +1,9 @@
+import NavBar from '../components/NavBar';
+
 const Home = () => {
 	return (
-		<div>
+		<div className="overflow-hidden flex">
+			<NavBar />
 			<h1>Home</h1>
 		</div>
 	);
