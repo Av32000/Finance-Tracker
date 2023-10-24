@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
+import AccountManagerCard from './AccountManagerCard';
 
 const menu = [
 	{
@@ -57,6 +58,7 @@ const NavBar = () => {
 					</div>
 				))}
 			</div>
+			<AccountManagerCard />
 		</div>
 	);
 };

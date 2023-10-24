@@ -3,6 +3,7 @@ import Home from './views/Home';
 import { useEffect, useState } from 'react';
 import Loading from './views/Loading';
 import NoBackend from './views/NoBackend';
+import { useBearStore } from './GlobalState';
 
 const router = createBrowserRouter([
 	{
@@ -35,9 +36,10 @@ const BACKEND_STATUS = {
 
 function App() {
 	const [backendStatus, setbackendStatus] = useState(BACKEND_STATUS.LOADING);
+	const { apiURL } = useBearStore();
 
 	const pingBackend = () => {
-		fetch('http://localhost:3000')
+		fetch(apiURL)
 			.then(() => setbackendStatus(BACKEND_STATUS.CONNECTED))
 			.catch(() => setbackendStatus(BACKEND_STATUS.DISCONNECTED));
 	};
