@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Loading from './views/Loading';
 import NoBackend from './views/NoBackend';
 import { useBearStore } from './GlobalState';
+import Transactions from './views/Transactions';
 
 const router = createBrowserRouter([
 	{
@@ -12,7 +13,7 @@ const router = createBrowserRouter([
 	},
 	{
 		path: '/transactions',
-		element: <Home />,
+		element: <Transactions />,
 	},
 	{
 		path: '/stats',

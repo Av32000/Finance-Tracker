@@ -3,6 +3,7 @@ import { useBearStore } from '../GlobalState';
 import { Account } from '../account';
 import { AccountSchema, AccountsSchema } from '../Schemas';
 import FTInput from './FTInput';
+import FTButton from './FTButton';
 
 type State = 'Closed' | 'Switch' | 'Create';
 
@@ -54,9 +55,9 @@ const createAccount = async (newAccount: string, apiURL: string) => {
 const AccountManagerCard = () => {
 	const [status, setStatus] = useState<State>('Closed');
 	const [accounts, setAccounts] = useState<Account[] | null>(null);
-	const [loading, setLoading] = useState(true);
 	const [newAccount, setNewAccount] = useState('');
 	const { account, setAccount, apiURL } = useBearStore();
+	const [loading, setLoading] = useState(!account);
 
 	useEffect(() => {
 		if (!accounts) {
@@ -119,14 +120,12 @@ const AccountManagerCard = () => {
 										<p className="text-lg">{a.name}</p>
 									</div>
 								))}
-							<button
-								className={`bg-cta-primarly p-1 px-4 rounded text-active-text-color m-3 ${
-									status == 'Closed' ? 'hidden' : ''
-								}`}
+							<FTButton
+								className={`m-3 ${status == 'Closed' ? 'hidden' : ''}`}
 								onClick={() => setStatus('Create')}
 							>
 								Create Account
-							</button>
+							</FTButton>
 						</div>
 					) : null}
 					{status === 'Create' ? (
@@ -139,8 +138,7 @@ const AccountManagerCard = () => {
 								onChange={e => setNewAccount(e.target.value)}
 								className=""
 							/>
-							<button
-								className="bg-cta-primarly p-1 px-4 rounded text-active-text-color"
+							<FTButton
 								onClick={() => {
 									createAccount(newAccount, apiURL).then(id => {
 										if (id) {
@@ -155,7 +153,7 @@ const AccountManagerCard = () => {
 								}}
 							>
 								Create Account
-							</button>
+							</FTButton>
 						</div>
 					) : null}
 					{accounts && accounts.length > 0 ? (

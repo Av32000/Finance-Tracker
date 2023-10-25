@@ -13,7 +13,8 @@ export default {
       "active-text-color": "#E4E9F1",
       "green": "#25B14C",
       "red": "#B12525",
-      "cta-primarly": "#6366F1"
+      "cta-primarly": "#6366F1",
+      "transparent": "transparent"
     },
   },
   plugins: [],

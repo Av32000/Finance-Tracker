@@ -7,7 +7,7 @@ const FTInput = (params: InputHTMLAttributes<HTMLInputElement>) => {
 			type="text"
 			{...params}
 			className={
-				'bg-bg-light border-text-color border rounded text-active-text-color outline-none px-1 ' +
+				'bg-transparent border-text-color border rounded text-active-text-color outline-none px-2 py-1 ' +
 				className
 			}
 		/>
