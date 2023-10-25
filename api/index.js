@@ -7,7 +7,7 @@ const app = express();
 
 app.use(bodyParser.json())
 app.use((req, res, next) => {
-	res.header('Access-Control-Allow-Origin', '*'); // Autorise tous les ports de localhost.
+	res.header('Access-Control-Allow-Origin', '*');
 	res.header('Access-Control-Allow-Methods', 'GET, POST, DELETE, PATCH');
 	res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 	next();
@@ -15,6 +15,7 @@ app.use((req, res, next) => {
 
 const accountsPath = path.join(__dirname, "../", "datas")
 const accountsAPI = new AccountsAPI(accountsPath)
+accountsAPI.FixAccounts()
 
 const port = parseInt(
 	process.argv.find(s => s.startsWith('--port'))?.split('=')[1] || '3000',

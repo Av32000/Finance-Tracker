@@ -2,6 +2,12 @@ const { randomUUID } = require('crypto')
 const { existsSync, mkdirSync, writeFileSync, readFileSync } = require('fs')
 const path = require("path")
 
+const newAccountSchema = {
+  id: 0,
+  name: "",
+  balance: 0
+}
+
 module.exports = class AccountsAPI {
   constructor(dataPath) {
     this.dataPath = dataPath
@@ -23,12 +29,43 @@ module.exports = class AccountsAPI {
     return this.accounts.find(a => a.id === id)
   }
 
+  // Fix Accounts when account newAccountSchema was changed
+  FixAccounts() {
+    let fixCount = 0
+    this.accounts.forEach(element => {
+      let fix = false
+
+      // Add new keys
+      Object.keys(newAccountSchema).forEach(key => {
+        if (element[key] == undefined) {
+          element[key] = newAccountSchema[key]
+          fix = true
+        }
+      })
+
+      // Remove deprecated keys
+      Object.keys(element).forEach(key => {
+        if (newAccountSchema[key] == undefined) {
+          delete element[key]
+          fix = true
+        }
+      })
+
+      if (fix) fixCount++
+    });
+
+    if (fixCount > 0) {
+      this.SaveAccounts()
+      console.log(fixCount + " propert" + (fixCount > 1 ? "ies" : "y") + " fixed");
+    }
+  }
+
   CreateAccount(name) {
     let id = randomUUID()
-    this.accounts.push({
-      id,
-      name
-    })
+    let newAccount = { ...newAccountSchema }
+    newAccount.id = id
+    newAccount.name = name
+    this.accounts.push(newAccount)
 
     this.SaveAccounts()
     return id
