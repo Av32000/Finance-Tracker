@@ -84,15 +84,51 @@ const AccountManagerCard = () => {
 				<p>Loading...</p>
 			) : (
 				<>
-					{status === 'Closed' && account ? (
-						<div className="flex gap-2 items-center">
-							<div className="flex items-center justify-center w-8 h-8 rounded-md bg-bg">
-								{account.name[0]}
+					{status !== 'Create' && account ? (
+						<div
+							className={`flex justify-center flex-col ${
+								status == 'Switch' ? 'min-h-[5rem]' : ''
+							}`}
+						>
+							<div
+								className="flex gap-2 items-center cursor-pointer m-3"
+								onClick={() => setStatus('Closed')}
+							>
+								<div className="flex items-center justify-center w-8 h-8 rounded-md bg-bg">
+									{account.name[0]}
+								</div>
+								<p className="text-lg">{account.name}</p>
 							</div>
-							<p className="text-lg">{account.name}</p>
+							{accounts
+								?.filter(a => a.id !== account.id)
+								.map(a => (
+									<div
+										key={a.id}
+										className={`flex gap-2 items-center cursor-pointer m-3 ${
+											status == 'Closed' ? 'hidden' : ''
+										}`}
+										onClick={() => {
+											RefreshAccount(a.id, setAccount, apiURL).then(() =>
+												setStatus('Closed'),
+											);
+										}}
+									>
+										<div className="flex items-center justify-center w-8 h-8 rounded-md bg-bg">
+											{a.name[0]}
+										</div>
+										<p className="text-lg">{a.name}</p>
+									</div>
+								))}
+							<button
+								className={`bg-cta-primarly p-1 px-4 rounded text-active-text-color m-3 ${
+									status == 'Closed' ? 'hidden' : ''
+								}`}
+								onClick={() => setStatus('Create')}
+							>
+								Create Account
+							</button>
 						</div>
 					) : null}
-					{status === 'Switch' && accounts ? <div></div> : null}
 					{status === 'Create' ? (
 						<div className="flex flex-col items-center gap-3">
 							<p>Create Account</p>
@@ -105,7 +141,7 @@ const AccountManagerCard = () => {
 							/>
 							<button
 								className="bg-cta-primarly p-1 px-4 rounded text-active-text-color"
-								onClick={() =>
+								onClick={() => {
 									createAccount(newAccount, apiURL).then(id => {
 										if (id) {
 											RefreshAccount(id, setAccount, apiURL).then(() =>
@@ -114,12 +150,25 @@ const AccountManagerCard = () => {
 										} else {
 											console.error("Can't create Account");
 										}
-									})
-								}
+									});
+									RefreshAccounts(setAccounts, apiURL);
+								}}
 							>
 								Create Account
 							</button>
 						</div>
+					) : null}
+					{accounts && accounts.length > 0 ? (
+						<img
+							src="/components/open-arrow.svg"
+							className={`absolute top-2 right-1 w-[30px] h-[15px] cursor-pointer ${
+								status != 'Closed' ? 'rotate-180' : ''
+							}`}
+							onClick={() => {
+								if (status != 'Closed') setStatus('Closed');
+								else setStatus('Switch');
+							}}
+						/>
 					) : null}
 				</>
 			)}
