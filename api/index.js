@@ -30,6 +30,11 @@ app.get("/accounts", (req, res) => {
 	res.send(JSON.stringify(accountsAPI.GetAccounts()))
 })
 
+app.get("/account/:id", (req, res) => {
+	if (!req.params.id) return res.sendStatus(404)
+	res.send(JSON.stringify(accountsAPI.GetAccount(req.params.id)))
+})
+
 app.post("/accounts", (req, res) => {
 	const name = req.body.name
 	if (!name) return res.sendStatus(404)

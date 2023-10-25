@@ -19,6 +19,10 @@ module.exports = class AccountsAPI {
     return this.accounts
   }
 
+  GetAccount(id) {
+    return this.accounts.find(a => a.id === id)
+  }
+
   CreateAccount(name) {
     let id = randomUUID()
     this.accounts.push({

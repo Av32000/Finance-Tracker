@@ -30,7 +30,7 @@ const NavBar = () => {
 	const navigate = useNavigate();
 
 	return (
-		<div className="w-1/5 h-screen bg-bg-dark">
+		<div className="w-[280px] h-screen bg-bg-dark">
 			<img src="logo.svg" width={50} height={50} className="m-4" />
 			<div className="p-6">
 				{menu.map(m => (
