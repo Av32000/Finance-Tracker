@@ -26,11 +26,11 @@ app.get('/', (req, res) => {
 });
 
 // Account
-
 app.get("/accounts", (req, res) => {
 	res.send(JSON.stringify(accountsAPI.GetAccounts()))
 })
 
+// TODO : Switch to /accounts
 app.get("/account/:id", (req, res) => {
 	if (!req.params.id) return res.sendStatus(404)
 	res.send(JSON.stringify(accountsAPI.GetAccount(req.params.id)))
@@ -54,6 +54,46 @@ app.delete("/accounts/:id", (req, res) => {
 	const id = req.params.id
 	if (!id) return res.sendStatus(404)
 	accountsAPI.DeleteAccount(id)
+	res.sendStatus(200)
+})
+
+// Transaction
+app.get("/accounts/:accountId/transactions", (req, res) => {
+	const accountId = req.params.accountId
+	if (!accountId) return res.sendStatus(404)
+	res.send(JSON.stringify(accountsAPI.GetTransactions(accountId)))
+})
+
+app.get("/accounts/:accountId/transactions/:transactionId", (req, res) => {
+	const accountId = req.params.accountId
+	const transactionId = req.params.transactionId
+	if (!accountId || !transactionId) return res.sendStatus(404)
+	res.send(JSON.stringify(accountsAPI.GetTransaction(accountId, transactionId)))
+})
+
+app.post("/accounts/:accountId/transactions", (req, res) => {
+	const accountId = req.params.accountId
+	const name = req.body.name
+	const amount = req.body.amount
+	const date = req.body.date
+
+	if (!accountId || !name || !amount || !date) return res.sendStatus(404)
+	res.send(accountsAPI.AddTransaction(accountId, name, amount, date))
+})
+
+app.patch("/accounts/:accountId/transactions/:transactionId", (req, res) => {
+	const accountId = req.params.accountId
+	const transactionId = req.params.transactionId
+	if (!accountId || !transactionId) return res.sendStatus(404)
+	accountsAPI.PatchTransaction(accountId, transactionId, req.body)
+	res.sendStatus(200)
+})
+
+app.delete("/accounts/:accountId/transactions/:transactionId", (req, res) => {
+	const accountId = req.params.accountId
+	const transactionId = req.params.transactionId
+	if (!accountId || !transactionId) return res.sendStatus(404)
+	accountsAPI.DeleteTransaction(accountId, transactionId)
 	res.sendStatus(200)
 })
 
