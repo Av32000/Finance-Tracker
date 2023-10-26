@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useBearStore } from '../GlobalState';
 import { Account } from '../account';
-import { AccountSchema, AccountsSchema } from '../Schemas';
+import { AccountsSchema } from '../Schemas';
 import FTInput from './FTInput';
 import FTButton from './FTButton';
 
@@ -16,21 +16,6 @@ const RefreshAccounts = async (
 		const accounts = AccountsSchema.parse(await fetchedAccouts.json());
 		console.log(accounts);
 		setAccounts(accounts);
-	} catch (e) {
-		console.error(e);
-	}
-};
-
-const RefreshAccount = async (
-	id: string,
-	setAccount: (account: Account) => void,
-	apiURL: string,
-) => {
-	try {
-		const fetchedAccouts = await fetch(apiURL + '/account/' + id);
-		const accounts = AccountSchema.parse(await fetchedAccouts.json());
-		console.log(accounts);
-		setAccount(accounts);
 	} catch (e) {
 		console.error(e);
 	}
@@ -56,7 +41,7 @@ const AccountManagerCard = () => {
 	const [status, setStatus] = useState<State>('Closed');
 	const [accounts, setAccounts] = useState<Account[] | null>(null);
 	const [newAccount, setNewAccount] = useState('');
-	const { account, setAccount, apiURL } = useBearStore();
+	const { account, setAccount, refreshAccount, apiURL } = useBearStore();
 	const [loading, setLoading] = useState(!account);
 
 	useEffect(() => {
@@ -109,7 +94,7 @@ const AccountManagerCard = () => {
 											status == 'Closed' ? 'hidden' : ''
 										}`}
 										onClick={() => {
-											RefreshAccount(a.id, setAccount, apiURL).then(() =>
+											refreshAccount(a.id, setAccount, apiURL).then(() =>
 												setStatus('Closed'),
 											);
 										}}
@@ -142,7 +127,7 @@ const AccountManagerCard = () => {
 								onClick={() => {
 									createAccount(newAccount, apiURL).then(id => {
 										if (id) {
-											RefreshAccount(id, setAccount, apiURL).then(() =>
+											refreshAccount(id, setAccount, apiURL).then(() =>
 												setStatus('Closed'),
 											);
 										} else {

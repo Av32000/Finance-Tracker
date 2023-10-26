@@ -6,8 +6,6 @@ import FTButton from '../components/FTButton';
 import TransactionsTable from '../components/TransactionsTable';
 import AddTransactionModal from '../components/AddTransactionModal';
 import FTBooleanModal from '../components/FTBooleanModal';
-import { Account } from '../account';
-import { AccountSchema } from '../Schemas';
 
 const DeleteTransaction = async (
 	tId: string,
@@ -19,21 +17,6 @@ const DeleteTransaction = async (
 	});
 };
 
-const RefreshAccount = async (
-	id: string,
-	setAccount: (account: Account) => void,
-	apiURL: string,
-) => {
-	try {
-		const fetchedAccouts = await fetch(apiURL + '/account/' + id);
-		const accounts = AccountSchema.parse(await fetchedAccouts.json());
-		console.log(accounts);
-		setAccount(accounts);
-	} catch (e) {
-		console.error(e);
-	}
-};
-
 const Transactions = () => {
 	const [addNewTransactionModalIsOpen, setAddNewTransactionModalIsOpen] =
 		useState(false);
@@ -43,7 +26,7 @@ const Transactions = () => {
 		confirmDeleteTransactionModalIsOpen,
 		setConfirmDeleteTransactionModalIsOpen,
 	] = useState(false);
-	const { account, setAccount, apiURL } = useBearStore();
+	const { account, setAccount, refreshAccount, apiURL } = useBearStore();
 
 	useEffect(() => {
 		document.title = 'Finance Tracker - Home';
@@ -113,7 +96,7 @@ const Transactions = () => {
 								DeleteTransaction(s, account.id, apiURL),
 							);
 							await Promise.all(promises);
-							await RefreshAccount(account.id, setAccount, apiURL);
+							await refreshAccount(account.id, setAccount, apiURL);
 							setSelected([]);
 						}}
 						isOpen={confirmDeleteTransactionModalIsOpen}

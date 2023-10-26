@@ -2,8 +2,6 @@ import { useState } from 'react';
 import FTButton from './FTButton';
 import FTInput from './FTInput';
 import { useBearStore } from '../GlobalState';
-import { Account } from '../account';
-import { AccountSchema } from '../Schemas';
 
 const SaveTransaction = async (
 	accountId: string,
@@ -19,22 +17,6 @@ const SaveTransaction = async (
 	});
 };
 
-// TODO : Stack RefreshAccount Duplication in one file (GlobalState?)
-const RefreshAccount = async (
-	id: string,
-	setAccount: (account: Account) => void,
-	apiURL: string,
-) => {
-	try {
-		const fetchedAccouts = await fetch(apiURL + '/account/' + id);
-		const accounts = AccountSchema.parse(await fetchedAccouts.json());
-		console.log(accounts);
-		setAccount(accounts);
-	} catch (e) {
-		console.error(e);
-	}
-};
-
 const AddTransactionModal = ({
 	isOpen,
 	setIsOpen,
@@ -45,7 +27,7 @@ const AddTransactionModal = ({
 	const [name, setName] = useState('');
 	const [date, setDate] = useState('');
 	const [amount, setAmount] = useState(0);
-	const { account, setAccount, apiURL } = useBearStore();
+	const { account, setAccount, refreshAccount, apiURL } = useBearStore();
 
 	return (
 		<div
@@ -97,7 +79,7 @@ const AddTransactionModal = ({
 							amount,
 							apiURL,
 						).then(() => {
-							RefreshAccount(account!.id, setAccount, apiURL).then(() => {
+							refreshAccount(account!.id, setAccount, apiURL).then(() => {
 								setIsOpen(false);
 								setName('');
 								setDate('');
