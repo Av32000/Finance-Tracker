@@ -10,7 +10,7 @@ const UploadFile = async (file: File, apiURL: string) => {
 		let result = { id: '', name: file.name };
 		const formData = new FormData();
 		formData.append('file', file);
-		const fetchedId = await fetch(apiURL + '/upload', {
+		const fetchedId = await fetch(apiURL + '/files/upload', {
 			method: 'POST',
 			body: formData,
 		});
@@ -62,10 +62,13 @@ const AddTransactionModal = ({
 			} absolute items-center justify-center h-screen w-full bg-[black] bg-opacity-60`}
 			onClick={e => {
 				if (e.target === e.currentTarget) {
+					setIsOpen(false);
 					setName('');
 					setDate('');
 					setAmount(0);
-					setIsOpen(false);
+					if (fileInput.current) {
+						fileInput.current.value = '';
+					}
 				}
 			}}
 		>

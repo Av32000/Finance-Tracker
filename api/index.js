@@ -3,6 +3,7 @@ const bodyParser = require("body-parser")
 const path = require("path")
 const AccountsAPI = require("./AccountsAPI")
 const { upload, filePath } = require('./upload');
+const { existsSync } = require("fs");
 
 const app = express();
 
@@ -101,7 +102,15 @@ app.delete("/accounts/:accountId/transactions/:transactionId", (req, res) => {
 })
 
 // Files
-app.post("/upload", upload.single("file"), (req, res) => {
+app.get("/files/:file", (req, res) => {
+	let file = req.params.file
+	file = file.replace(/[\\/]/g, "")
+	let fullPath = path.join(__dirname, "../", filePath, file)
+	if (!file || !existsSync(fullPath)) return res.sendStatus(404)
+	res.sendFile(fullPath)
+})
+
+app.post("/files/upload", upload.single("file"), (req, res) => {
 	res.send(req.file.filename.split(".")[0])
 })
 

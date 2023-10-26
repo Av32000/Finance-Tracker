@@ -2,6 +2,7 @@ import { useBearStore } from '../GlobalState';
 import { Transaction } from '../account';
 import AmountTag from './AmountTag';
 import FTCheckbox from './FTCheckbox';
+import FileTag from './FileTag';
 
 const FormatDate = (date: number) => {
 	return new Date(date).toLocaleDateString(undefined, {
@@ -19,6 +20,8 @@ const FilterItem = (filter: string, transaction: Transaction) => {
 	filter.split(' ').forEach(m => {
 		if (!isValid && transaction.id == m) isValid = true;
 		if (!isValid && transaction.name.includes(m)) isValid = true;
+		if (!isValid && transaction.file && transaction.file.name.includes(m))
+			isValid = true;
 		if (!isValid && FormatDate(transaction.date).includes(m)) isValid = true;
 		if (!isValid && transaction.amount.toString().includes(m)) isValid = true;
 	});
@@ -70,6 +73,7 @@ const TransactionsTable = ({
 								/>
 							</th>
 							<th className="font-medium p-2">Name</th>
+							<th className="font-medium p-2">Files</th>
 							<th className="font-medium p-2">Date</th>
 							<th className="font-medium p-2">Amount</th>
 						</tr>
@@ -100,6 +104,13 @@ const TransactionsTable = ({
 										</td>
 										<td className="text-center text-active-text-color p-2">
 											{t.name}
+										</td>
+										<td>
+											{t.file ? (
+												<FileTag file={t.file} />
+											) : (
+												<p className="text-text-color text-center">No File</p>
+											)}
 										</td>
 										<td className="text-center text-text-color">
 											{FormatDate(t.date)}
