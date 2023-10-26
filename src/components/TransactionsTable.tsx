@@ -22,7 +22,13 @@ const TransactionsTable = () => {
 									{t.name}
 								</td>
 								<td className="text-center text-text-color">
-									{new Date(t.date).toLocaleDateString()}
+									{new Date(t.date).toLocaleDateString(undefined, {
+										year: 'numeric',
+										month: 'numeric',
+										day: 'numeric',
+										hour: '2-digit',
+										minute: '2-digit',
+									})}
 								</td>
 								<td className="text-center text-active-text-color">
 									<AmountTag amount={t.amount} />
