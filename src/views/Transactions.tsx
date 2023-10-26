@@ -9,6 +9,7 @@ import AddTransactionModal from '../components/AddTransactionModal';
 const Transactions = () => {
 	const [addNewTransactionModalIsOpen, setAddNewTransactionModalIsOpen] =
 		useState(false);
+	const [filter, setFilter] = useState('');
 	const { account } = useBearStore();
 
 	useEffect(() => {
@@ -32,7 +33,12 @@ const Transactions = () => {
 							</div>
 						</div>
 						<div className="flex flex-row items-center gap-3">
-							<FTInput placeholder="Search" className="h-10" />
+							<FTInput
+								placeholder="Search"
+								className="h-10"
+								value={filter}
+								onChange={e => setFilter(e.target.value)}
+							/>
 							<FTButton
 								className="h-10"
 								onClick={() => setAddNewTransactionModalIsOpen(true)}
@@ -41,7 +47,7 @@ const Transactions = () => {
 							</FTButton>
 						</div>
 					</div>
-					<TransactionsTable />
+					<TransactionsTable filter={filter} />
 					<AddTransactionModal
 						setIsOpen={setAddNewTransactionModalIsOpen}
 						isOpen={addNewTransactionModalIsOpen}
