@@ -2,6 +2,7 @@ const express = require("express")
 const bodyParser = require("body-parser")
 const path = require("path")
 const AccountsAPI = require("./AccountsAPI")
+const { upload, filePath } = require('./upload');
 
 const app = express();
 
@@ -76,9 +77,11 @@ app.post("/accounts/:accountId/transactions", (req, res) => {
 	const name = req.body.name
 	const amount = req.body.amount
 	const date = req.body.date
+	const file = req.body.file
 
 	if (!accountId || !name || !amount || !date) return res.sendStatus(404)
-	res.send(accountsAPI.AddTransaction(accountId, name, amount, date))
+	if (file && (!file.id || !file.name)) return res.sendStatus(404)
+	res.send(accountsAPI.AddTransaction(accountId, name, amount, date, file))
 })
 
 app.patch("/accounts/:accountId/transactions/:transactionId", (req, res) => {
@@ -95,6 +98,11 @@ app.delete("/accounts/:accountId/transactions/:transactionId", (req, res) => {
 	if (!accountId || !transactionId) return res.sendStatus(404)
 	accountsAPI.DeleteTransaction(accountId, transactionId)
 	res.sendStatus(200)
+})
+
+// Files
+app.post("/upload", upload.single("file"), (req, res) => {
+	res.send(req.file.filename.split(".")[0])
 })
 
 app.listen(port, () => {

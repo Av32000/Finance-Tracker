@@ -1,19 +1,44 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import FTButton from './FTButton';
 import FTInput from './FTInput';
 import { useBearStore } from '../GlobalState';
+import FTFileInput from './FTFileInput';
+import { z } from 'zod';
+
+const UploadFile = async (file: File, apiURL: string) => {
+	try {
+		let result = { id: '', name: file.name };
+		const formData = new FormData();
+		formData.append('file', file);
+		const fetchedId = await fetch(apiURL + '/upload', {
+			method: 'POST',
+			body: formData,
+		});
+		const id = z.string().parse(await fetchedId.text());
+		result.id = id;
+		console.log(result);
+
+		return result;
+	} catch {
+		return null;
+	}
+};
 
 const SaveTransaction = async (
 	accountId: string,
 	name: string,
 	date: number,
 	amount: number,
+	file: {
+		id: string;
+		name: string;
+	} | null,
 	apiURL: string,
 ) => {
 	await fetch(apiURL + '/accounts/' + accountId + '/transactions', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ name, date, amount }),
+		body: JSON.stringify({ name, date, amount, file }),
 	});
 };
 
@@ -28,6 +53,7 @@ const AddTransactionModal = ({
 	const [date, setDate] = useState('');
 	const [amount, setAmount] = useState(0);
 	const { account, setAccount, refreshAccount, apiURL } = useBearStore();
+	const fileInput = useRef<HTMLInputElement | null>();
 
 	return (
 		<div
@@ -44,7 +70,7 @@ const AddTransactionModal = ({
 			}}
 		>
 			<div className="p-10 bg-bg-light rounded-xl flex flex-col items-center justify-center">
-				<p className="m-2 text-active-text-color">Add Transaction</p>
+				<p className="m-2 text-active-text-color text-xl">Add Transaction</p>
 				<FTInput
 					placeholder="Name"
 					className="m-2"
@@ -68,24 +94,38 @@ const AddTransactionModal = ({
 						if (nRegex.test(e.target.value)) setAmount(Number(e.target.value));
 					}}
 				/>
+				<FTFileInput
+					className="m-2"
+					ref={element => {
+						if (element) {
+							fileInput.current = element;
+						}
+					}}
+				/>
 				<FTButton
 					className="m-2"
-					onClick={() => {
+					onClick={async () => {
 						if (!name || !date || !amount) return;
-						SaveTransaction(
+						let fileObject = null;
+						if (fileInput.current && fileInput.current.files) {
+							fileObject = await UploadFile(fileInput.current.files[0], apiURL);
+						}
+						await SaveTransaction(
 							account!.id,
 							name,
 							new Date(date).getTime(),
 							amount,
+							fileObject,
 							apiURL,
-						).then(() => {
-							refreshAccount(account!.id, setAccount, apiURL).then(() => {
-								setIsOpen(false);
-								setName('');
-								setDate('');
-								setAmount(0);
-							});
-						});
+						);
+						await refreshAccount(account!.id, setAccount, apiURL);
+						setIsOpen(false);
+						setName('');
+						setDate('');
+						setAmount(0);
+						if (fileInput.current) {
+							fileInput.current.value = '';
+						}
 					}}
 				>
 					Save Transaction

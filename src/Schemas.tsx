@@ -6,6 +6,12 @@ const TransactionSchema = z.object({
 	name: z.string(),
 	amount: z.number(),
 	date: z.number(),
+	file: z
+		.object({
+			id: z.string(),
+			name: z.string(),
+		})
+		.or(z.null()),
 });
 
 const AccountSchema = z.object({

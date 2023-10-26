@@ -89,15 +89,18 @@ module.exports = class AccountsAPI {
 
   // Transactions
   // TODO : Add type + file + link
-  AddTransaction(accountId, name, amount, date) {
+  AddTransaction(accountId, name, amount, date, file) {
     const id = randomUUID()
     const transaction = {
       id,
       created_at: Date.now(),
       name,
       amount,
-      date
+      date,
     }
+
+    if (file) Object.assign(transaction, { file })
+    else Object.assign(transaction, { file: null })
 
     this.accounts.find(a => a.id === accountId).transactions.push(transaction)
     this.UpdateBalance(accountId)
