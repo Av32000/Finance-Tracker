@@ -29,6 +29,8 @@ module.exports = class AccountsAPI {
     this.accounts.forEach(element => {
       let fix = false
 
+      this.UpdateBalance(element.id)
+
       // Add new keys
       Object.keys(newAccountSchema).forEach(key => {
         if (element[key] === undefined) {
@@ -98,8 +100,7 @@ module.exports = class AccountsAPI {
     }
 
     this.accounts.find(a => a.id === accountId).transactions.push(transaction)
-    this.SaveAccounts()
-
+    this.UpdateBalance(accountId)
     return id
   }
 
@@ -124,6 +125,17 @@ module.exports = class AccountsAPI {
 
   GetTransaction(accountId, transactionId) {
     return this.accounts.find(a => a.id === accountId).transactions.find(t => t.id === transactionId)
+  }
+
+  UpdateBalance(accountId) {
+    let balance = 0
+    let account = this.accounts.find(a => a.id === accountId)
+    account.transactions.forEach(t => {
+      balance += t.amount
+    })
+
+    account.balance = balance
+    this.SaveAccounts()
   }
 
   // Data
