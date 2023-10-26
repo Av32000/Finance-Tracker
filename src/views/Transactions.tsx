@@ -3,6 +3,7 @@ import { useBearStore } from '../GlobalState';
 import NavBar from '../components/NavBar';
 import FTInput from '../components/FTInput';
 import FTButton from '../components/FTButton';
+import TransactionsTable from '../components/TransactionsTable';
 
 const Transactions = () => {
 	const { account } = useBearStore();
@@ -32,6 +33,7 @@ const Transactions = () => {
 							<FTButton className="h-10">Add Transaction</FTButton>
 						</div>
 					</div>
+					<TransactionsTable />
 				</div>
 			) : (
 				<div className="flex-1 h-screen bg-bg flex items-center justify-center">

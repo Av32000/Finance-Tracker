@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { AccountSchema } from './Schemas';
+import { AccountSchema, TransactionSchema } from './Schemas';
 
 type Account = z.infer<typeof AccountSchema>;
+type Transaction = z.infer<typeof TransactionSchema>;
 
 export { Account };
