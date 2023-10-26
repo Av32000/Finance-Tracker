@@ -1,6 +1,7 @@
 import { useBearStore } from '../GlobalState';
 import { Transaction } from '../account';
 import AmountTag from './AmountTag';
+import FTCheckbox from './FTCheckbox';
 
 const FormatDate = (date: number) => {
 	return new Date(date).toLocaleDateString(undefined, {
@@ -25,38 +26,91 @@ const FilterItem = (filter: string, transaction: Transaction) => {
 	return isValid;
 };
 
-const TransactionsTable = ({ filter }: { filter: string }) => {
+const TransactionsTable = ({
+	filter,
+	selected,
+	setSelected,
+}: {
+	filter: string;
+	selected: string[];
+	setSelected: (selected: string[]) => void;
+}) => {
 	const { account } = useBearStore();
 
 	return (
 		<div className="m-4">
 			{account ? (
-				<table className="table-fixed w-full">
+				<table className="table-fixed w-full border-spacing-y-px">
 					<thead className="border-b-[1px] p-4 border-text-color">
 						<tr className="text-active-text-color">
+							<th className="w-7">
+								<FTCheckbox
+									checked={
+										selected.length ===
+											account.transactions.filter(t =>
+												FilterItem(filter.trim(), t),
+											).length &&
+										account.transactions.filter(t =>
+											FilterItem(filter.trim(), t),
+										).length > 0
+											? true
+											: false
+									}
+									onChange={e => {
+										if (e.target.checked) {
+											setSelected(
+												account.transactions
+													.filter(t => FilterItem(filter.trim(), t))
+													.map(t => t.id),
+											);
+										} else {
+											setSelected([]);
+										}
+									}}
+								/>
+							</th>
 							<th className="font-medium p-2">Name</th>
 							<th className="font-medium p-2">Date</th>
 							<th className="font-medium p-2">Amount</th>
 						</tr>
 					</thead>
 					<tbody>
-						{account.transactions.map(t => {
-							if (!FilterItem(filter.trim(), t)) return;
+						{
+							// TODO : Add ScrollBar
+							account.transactions.map(t => {
+								if (!FilterItem(filter.trim(), t)) return;
 
-							return (
-								<tr key={t.id}>
-									<td className="text-center text-active-text-color p-2">
-										{t.name}
-									</td>
-									<td className="text-center text-text-color">
-										{FormatDate(t.date)}
-									</td>
-									<td className="text-center text-active-text-color">
-										<AmountTag amount={t.amount} />
-									</td>
-								</tr>
-							);
-						})}
+								return (
+									<tr
+										key={t.id}
+										className={
+											selected.indexOf(t.id) != -1 ? 'bg-bg-light' : ''
+										}
+									>
+										<td>
+											<FTCheckbox
+												checked={selected.indexOf(t.id) != -1}
+												onChange={e => {
+													if (e.target.checked && selected.indexOf(t.id) == -1)
+														setSelected([...selected, t.id]);
+													if (!e.target.checked && selected.indexOf(t.id) != -1)
+														setSelected(selected.filter(i => i !== t.id));
+												}}
+											/>
+										</td>
+										<td className="text-center text-active-text-color p-2">
+											{t.name}
+										</td>
+										<td className="text-center text-text-color">
+											{FormatDate(t.date)}
+										</td>
+										<td className="text-center text-active-text-color">
+											<AmountTag amount={t.amount} />
+										</td>
+									</tr>
+								);
+							})
+						}
 					</tbody>
 				</table>
 			) : (

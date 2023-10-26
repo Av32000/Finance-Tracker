@@ -5,12 +5,45 @@ import FTInput from '../components/FTInput';
 import FTButton from '../components/FTButton';
 import TransactionsTable from '../components/TransactionsTable';
 import AddTransactionModal from '../components/AddTransactionModal';
+import FTBooleanModal from '../components/FTBooleanModal';
+import { Account } from '../account';
+import { AccountSchema } from '../Schemas';
+
+const DeleteTransaction = async (
+	tId: string,
+	accountId: string,
+	apiURL: string,
+) => {
+	await fetch(apiURL + '/accounts/' + accountId + '/transactions/' + tId, {
+		method: 'DELETE',
+	});
+};
+
+const RefreshAccount = async (
+	id: string,
+	setAccount: (account: Account) => void,
+	apiURL: string,
+) => {
+	try {
+		const fetchedAccouts = await fetch(apiURL + '/account/' + id);
+		const accounts = AccountSchema.parse(await fetchedAccouts.json());
+		console.log(accounts);
+		setAccount(accounts);
+	} catch (e) {
+		console.error(e);
+	}
+};
 
 const Transactions = () => {
 	const [addNewTransactionModalIsOpen, setAddNewTransactionModalIsOpen] =
 		useState(false);
 	const [filter, setFilter] = useState('');
-	const { account } = useBearStore();
+	const [selected, setSelected] = useState<string[]>([]);
+	const [
+		confirmDeleteTransactionModalIsOpen,
+		setConfirmDeleteTransactionModalIsOpen,
+	] = useState(false);
+	const { account, setAccount, apiURL } = useBearStore();
 
 	useEffect(() => {
 		document.title = 'Finance Tracker - Home';
@@ -33,24 +66,58 @@ const Transactions = () => {
 							</div>
 						</div>
 						<div className="flex flex-row items-center gap-3">
-							<FTInput
-								placeholder="Search"
-								className="h-10"
-								value={filter}
-								onChange={e => setFilter(e.target.value)}
-							/>
-							<FTButton
-								className="h-10"
-								onClick={() => setAddNewTransactionModalIsOpen(true)}
-							>
-								Add Transaction
-							</FTButton>
+							{selected.length == 0 ? (
+								<>
+									<FTInput
+										placeholder="Search"
+										className="h-10"
+										value={filter}
+										onChange={e => setFilter(e.target.value)}
+									/>
+									<FTButton
+										className="h-10"
+										onClick={() => setAddNewTransactionModalIsOpen(true)}
+									>
+										Add Transaction
+									</FTButton>
+								</>
+							) : (
+								<FTButton
+									className="h-10 bg-red"
+									onClick={() => setConfirmDeleteTransactionModalIsOpen(true)}
+								>
+									Delete Transaction{selected.length > 1 ? 's' : ''}
+								</FTButton>
+							)}
 						</div>
 					</div>
-					<TransactionsTable filter={filter} />
+					<TransactionsTable
+						filter={filter}
+						selected={selected}
+						setSelected={setSelected}
+					/>
 					<AddTransactionModal
 						setIsOpen={setAddNewTransactionModalIsOpen}
 						isOpen={addNewTransactionModalIsOpen}
+					/>
+					<FTBooleanModal
+						title={`Are you sure you want to delete ${
+							selected.length
+						} transaction${selected.length > 1 ? 's' : ''} ?`}
+						confirmText={`Delete ${selected.length} transaction${
+							selected.length > 1 ? 's' : ''
+						}`}
+						cancelText="Cancel"
+						callback={async () => {
+							const promises = selected.map(s =>
+								DeleteTransaction(s, account.id, apiURL),
+							);
+							await Promise.all(promises);
+							await RefreshAccount(account.id, setAccount, apiURL);
+							setSelected([]);
+						}}
+						isOpen={confirmDeleteTransactionModalIsOpen}
+						setIsOpen={setConfirmDeleteTransactionModalIsOpen}
 					/>
 				</div>
 			) : (

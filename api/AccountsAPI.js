@@ -111,12 +111,13 @@ module.exports = class AccountsAPI {
         transaction[key] = data[key]
       }
     })
+    this.UpdateBalance(accountId)
   }
 
   DeleteTransaction(accountId, transactionId) {
     const account = this.accounts.find(a => a.id === accountId)
     account.transactions = account.transactions.filter(t => t.id !== transactionId)
-    this.SaveAccounts()
+    this.UpdateBalance(accountId)
   }
 
   GetTransactions(accountId) {

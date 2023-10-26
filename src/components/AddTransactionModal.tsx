@@ -54,6 +54,9 @@ const AddTransactionModal = ({
 			} absolute items-center justify-center h-screen w-full bg-[black] bg-opacity-60`}
 			onClick={e => {
 				if (e.target === e.currentTarget) {
+					setName('');
+					setDate('');
+					setAmount(0);
 					setIsOpen(false);
 				}
 			}}
@@ -93,11 +96,14 @@ const AddTransactionModal = ({
 							new Date(date).getTime(),
 							amount,
 							apiURL,
-						).then(() =>
-							RefreshAccount(account!.id, setAccount, apiURL).then(() =>
-								setIsOpen(false),
-							),
-						);
+						).then(() => {
+							RefreshAccount(account!.id, setAccount, apiURL).then(() => {
+								setIsOpen(false);
+								setName('');
+								setDate('');
+								setAmount(0);
+							});
+						});
 					}}
 				>
 					Save Transaction
