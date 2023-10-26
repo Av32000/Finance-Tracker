@@ -1,5 +1,5 @@
 const { randomUUID } = require('crypto')
-const { existsSync, mkdirSync, writeFileSync, readFileSync } = require('fs')
+const { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync } = require('fs')
 const path = require("path")
 
 const newAccountSchema = {
@@ -140,6 +140,30 @@ module.exports = class AccountsAPI {
 
     account.balance = balance
     this.SaveAccounts()
+  }
+
+  CleanFile(filePath) {
+    let count = 0
+    const existingFiles = readdirSync(filePath)
+    const validFiles = []
+    this.accounts.forEach(a => {
+      a.transactions.forEach(t => {
+        if (t.file) {
+          validFiles.push(t.file.id + "." + t.file.name.split(".")[1])
+        }
+      })
+    })
+
+    existingFiles.forEach(f => {
+      if (validFiles.indexOf(f) == -1) {
+        rmSync(path.join(__dirname, "../", filePath + f))
+        count++
+      };
+    })
+
+    if (count > 0) {
+      console.log(`${count} file${count > 1 ? "s" : ""} cleaned`);
+    }
   }
 
   // Data

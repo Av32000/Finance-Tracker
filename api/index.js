@@ -18,6 +18,7 @@ app.use((req, res, next) => {
 const accountsPath = path.join(__dirname, "../", "datas")
 const accountsAPI = new AccountsAPI(accountsPath)
 accountsAPI.FixAccounts()
+accountsAPI.CleanFile(filePath)
 
 const port = parseInt(
 	process.argv.find(s => s.startsWith('--port'))?.split('=')[1] || '3000',
