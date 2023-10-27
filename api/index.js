@@ -15,6 +15,8 @@ app.use((req, res, next) => {
 	next();
 });
 
+// TODO : Add Passkey Auth
+
 const accountsPath = path.join(__dirname, "../", "datas")
 const accountsAPI = new AccountsAPI(accountsPath)
 accountsAPI.FixAccounts()
@@ -79,11 +81,12 @@ app.post("/accounts/:accountId/transactions", (req, res) => {
 	const name = req.body.name
 	const amount = req.body.amount
 	const date = req.body.date
+	const tag = req.body.tag
 	const file = req.body.file
 
-	if (!accountId || !name || !amount || !date) return res.sendStatus(404)
+	if (!accountId || !name || !amount || !date || !tag) return res.sendStatus(404)
 	if (file && (!file.id || !file.name)) return res.sendStatus(404)
-	res.send(accountsAPI.AddTransaction(accountId, name, amount, date, file))
+	res.send(accountsAPI.AddTransaction(accountId, name, amount, date, tag, file))
 })
 
 app.patch("/accounts/:accountId/transactions/:transactionId", (req, res) => {
@@ -109,6 +112,34 @@ app.get("/files/:file", (req, res) => {
 	let fullPath = path.join(__dirname, "../", filePath, file)
 	if (!file || !existsSync(fullPath)) return res.sendStatus(404)
 	res.sendFile(fullPath)
+})
+
+// Settigns
+app.get("/accounts/:accountId/settings", (req, res) => {
+	const accountId = req.params.accountId
+	if (!accountId) return res.sendStatus(404)
+	const account = accountsAPI.GetAccount(accountId)
+	if (!account) return res.sendStatus(404)
+	res.send(JSON.stringify(account.settings))
+})
+
+app.get("/accounts/:accountId/settings/:setting", (req, res) => {
+	const accountId = req.params.accountId
+	const settingName = req.params.setting
+	if (!accountId || settingName) return res.sendStatus(404)
+	const account = accountsAPI.GetAccount(accountId)
+	if (!account) return res.sendStatus(404)
+	const setting = account.settings.find(s => s.name === settingName)
+	if (!setting) return res.sendStatus(404)
+	res.send(JSON.stringify(setting))
+})
+
+app.post("/accounts/:accountId/settings/", (req, res) => {
+	const accountId = req.params.accountId
+	const newSetting = req.body
+	if (!accountId || !newSetting || !newSetting.name || !newSetting.value) return res.sendStatus(404)
+	accountsAPI.SetSetting(accountId, newSetting)
+	res.send(200)
 })
 
 app.post("/files/upload", upload.single("file"), (req, res) => {

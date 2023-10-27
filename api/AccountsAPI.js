@@ -6,7 +6,25 @@ const newAccountSchema = {
   id: 0,
   name: "",
   balance: 0,
-  transactions: []
+  transactions: [],
+  settings: [],
+  tags: [
+    {
+      id: "bde71bb0-28ae-491c-ad88-358f83758eca",
+      name: "Monthly",
+      color: "#6366F1"
+    },
+    {
+      id: "eb1de408-85a9-404a-90dd-6705748b3fd5",
+      name: "Food",
+      color: "#25B14C"
+    },
+    {
+      id: "30d0edb1-e1c0-423b-82d7-b0c9ca615973",
+      name: "Other",
+      color: "#646769"
+    }
+  ]
 }
 
 module.exports = class AccountsAPI {
@@ -21,7 +39,6 @@ module.exports = class AccountsAPI {
   LoadAccounts() {
     this.accounts = JSON.parse(readFileSync(this.accountsPath).toString())
   }
-
 
   // Fix Accounts when account newAccountSchema was changed
   FixAccounts() {
@@ -88,8 +105,7 @@ module.exports = class AccountsAPI {
   }
 
   // Transactions
-  // TODO : Add type + file + link
-  AddTransaction(accountId, name, amount, date, file) {
+  AddTransaction(accountId, name, amount, date, tag, file) {
     const id = randomUUID()
     const transaction = {
       id,
@@ -97,6 +113,7 @@ module.exports = class AccountsAPI {
       name,
       amount,
       date,
+      tag
     }
 
     if (file) Object.assign(transaction, { file })
@@ -166,8 +183,16 @@ module.exports = class AccountsAPI {
     }
   }
 
-  // Data
+  // Settings
+  SetSetting(accountId, newSetting) {
+    let settings = this.accounts.find(a => a.id === accountId).settings
+    let setting = settings.find(s => s.name === newSetting.name)
+    if (setting) setting.value = newSetting.value
+    else settings.push(newSetting)
+    this.SaveAccounts()
+  }
 
+  // Data
   SaveAccounts() {
     writeFileSync(this.accountsPath, JSON.stringify(this.accounts))
   }

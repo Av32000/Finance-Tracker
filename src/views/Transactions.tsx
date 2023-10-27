@@ -29,7 +29,7 @@ const Transactions = () => {
 	const { account, setAccount, refreshAccount, apiURL } = useBearStore();
 
 	useEffect(() => {
-		document.title = 'Finance Tracker - Home';
+		document.title = 'Finance Tracker - Transactions';
 	});
 	return (
 		<div className="overflow-hidden flex">

@@ -3,6 +3,7 @@ import { Transaction } from '../account';
 import AmountTag from './AmountTag';
 import FTCheckbox from './FTCheckbox';
 import FileTag from './FileTag';
+import TransactionTagElement from './TransactionTagElement';
 
 const FormatDate = (date: number) => {
 	return new Date(date).toLocaleDateString(undefined, {
@@ -75,6 +76,7 @@ const TransactionsTable = ({
 							<th className="font-medium p-2">Name</th>
 							<th className="font-medium p-2">Files</th>
 							<th className="font-medium p-2">Date</th>
+							<th className="font-medium p-2">Tag</th>
 							<th className="font-medium p-2">Amount</th>
 						</tr>
 					</thead>
@@ -114,6 +116,12 @@ const TransactionsTable = ({
 										</td>
 										<td className="text-center text-text-color">
 											{FormatDate(t.date)}
+										</td>
+										<td className="text-center text-active-text-color">
+											<TransactionTagElement
+												tagId={t.tag}
+												accountTags={account.tags}
+											/>
 										</td>
 										<td className="text-center text-active-text-color">
 											<AmountTag amount={t.amount} />

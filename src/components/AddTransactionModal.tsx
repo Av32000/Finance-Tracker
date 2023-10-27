@@ -4,6 +4,7 @@ import FTInput from './FTInput';
 import { useBearStore } from '../GlobalState';
 import FTFileInput from './FTFileInput';
 import { z } from 'zod';
+import TransactionTagSelect from './TransactionTagSelect';
 
 const UploadFile = async (file: File, apiURL: string) => {
 	try {
@@ -28,6 +29,7 @@ const SaveTransaction = async (
 	accountId: string,
 	name: string,
 	date: number,
+	tag: string,
 	amount: number,
 	file: {
 		id: string;
@@ -38,7 +40,7 @@ const SaveTransaction = async (
 	await fetch(apiURL + '/accounts/' + accountId + '/transactions', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ name, date, amount, file }),
+		body: JSON.stringify({ name, date, tag, amount, file }),
 	});
 };
 
@@ -51,6 +53,7 @@ const AddTransactionModal = ({
 }) => {
 	const [name, setName] = useState('');
 	const [date, setDate] = useState('');
+	const [tag, setTag] = useState('');
 	const [amount, setAmount] = useState(0);
 	const { account, setAccount, refreshAccount, apiURL } = useBearStore();
 	const fileInput = useRef<HTMLInputElement | null>();
@@ -97,6 +100,13 @@ const AddTransactionModal = ({
 						if (nRegex.test(e.target.value)) setAmount(Number(e.target.value));
 					}}
 				/>
+				<div className="flex flex-row gap-3 items-center">
+					<p className="text-text-color">Tag : </p>
+					<TransactionTagSelect
+						value={tag}
+						onChange={e => setTag(e.target.value)}
+					/>
+				</div>
 				<FTFileInput
 					className="m-2"
 					ref={element => {
@@ -108,7 +118,7 @@ const AddTransactionModal = ({
 				<FTButton
 					className="m-2"
 					onClick={async () => {
-						if (!name || !date || !amount) return;
+						if (!name || !date || !tag || !amount) return;
 						let fileObject = null;
 						if (fileInput.current && fileInput.current.files) {
 							fileObject = await UploadFile(fileInput.current.files[0], apiURL);
@@ -117,6 +127,7 @@ const AddTransactionModal = ({
 							account!.id,
 							name,
 							new Date(date).getTime(),
+							tag,
 							amount,
 							fileObject,
 							apiURL,
