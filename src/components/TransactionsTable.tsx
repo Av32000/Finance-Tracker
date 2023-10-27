@@ -1,5 +1,5 @@
 import { useBearStore } from '../GlobalState';
-import { Transaction } from '../account';
+import { Account, Transaction } from '../account';
 import AmountTag from './AmountTag';
 import FTCheckbox from './FTCheckbox';
 import FileTag from './FileTag';
@@ -15,15 +15,21 @@ const FormatDate = (date: number) => {
 	});
 };
 
-const FilterItem = (filter: string, transaction: Transaction) => {
+const FilterItem = (
+	filter: string,
+	transaction: Transaction,
+	account: Account,
+) => {
 	if (filter == '') return true;
 	let isValid = false;
 	filter.split(' ').forEach(m => {
+		const tag = account.tags.find(t => t.id === transaction.tag);
 		if (!isValid && transaction.id == m) isValid = true;
 		if (!isValid && transaction.name.includes(m)) isValid = true;
 		if (!isValid && transaction.file && transaction.file.name.includes(m))
 			isValid = true;
 		if (!isValid && FormatDate(transaction.date).includes(m)) isValid = true;
+		if (!isValid && tag && tag.name.includes(m)) isValid = true;
 		if (!isValid && transaction.amount.toString().includes(m)) isValid = true;
 	});
 
@@ -52,10 +58,10 @@ const TransactionsTable = ({
 									checked={
 										selected.length ===
 											account.transactions.filter(t =>
-												FilterItem(filter.trim(), t),
+												FilterItem(filter.trim(), t, account),
 											).length &&
 										account.transactions.filter(t =>
-											FilterItem(filter.trim(), t),
+											FilterItem(filter.trim(), t, account),
 										).length > 0
 											? true
 											: false
@@ -64,7 +70,7 @@ const TransactionsTable = ({
 										if (e.target.checked) {
 											setSelected(
 												account.transactions
-													.filter(t => FilterItem(filter.trim(), t))
+													.filter(t => FilterItem(filter.trim(), t, account))
 													.map(t => t.id),
 											);
 										} else {
@@ -84,7 +90,7 @@ const TransactionsTable = ({
 						{
 							// TODO : Add ScrollBar
 							account.transactions.map(t => {
-								if (!FilterItem(filter.trim(), t)) return;
+								if (!FilterItem(filter.trim(), t, account)) return;
 
 								return (
 									<tr
