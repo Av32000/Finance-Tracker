@@ -19,4 +19,4 @@ const FTFileInput = (
 	);
 };
 
-export default forwardRef(FTFileInput);
+export const FileInput = forwardRef(FTFileInput);

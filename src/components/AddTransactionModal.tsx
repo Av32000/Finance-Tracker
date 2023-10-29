@@ -2,13 +2,13 @@ import { useRef, useState } from 'react';
 import FTButton from './FTButton';
 import FTInput from './FTInput';
 import { useBearStore } from '../GlobalState';
-import FTFileInput from './FTFileInput';
+import { FileInput } from './FTFileInput';
 import { z } from 'zod';
 import TransactionTagSelect from './TransactionTagSelect';
 
 const UploadFile = async (file: File, apiURL: string) => {
 	try {
-		let result = { id: '', name: file.name };
+		const result = { id: '', name: file.name };
 		const formData = new FormData();
 		formData.append('file', file);
 		const fetchedId = await fetch(apiURL + '/files/upload', {
@@ -107,7 +107,7 @@ const AddTransactionModal = ({
 						onChange={e => setTag(e.target.value)}
 					/>
 				</div>
-				<FTFileInput
+				<FileInput
 					className="m-2"
 					ref={element => {
 						if (element) {

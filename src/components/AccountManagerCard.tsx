@@ -58,7 +58,7 @@ const AccountManagerCard = () => {
 			setAccount(accounts[0]);
 			setLoading(false);
 		}
-	}, [accounts]);
+	}, [accounts, account, apiURL, setAccount]);
 
 	return (
 		<div

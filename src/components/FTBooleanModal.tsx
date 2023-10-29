@@ -10,7 +10,8 @@ const FTBooleanModal = ({
 }: {
 	isOpen: boolean;
 	setIsOpen: (isOpen: boolean) => void;
-	callback: Function;
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	callback: (...args: any) => void;
 	title: string;
 	confirmText: string;
 	cancelText: string;

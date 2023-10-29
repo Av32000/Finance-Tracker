@@ -52,7 +52,7 @@ function App() {
 		setInterval(() => {
 			pingBackend();
 		}, 3000);
-	}, []);
+	});
 
 	return (
 		<div>
