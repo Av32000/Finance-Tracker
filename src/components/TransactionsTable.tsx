@@ -1,19 +1,10 @@
 import { useBearStore } from '../GlobalState';
+import { FormatDate } from '../Utils';
 import { Account, Transaction } from '../account';
 import AmountTag from './AmountTag';
 import FTCheckbox from './FTCheckbox';
 import FileTag from './FileTag';
 import TransactionTagElement from './TransactionTagElement';
-
-const FormatDate = (date: number) => {
-	return new Date(date).toLocaleDateString(undefined, {
-		year: 'numeric',
-		month: 'numeric',
-		day: 'numeric',
-		hour: '2-digit',
-		minute: '2-digit',
-	});
-};
 
 const FilterItem = (
 	filter: string,
