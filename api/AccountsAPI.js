@@ -8,6 +8,8 @@ const newAccountSchema = {
   balance: 0,
   transactions: [],
   settings: [],
+  monthly: 1000,
+  currentMonthly: 0,
   tags: [
     {
       id: "bde71bb0-28ae-491c-ad88-358f83758eca",
@@ -74,7 +76,6 @@ module.exports = class AccountsAPI {
   }
 
   // Accounts
-
   GetAccounts() {
     return this.accounts
   }
@@ -156,6 +157,7 @@ module.exports = class AccountsAPI {
     })
 
     account.balance = balance
+    this.ComputeCurrentMonthly(accountId)
     this.SaveAccounts()
   }
 
@@ -181,6 +183,22 @@ module.exports = class AccountsAPI {
     if (count > 0) {
       console.log(`${count} file${count > 1 ? "s" : ""} cleaned`);
     }
+  }
+
+  // Monthly
+  SetMonthly(accountId, newMonthly){
+    this.accounts.find(a => a.id === accountId).monthly = newMonthly
+    this.SaveAccounts()
+  }
+
+  ComputeCurrentMonthly(accountId){
+    let result = 0
+    let account = this.accounts.find(a => a.id === accountId)
+    account.transactions.filter(t => (new Date(t.date).getMonth() === new Date(Date.now()).getMonth()) && new Date(t.date).getFullYear() === new Date(Date.now()).getFullYear()).forEach(t => {
+      if(t.amount < 0) result += t.amount
+    })
+
+    account.currentMonthly = Math.abs(result)
   }
 
   // Settings

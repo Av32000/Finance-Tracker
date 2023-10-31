@@ -31,6 +31,8 @@ const AccountSchema = z.object({
 	name: z.string(),
 	balance: z.number(),
 	transactions: z.array(TransactionSchema),
+	monthly: z.number(),
+	currentMonthly: z.number(),
 	settings: z.array(SettingSchema),
 	tags: z.array(TransactionTagSchema),
 });

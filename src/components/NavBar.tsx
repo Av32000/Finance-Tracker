@@ -15,10 +15,6 @@ const menu = [
 		path: '/stats',
 	},
 	{
-		name: 'Monthly Budget',
-		path: '/monthly',
-	},
-	{
 		name: 'Settings',
 		path: '/settings',
 	},
