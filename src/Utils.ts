@@ -8,4 +8,12 @@ const FormatDate = (date: number) => {
 	});
 };
 
-export { FormatDate };
+const FormatDateWithoutHours = (date: number) => {
+	return new Date(date).toLocaleDateString(undefined, {
+		year: 'numeric',
+		month: 'numeric',
+		day: 'numeric',
+	});
+};
+
+export { FormatDate, FormatDateWithoutHours };

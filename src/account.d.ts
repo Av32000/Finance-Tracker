@@ -11,4 +11,6 @@ type Transaction = z.infer<typeof TransactionSchema>;
 type Setting = z.infer<typeof SettingSchema>;
 type TransactionTag = z.infer<typeof TransactionTagSchema>;
 
-export { Account, Transaction, TransactionTag };
+type ChartFrequency = 'Days' | 'Weeks' | 'Months' | 'Years'
+
+export { Account, Transaction, TransactionTag, ChartFrequency };

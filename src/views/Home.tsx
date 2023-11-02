@@ -3,6 +3,7 @@ import NavBar from "../components/NavBar";
 import { useBearStore } from "../GlobalState";
 import { FormatDate } from "../Utils";
 import AmountTag from "../components/AmountTag";
+import EvolutionChart from "../components/charts/EvolutionChart";
 
 const Home = () => {
   const { account } = useBearStore();
@@ -105,8 +106,9 @@ const Home = () => {
 				  : <div className="w-full h-full flex items-center justify-center"><p className="text-text-color">Monhly Budget not set</p></div>
 			}
           </div>
-          <div className="bg-bg-light col-start-5 col-end-10 row-start-4 row-end-7 rounded-2xl flex p-3 shadow-lg">
-            <p className="text-text-color">Balance Evolution</p>
+          <div className="bg-bg-light col-start-5 col-end-10 row-start-4 row-end-7 rounded-2xl flex flex-col p-3 shadow-lg">
+            <p className="text-active-text-color">Balance Evolution</p>
+            <div className="w-full h-full"><EvolutionChart frequency="Days"/></div>
           </div>
         </div>
       ) : (
