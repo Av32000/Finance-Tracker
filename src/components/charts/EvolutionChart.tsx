@@ -13,6 +13,7 @@ import {
 	ChartOptions,
 } from 'chart.js';
 import { Line } from 'react-chartjs-2';
+import tailwindConfig from '../../../tailwind.config.js';
 
 ChartJS.register(
 	CategoryScale,
@@ -39,13 +40,31 @@ const EvolutionChart = ({
 
 	const options: ChartOptions = {
 		responsive: true,
+		scales: {
+			x: {
+				ticks: {
+					color: tailwindConfig.theme.colors['text-color'],
+				},
+			},
+			y: {
+				type: 'linear',
+				ticks: {
+					color: tailwindConfig.theme.colors['text-color'],
+				},
+			},
+		},
 		plugins: {
 			legend: {
-				position: 'top' as const,
+				display: false,
 			},
 			title: {
 				display: true,
 				text: title || `Balance Evolution by ${frequency}`,
+				color: tailwindConfig.theme.colors['active-text-color'],
+				font: { weight: 'normal' },
+			},
+			tooltip: {
+				displayColors: false,
 			},
 		},
 	};
@@ -101,8 +120,10 @@ const EvolutionChart = ({
 				{
 					label: 'Balance',
 					data,
-					borderColor: '#6366F1',
-					backgroundColor: '#6366F1',
+					borderColor: tailwindConfig.theme.colors['cta-primarly'],
+					backgroundColor: `${
+						tailwindConfig.theme.colors['cta-primarly']
+					}${Math.round(0.6 * 255).toString(16)}`,
 					tension: 0.1,
 				},
 			],
@@ -113,6 +134,7 @@ const EvolutionChart = ({
 		<div className="w-full h-full p-4">
 			{account ? (
 				<Line
+					// @ts-ignore
 					options={options}
 					data={GenerateData()}
 					className="w-full h-full"
