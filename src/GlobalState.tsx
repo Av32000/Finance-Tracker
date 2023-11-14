@@ -18,7 +18,7 @@ export const useBearStore = create<AppState>(set => ({
 	setAccount: account => set({ account }),
 	refreshAccount: async (id, setAccount, apiURL) => {
 		try {
-			const fetchedAccouts = await fetch(apiURL + '/account/' + id);
+			const fetchedAccouts = await fetch(apiURL + '/accounts/' + id);
 			const accounts = AccountSchema.parse(await fetchedAccouts.json());
 			console.log(accounts);
 			setAccount(accounts);

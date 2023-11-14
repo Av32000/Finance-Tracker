@@ -46,8 +46,7 @@ fastify.get("/accounts", async () => {
   return accountsAPI.GetAccounts();
 });
 
-// TODO : Switch to /accounts
-fastify.get("/account/:id", async (request, reply) => {
+fastify.get("/accounts/:id", async (request, reply) => {
   return accountsAPI.GetAccount(request.params.id);
 });
 
