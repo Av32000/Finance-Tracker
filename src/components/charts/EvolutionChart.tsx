@@ -28,18 +28,17 @@ ChartJS.register(
 type EvolutionChartProps = {
 	frequency: ChartFrequency;
 	transactions?: string[];
-	title?: string;
 };
 
 const EvolutionChart = ({
 	frequency,
 	transactions,
-	title,
 }: EvolutionChartProps) => {
 	const { account } = useBearStore();
 
 	const options: ChartOptions = {
 		responsive: true,
+		maintainAspectRatio: false,
 		scales: {
 			x: {
 				ticks: {
@@ -56,12 +55,6 @@ const EvolutionChart = ({
 		plugins: {
 			legend: {
 				display: false,
-			},
-			title: {
-				display: true,
-				text: title || `Balance Evolution by ${frequency}`,
-				color: tailwindConfig.theme.colors['active-text-color'],
-				font: { weight: 'normal' },
 			},
 			tooltip: {
 				displayColors: false,

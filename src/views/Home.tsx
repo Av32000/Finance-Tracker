@@ -4,6 +4,7 @@ import { useBearStore } from '../GlobalState';
 import { FormatDate } from '../Utils';
 import AmountTag from '../components/AmountTag';
 import EvolutionChart from '../components/charts/EvolutionChart';
+import DistributionPieChart from '../components/charts/DistributionPieChart';
 
 const Home = () => {
 	const { account } = useBearStore();
@@ -27,8 +28,9 @@ const Home = () => {
 							</p>
 						</div>
 					</div>
-					<div className="bg-bg-light col-start-5 col-end-10 row-start-1 row-end-4 rounded-2xl flex p-3 shadow-lg">
-						<p className="text-text-color">Expenses Sources</p>
+					<div className="bg-bg-light col-start-5 col-end-10 row-start-1 row-end-4 rounded-2xl flex flex-col p-3 shadow-lg">
+						<p className="text-active-text-color">Expenses Sources</p>
+						<DistributionPieChart type='Doughnut'/>
 					</div>
 					<div className="bg-bg-light col-start-1 col-end-5 row-start-2 row-end-5 rounded-2xl flex p-3 shadow-lg flex-col gap-3 overflow-hidden">
 						<p className="text-active-text-color text-lg">Last Transactions</p>

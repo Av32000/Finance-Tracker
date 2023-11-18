@@ -12,5 +12,6 @@ type Setting = z.infer<typeof SettingSchema>;
 type TransactionTag = z.infer<typeof TransactionTagSchema>;
 
 type ChartFrequency = 'Days' | 'Weeks' | 'Months' | 'Years'
+type DistributionChartType = 'Pie' | 'Doughnut'
 
-export { Account, Transaction, TransactionTag, ChartFrequency };
+export { Account, Transaction, TransactionTag, ChartFrequency, DistributionChartType };
