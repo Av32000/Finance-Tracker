@@ -39,7 +39,7 @@ const TransactionsTable = ({
 	const { account } = useBearStore();
 
 	return (
-		<div className="m-4">
+		<div className="m-4 overflow-y-scroll">
 			{account ? (
 				<table className="table-fixed w-full border-spacing-y-px">
 					<thead className="border-b-[1px] p-4 border-text-color">
@@ -80,7 +80,7 @@ const TransactionsTable = ({
 					<tbody>
 						{
 							// TODO : Add ScrollBar
-							account.transactions.map(t => {
+							[...account.transactions].sort((a,b) => b.date - a.date).map(t => {
 								if (!FilterItem(filter.trim(), t, account)) return;
 
 								return (

@@ -38,7 +38,7 @@ const Home = () => {
 							className="flex flex-col gap-3 overflow-hidden"
 							style={{ flexFlow: 'column wrap' }}
 						>
-							{account.transactions.slice(0, 19).map(t => (
+							{[...account.transactions].sort((a,b) => b.date - a.date).slice(0, 19).map(t => (
 								<div
 									className="flex flex-row justify-between w-full"
 									key={t.id}
