@@ -51,11 +51,12 @@ const AddTransactionModal = ({
 	isOpen: boolean;
 	setIsOpen: (isOpen: boolean) => void;
 }) => {
+	const { account, setAccount, refreshAccount, apiURL } = useBearStore();
+
 	const [name, setName] = useState('');
 	const [date, setDate] = useState('');
-	const [tag, setTag] = useState('');
+	const [tag, setTag] = useState(account!.tags[0].id);
 	const [amount, setAmount] = useState(0);
-	const { account, setAccount, refreshAccount, apiURL } = useBearStore();
 	const fileInput = useRef<HTMLInputElement | null>();
 
 	return (
@@ -69,6 +70,7 @@ const AddTransactionModal = ({
 					setName('');
 					setDate('');
 					setAmount(0);
+					setTag(account!.tags[0].id)
 					if (fileInput.current) {
 						fileInput.current.value = '';
 					}
@@ -137,6 +139,7 @@ const AddTransactionModal = ({
 						setName('');
 						setDate('');
 						setAmount(0);
+						setTag(account!.tags[0].id)
 						if (fileInput.current) {
 							fileInput.current.value = '';
 						}
