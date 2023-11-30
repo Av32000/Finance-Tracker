@@ -6,6 +6,7 @@ import NoBackend from './views/NoBackend';
 import { useBearStore } from './GlobalState';
 import Transactions from './views/Transactions';
 import Settings from './views/Settings';
+import Statistics from './views/Statistics';
 
 const router = createBrowserRouter([
 	{
@@ -18,7 +19,7 @@ const router = createBrowserRouter([
 	},
 	{
 		path: '/stats',
-		element: <Home />,
+		element: <Statistics />,
 	},
 	{
 		path: '/settings',
