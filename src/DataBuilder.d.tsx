@@ -4,7 +4,7 @@ type FilterKeysOfType<T, U> = {
     [K in keyof T]: T[K] extends U ? K : never;
   }[keyof T];
 
-export type Filter = {
+type Filter = {
     propsName: FilterKeysOfType<Transaction, string>,
     type: "string",
     operation: FilterStringOperation,
@@ -18,3 +18,6 @@ export type Filter = {
 
 type FilterStringOperation = "=" | "!="
 type FilterNumberOperation = "<" | "<=" | "=" | "!=" | ">=" | ">"
+type ChartType = "EvolutionChart" | "DistributionPieChart"
+
+export type {Filter, ChartType}

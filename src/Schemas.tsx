@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ChartType, Filter } from './DataBuilder.d';
 
 const SettingSchema = z.object({
 	name: z.string(),
@@ -26,6 +27,13 @@ const TransactionSchema = z.object({
 		.or(z.null()),
 });
 
+const ChartSchema = z.object({
+	id: z.string(),
+	title: z.string(),
+	filter: z.array(z.custom<Filter>()),
+	type: z.custom<ChartType>()
+})
+
 const AccountSchema = z.object({
 	id: z.string(),
 	name: z.string(),
@@ -35,6 +43,7 @@ const AccountSchema = z.object({
 	currentMonthly: z.number(),
 	settings: z.array(SettingSchema),
 	tags: z.array(TransactionTagSchema),
+	charts: z.array(ChartSchema)
 });
 
 const AccountsSchema = z.array(AccountSchema);
@@ -45,4 +54,5 @@ export {
 	TransactionSchema,
 	SettingSchema,
 	TransactionTagSchema,
+	ChartSchema
 };

@@ -141,6 +141,43 @@ fastify.patch("/accounts/:accountId/monthly", async (request, reply) => {
   reply.status(200);
 });
 
+// Chart
+fastify.get("/accounts/:accountId/charts", async (request, reply) => {
+  const accountId = request.params.accountId;
+  const account = accountsAPI.GetAccount(accountId);
+  if (!account) return reply.status(400);
+  return account.charts
+})
+
+fastify.get("/accounts/:accountId/charts/:chartId", async (request, reply) => {
+  const accountId = request.params.accountId;
+  const chartId = request.params.chartId;
+  const account = accountsAPI.GetAccount(accountId);
+  if (!account) return reply.status(400);
+  const chart = account.charts.find(c => c.id === chartId)
+  if (!chart) return reply.status(404);
+  return chart
+})
+
+fastify.post("/accounts/:accountId/charts", async (request, reply) => {
+  const accountId = request.params.accountId;
+  const title = request.body.title;
+  const filters = request.body.filters;
+  const type = request.body.type;
+  const account = accountsAPI.GetAccount(accountId);
+  if (!account || !title || filters === null || !type) return reply.status(400);
+  return accountsAPI.CreateChart(accountId, title, filters, type)
+})
+
+fastify.delete("/accounts/:accountId/charts/:chartId", async (request, reply) => {
+  const accountId = request.params.accountId;
+  const chartId = request.params.chartId;
+  const account = accountsAPI.GetAccount(accountId);
+  if (!account) return reply.status(400);
+  accountsAPI.DeleteChart(accountId, chartId)
+  return reply.status(200)
+})
+
 // Settigns
 fastify.get("/accounts/:accountId/settings", async (request, reply) => {
   const accountId = request.params.accountId;

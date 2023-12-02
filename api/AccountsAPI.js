@@ -26,7 +26,8 @@ const newAccountSchema = {
       name: "Other",
       color: "#646769"
     }
-  ]
+  ],
+  charts:[]
 }
 
 module.exports = class AccountsAPI {
@@ -199,6 +200,20 @@ module.exports = class AccountsAPI {
     })
 
     account.currentMonthly = Math.abs(result)
+  }
+
+  // Charts
+  CreateChart(accountId, title, filters, type){
+    const id = randomUUID()
+    this.accounts.find(a => a.id === accountId).charts.push({id, title, filters, type})
+    this.SaveAccounts()
+    return id
+  }
+
+  DeleteChart(accountId, chartId){
+    const account = this.accounts.find(a => a.id === accountId)
+    account.charts = account.charts.filter(c => c.id !== chartId)
+    this.SaveAccounts()
   }
 
   // Settings
