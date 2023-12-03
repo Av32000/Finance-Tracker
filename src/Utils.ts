@@ -21,6 +21,9 @@ const FormatDateWithoutHours = (date: number) => {
 
 const FilterTransactions = (account: Account, filters: Filter[]) => {
 	const result:string[] = []
+	if(filters.length == 0){
+		return account.transactions.map(t => t.id)
+	}
 	account.transactions.forEach(t => {
 		let isValid = true
 		filters.forEach(f => {
@@ -51,6 +54,8 @@ const FilterTransactions = (account: Account, filters: Filter[]) => {
 		})
 		if(isValid) result.push(t.id)
 	})
+
+	return result
 }
 
 export { FormatDate, FormatDateWithoutHours, FilterTransactions };

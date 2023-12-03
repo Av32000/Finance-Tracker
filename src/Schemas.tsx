@@ -31,7 +31,11 @@ const ChartSchema = z.object({
 	id: z.string(),
 	title: z.string(),
 	filter: z.array(z.custom<Filter>()),
-	type: z.custom<ChartType>()
+	type: z.custom<ChartType>(),
+	options: z.array(z.object({
+		name:z.string(),
+		value: z.string()
+	})).optional()
 })
 
 const AccountSchema = z.object({

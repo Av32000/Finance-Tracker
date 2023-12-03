@@ -17,8 +17,8 @@ const Statistics = () => {
             <div className="flex items-start">
               <img src="/pages/statistics.svg" className="w-6 m-2" />
               <div className="flex flex-col">
-                <h1 className="text-active-text-color text-2xl">Settings</h1>
-                <p className="text-text-color">Edit account settings</p>
+                <h1 className="text-active-text-color text-2xl">Statistics</h1>
+                <p className="text-text-color">Creating chart to visualise data</p>
               </div>
             </div>
             <div className="flex flex-row items-center gap-3">
