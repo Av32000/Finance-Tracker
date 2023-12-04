@@ -30,10 +30,7 @@ type EvolutionChartProps = {
 	transactions?: string[];
 };
 
-const EvolutionChart = ({
-	frequency,
-	transactions,
-}: EvolutionChartProps) => {
+const EvolutionChart = ({ frequency, transactions }: EvolutionChartProps) => {
 	const { account } = useBearStore();
 
 	const options: ChartOptions = {
@@ -124,13 +121,13 @@ const EvolutionChart = ({
 	};
 
 	return (
-		<div className="w-full h-full p-4">
+		<div className="h-full max-h-full flex-1 p-4">
 			{account ? (
 				<Line
 					// @ts-ignore
 					options={options}
 					data={GenerateData()}
-					className="w-full h-full"
+					className="h-full max-w-full"
 				></Line>
 			) : (
 				<p className="text-text-color">Loading...</p>

@@ -20,7 +20,7 @@ fastify.register(cors, {
 });
 
 fastify.register(require('@fastify/static'), {
-  root: path.join(__dirname,"../", filesPath),
+  root: path.join(__dirname, "../", filesPath),
 })
 
 fastify.register(multipart);
@@ -124,7 +124,6 @@ fastify.get("/files/:file", async (request, reply) => {
   let file = request.params.file;
   file = file.replace(/[\\/]/g, "");
   let fullPath = path.join(__dirname, "../", filesPath, file);
-  console.log(fullPath);
   if (!file || !existsSync(fullPath)) throw new Error("File not found");
   const fileContent = readFileSync(fullPath);
 
@@ -141,7 +140,7 @@ fastify.patch("/accounts/:accountId/monthly", async (request, reply) => {
   reply.status(200);
 });
 
-// Chart
+// Charts
 fastify.get("/accounts/:accountId/charts", async (request, reply) => {
   const accountId = request.params.accountId;
   const account = accountsAPI.GetAccount(accountId);
@@ -164,9 +163,10 @@ fastify.post("/accounts/:accountId/charts", async (request, reply) => {
   const title = request.body.title;
   const filters = request.body.filters;
   const type = request.body.type;
+  const options = request.body.options;
   const account = accountsAPI.GetAccount(accountId);
   if (!account || !title || filters === null || !type) return reply.status(400);
-  return accountsAPI.CreateChart(accountId, title, filters, type)
+  return accountsAPI.CreateChart(accountId, title, filters, type, options)
 })
 
 fastify.delete("/accounts/:accountId/charts/:chartId", async (request, reply) => {
@@ -214,7 +214,7 @@ fastify.post("/files/upload", async (request, reply) => {
   await pump(
     data.file,
     createWriteStream(
-      path.join(filesPath,newName + "." + data.filename.split(".").pop())
+      path.join(filesPath, newName + "." + data.filename.split(".").pop())
     )
   );
   return newName;

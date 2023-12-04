@@ -27,7 +27,7 @@ const newAccountSchema = {
       color: "#646769"
     }
   ],
-  charts:[]
+  charts: []
 }
 
 module.exports = class AccountsAPI {
@@ -187,30 +187,30 @@ module.exports = class AccountsAPI {
   }
 
   // Monthly
-  SetMonthly(accountId, newMonthly){
+  SetMonthly(accountId, newMonthly) {
     this.accounts.find(a => a.id === accountId).monthly = newMonthly
     this.SaveAccounts()
   }
 
-  ComputeCurrentMonthly(accountId){
+  ComputeCurrentMonthly(accountId) {
     let result = 0
     let account = this.accounts.find(a => a.id === accountId)
     account.transactions.filter(t => (new Date(t.date).getMonth() === new Date(Date.now()).getMonth()) && new Date(t.date).getFullYear() === new Date(Date.now()).getFullYear()).forEach(t => {
-      if(t.amount < 0) result += t.amount
+      if (t.amount < 0) result += t.amount
     })
 
     account.currentMonthly = Math.abs(result)
   }
 
   // Charts
-  CreateChart(accountId, title, filters, type){
+  CreateChart(accountId, title, filters, type, options) {
     const id = randomUUID()
-    this.accounts.find(a => a.id === accountId).charts.push({id, title, filters, type})
+    this.accounts.find(a => a.id === accountId).charts.push({ id, title, filters, type, options })
     this.SaveAccounts()
     return id
   }
 
-  DeleteChart(accountId, chartId){
+  DeleteChart(accountId, chartId) {
     const account = this.accounts.find(a => a.id === accountId)
     account.charts = account.charts.filter(c => c.id !== chartId)
     this.SaveAccounts()
