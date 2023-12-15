@@ -6,7 +6,7 @@ const multipart = require("@fastify/multipart");
 const util = require("util");
 const path = require("path");
 const AccountsAPI = require("./AccountsAPI");
-const { existsSync, createWriteStream, createReadStream, readFileSync } = require("fs");
+const { existsSync, createWriteStream, mkdirSync, readFileSync } = require("fs");
 const { pipeline } = require("stream");
 const { randomUUID } = require("crypto");
 
