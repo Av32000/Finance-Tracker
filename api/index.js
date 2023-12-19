@@ -11,6 +11,7 @@ const { pipeline } = require("stream");
 const { randomUUID } = require("crypto");
 
 const filesPath = "datas/files/";
+if (!existsSync("datas")) mkdirSync("datas");
 if (!existsSync(filesPath)) mkdirSync(filesPath);
 
 fastify.register(cors, {
