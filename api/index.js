@@ -9,6 +9,7 @@ const AccountsAPI = require("./AccountsAPI");
 const { existsSync, createWriteStream, mkdirSync, readFileSync } = require("fs");
 const { pipeline } = require("stream");
 const { randomUUID } = require("crypto");
+const fastifyJWT = require('@fastify/jwt');
 
 const filesPath = "datas/files/";
 if (!existsSync("datas")) mkdirSync("datas");
@@ -25,6 +26,42 @@ fastify.register(require('@fastify/static'), {
 })
 
 fastify.register(multipart);
+if (existsSync(path.join(__dirname, "keys/publicKey.pem")) && existsSync(path.join(__dirname, "keys/privateKey.pem"))) {
+  const privateKey = readFileSync(path.join(__dirname, "keys/privateKey.pem"), 'utf-8');
+  const publicKey = readFileSync(path.join(__dirname, "keys/publicKey.pem"), 'utf-8');
+
+  fastify.register(fastifyJWT, {
+    secret: {
+      private: privateKey,
+      public: publicKey,
+      algorithms: ['RS256'],
+    },
+    sign: {
+      algorithm: 'RS256',
+    },
+    verify: {
+      algorithms: ['RS256'],
+    },
+    expiresIn: "7d"
+  });
+} else {
+  console.error("\x1b[33m%s\x1b[0m", "No RSA keys found => Insecure server");
+  fastify.register(fastifyJWT, {
+    secret: randomUUID(),
+    expiresIn: '7d',
+  });
+}
+
+const unauthenticatedRoutes = ["/login"]
+fastify.addHook("onRequest", async (request, reply) => {
+  try {
+    if (!unauthenticatedRoutes.includes(request.raw.url)) {
+      await request.jwtVerify()
+    }
+  } catch (err) {
+    reply.code(401).send(err);
+  }
+})
 
 const pump = util.promisify(pipeline);
 
@@ -41,6 +78,12 @@ const port = parseInt(
 fastify.get("/", async () => {
   return "Finance Tracker !";
 });
+
+// Login
+fastify.get("/login", (request, reply) => {
+  const token = fastify.jwt.sign({});
+  reply.send({ token });
+})
 
 // Account
 fastify.get("/accounts", async () => {

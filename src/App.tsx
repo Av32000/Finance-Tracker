@@ -7,6 +7,7 @@ import { useBearStore } from './GlobalState';
 import Transactions from './views/Transactions';
 import Settings from './views/Settings';
 import Statistics from './views/Statistics';
+import Login from './views/Login';
 
 const router = createBrowserRouter([
 	{
@@ -29,6 +30,7 @@ const router = createBrowserRouter([
 
 const BACKEND_STATUS = {
 	LOADING: -1,
+	UNAUTHENTICATED: 2,
 	CONNECTED: 1,
 	DISCONNECTED: 0,
 };
@@ -39,7 +41,11 @@ function App() {
 
 	const pingBackend = () => {
 		fetchServer('/')
-			.then(() => setbackendStatus(BACKEND_STATUS.CONNECTED))
+			.then(res => {
+				res.status === 401
+					? setbackendStatus(BACKEND_STATUS.UNAUTHENTICATED)
+					: setbackendStatus(BACKEND_STATUS.CONNECTED);
+			})
 			.catch(() => setbackendStatus(BACKEND_STATUS.DISCONNECTED));
 	};
 
@@ -57,6 +63,10 @@ function App() {
 
 			{backendStatus == BACKEND_STATUS.CONNECTED && (
 				<RouterProvider router={router} />
+			)}
+
+			{backendStatus == BACKEND_STATUS.UNAUTHENTICATED && (
+				<Login refresh={pingBackend} />
 			)}
 
 			{backendStatus == BACKEND_STATUS.DISCONNECTED && <NoBackend />}

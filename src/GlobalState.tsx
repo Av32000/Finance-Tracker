@@ -10,14 +10,31 @@ type AppState = {
 		setAccount: (account: Account) => void,
 	) => Promise<void>;
 	fetchServer: FetchServerType;
+	setAuthToken: (token: string) => void;
 };
 
 const apiURL = 'http://localhost:3000';
+let authToken: string;
 
 const fetchServer: FetchServerType = async (endpoint, options) => {
+	let fetchOptions = structuredClone(options);
+	if (fetchOptions && authToken) {
+		if (fetchOptions.headers)
+			Object.assign(fetchOptions.headers, {
+				Authorization: `Bearer ${authToken}`,
+			});
+		else
+			Object.assign(fetchOptions, {
+				headers: { Authorization: `Bearer ${authToken}` },
+			});
+	} else if (!fetchOptions && authToken) {
+		fetchOptions = {
+			headers: { Authorization: `Bearer ${authToken}` },
+		};
+	}
 	return await fetch(
 		apiURL + (endpoint.startsWith('/') ? endpoint : '/' + endpoint),
-		options,
+		fetchOptions,
 	);
 };
 
@@ -36,4 +53,7 @@ export const useBearStore = create<AppState>(set => ({
 		}
 	},
 	fetchServer,
+	setAuthToken: token => {
+		authToken = token;
+	},
 }));
