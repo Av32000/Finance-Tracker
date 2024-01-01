@@ -1,5 +1,7 @@
 const fastify = require("fastify")({
-  logger: false,
+  logger: {
+    level: "error"
+  },
 });
 const cors = require("@fastify/cors");
 const multipart = require("@fastify/multipart");
@@ -10,6 +12,14 @@ const { existsSync, createWriteStream, mkdirSync, readFileSync } = require("fs")
 const { pipeline } = require("stream");
 const { randomUUID } = require("crypto");
 const fastifyJWT = require('@fastify/jwt');
+const {
+  generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse,
+} = require("@simplewebauthn/server");
+const { isoBase64URL, isoUint8Array } = require("@simplewebauthn/server/helpers");
+const AuthAPI = require("./AuthAPI");
 
 const filesPath = "datas/files/";
 if (!existsSync("datas")) mkdirSync("datas");
@@ -52,7 +62,7 @@ if (existsSync(path.join(__dirname, "keys/publicKey.pem")) && existsSync(path.jo
   });
 }
 
-const unauthenticatedRoutes = ["/login"]
+const unauthenticatedRoutes = ["/login", "/has-passkey", "/generate-registration-options", "/verify-registration", '/generate-authentication-options', '/verify-authentication']
 fastify.addHook("onRequest", async (request, reply) => {
   try {
     if (!unauthenticatedRoutes.includes(request.raw.url)) {
@@ -68,6 +78,7 @@ const pump = util.promisify(pipeline);
 // TODO : Add Passkey Auth
 const accountsPath = path.join(__dirname, "../", "datas");
 const accountsAPI = new AccountsAPI(accountsPath);
+const authAPI = new AuthAPI(accountsPath)
 accountsAPI.FixAccounts();
 accountsAPI.CleanFile(filesPath);
 
@@ -80,10 +91,167 @@ fastify.get("/", async () => {
 });
 
 // Login
-fastify.get("/login", (request, reply) => {
-  const token = fastify.jwt.sign({});
-  reply.send({ token });
+fastify.get("/has-passkey", (request, reply) => {
+  return authAPI.PasskeyExist()
 })
+
+fastify.get("/generate-registration-options", async (request, reply) => {
+  if (!authAPI.PasskeyExist()) {
+    const {
+      userId,
+      username,
+      devices,
+    } = authAPI.GetUser();
+
+    const opts = {
+      rpName: authAPI.rpName,
+      rpID: authAPI.rpID,
+      userID: userId,
+      userName: username,
+      timeout: 60000,
+      attestationType: 'none',
+      excludeCredentials: devices.map((dev) => ({
+        id: dev.credentialID,
+        type: 'public-key',
+        transports: dev.transports,
+      })),
+      authenticatorSelection: {
+        residentKey: 'discouraged',
+        userVerification: 'required',
+        authenticatorAttachment: 'cross-platform'
+      },
+      supportedAlgorithmIDs: [-7, -257],
+    };
+
+    const options = await generateRegistrationOptions(opts);
+    authAPI.SetChallenge(options.challenge)
+
+    return options
+  } else {
+    reply.code(403).send("Passkey Already Setup")
+  }
+})
+
+fastify.post("/verify-registration", async (request, reply) => {
+  if (!authAPI.PasskeyExist()) {
+    const body = request.body
+    const user = authAPI.GetUser()
+    const expectedChallenge = authAPI.GetChallenge()
+
+    try {
+      const opts = {
+        response: body,
+        expectedChallenge: `${expectedChallenge}`,
+        expectedOrigin: authAPI.GetOrigin(),
+        expectedRPID: authAPI.rpID,
+        requireUserVerification: true,
+      };
+      verification = await verifyRegistrationResponse(opts);
+    } catch (error) {
+      console.error(error);
+      return reply.status(400).send({ error: error.message });
+    }
+
+    const { verified, registrationInfo } = verification;
+
+    if (verified && registrationInfo) {
+      const { credentialPublicKey, credentialID, counter } = registrationInfo;
+
+      const existingDevice = user.devices.find((device) =>
+        isoUint8Array.areEqual(device.credentialID, credentialID)
+      );
+
+      if (!existingDevice) {
+        const newDevice = {
+          credentialPublicKey,
+          credentialID,
+          counter,
+          transports: body.response.transports,
+        };
+        user.devices.push(newDevice);
+      }
+    }
+
+    authAPI.SaveData()
+    authAPI.SetChallenge(null)
+
+    return verified
+  }
+  else {
+    reply.code(403).send("Passkey Already Setup")
+  }
+})
+
+fastify.get('/generate-authentication-options', async (request, reply) => {
+  const user = authAPI.GetUser();
+
+  const opts = {
+    timeout: 60000,
+    allowCredentials: user.devices.map((dev) => ({
+      id: dev.credentialID,
+      type: 'public-key',
+      transports: dev.transports,
+    })),
+    userVerification: 'required',
+    rpID: authAPI.rpID,
+  };
+
+  const options = await generateAuthenticationOptions(opts);
+
+  authAPI.SetChallenge(options.challenge)
+
+  return options
+});
+
+fastify.post('/verify-authentication', async (request, reply) => {
+  const body = request.body;
+  const user = authAPI.GetUser();
+  const expectedChallenge = authAPI.GetChallenge();
+
+  let dbAuthenticator;
+  const bodyCredIDBuffer = isoBase64URL.toBuffer(body.rawId);
+  for (const dev of user.devices) {
+    if (isoUint8Array.areEqual(dev.credentialID, bodyCredIDBuffer)) {
+      dbAuthenticator = dev;
+      break;
+    }
+  }
+
+  if (!dbAuthenticator) {
+    return reply.code(400).send({
+      error: 'Authenticator is not registered with this site',
+    });
+  }
+
+  let verification;
+  try {
+    const opts = {
+      response: body,
+      expectedChallenge: `${expectedChallenge}`,
+      expectedOrigin: authAPI.GetOrigin(),
+      expectedRPID: authAPI.rpID,
+      authenticator: dbAuthenticator,
+      requireUserVerification: true,
+    };
+    verification = await verifyAuthenticationResponse(opts);
+  } catch (error) {
+    console.error(error);
+    return reply.code(400).send({ error: error.message });
+  }
+
+  const { verified, authenticationInfo } = verification;
+
+  if (verified) {
+    dbAuthenticator.counter = authenticationInfo.newCounter;
+    const token = fastify.jwt.sign({});
+    authAPI.SetChallenge(null)
+    authAPI.SaveData()
+    authenticationInfo.token = token
+    reply.send({ authenticationInfo });
+  } else {
+    reply.status(401)
+  }
+});
 
 // Account
 fastify.get("/accounts", async () => {
@@ -265,6 +433,7 @@ fastify.post("/files/upload", async (request, reply) => {
 });
 
 fastify.listen({ port, host: "localhost" }, function (err, address) {
+  authAPI.SetOrigin(`http://localhost:5173`)
   if (err) {
     fastify.log.error(err);
     process.exit(1);
