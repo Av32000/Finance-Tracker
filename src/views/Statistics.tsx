@@ -14,7 +14,7 @@ const Statistics = () => {
 	});
 
 	useEffect(() => {
-		if (account && account.charts.length > 0) {
+		if (account && account.charts.length > 0 && !currentChart) {
 			setCurrentChart(account.charts[0]);
 		}
 	}, [account]);

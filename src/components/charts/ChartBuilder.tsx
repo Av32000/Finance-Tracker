@@ -17,7 +17,7 @@ const ChartBuilder = ({ chart }: { chart: FTChart }) => {
 	}, [chart, account]);
 
 	return (
-		<div className="flex h-full max-w-full">
+		<div className="flex items-center justify-center h-full max-h-full max-w-full">
 			{chart.type === 'EvolutionChart' && (
 				<EvolutionChart
 					frequency={

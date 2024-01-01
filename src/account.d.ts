@@ -13,7 +13,20 @@ type Setting = z.infer<typeof SettingSchema>;
 type TransactionTag = z.infer<typeof TransactionTagSchema>;
 type FTChart = z.infer<typeof ChartSchema>;
 
-type ChartFrequency = 'Days' | 'Weeks' | 'Months' | 'Years'
-type DistributionChartType = 'Pie' | 'Doughnut'
+type ChartFrequency = 'Days' | 'Weeks' | 'Months' | 'Years';
+type DistributionChartType = 'Pie' | 'Doughnut';
 
-export { Account, Transaction, TransactionTag, ChartFrequency, DistributionChartType, FTChart };
+type FetchServerType = (
+	endpoint: string,
+	options?: RequestInit,
+) => Promise<Response>;
+
+export {
+	Account,
+	Transaction,
+	TransactionTag,
+	ChartFrequency,
+	DistributionChartType,
+	FTChart,
+	FetchServerType,
+};

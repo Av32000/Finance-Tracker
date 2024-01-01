@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Account } from './account';
+import { Account, FetchServerType } from './account';
 import { AccountSchema } from './Schemas';
 type AppState = {
 	account: Account | null;
@@ -8,17 +8,26 @@ type AppState = {
 	refreshAccount: (
 		id: string,
 		setAccount: (account: Account) => void,
-		apiURL: string,
 	) => Promise<void>;
+	fetchServer: FetchServerType;
+};
+
+const apiURL = 'http://localhost:3000';
+
+const fetchServer: FetchServerType = async (endpoint, options) => {
+	return await fetch(
+		apiURL + (endpoint.startsWith('/') ? endpoint : '/' + endpoint),
+		options,
+	);
 };
 
 export const useBearStore = create<AppState>(set => ({
 	account: null,
-	apiURL: 'http://localhost:3000',
+	apiURL,
 	setAccount: account => set({ account }),
-	refreshAccount: async (id, setAccount, apiURL) => {
+	refreshAccount: async (id, setAccount) => {
 		try {
-			const fetchedAccouts = await fetch(apiURL + '/accounts/' + id);
+			const fetchedAccouts = await fetchServer('/accounts/' + id);
 			const accounts = AccountSchema.parse(await fetchedAccouts.json());
 			console.log(accounts);
 			setAccount(accounts);
@@ -26,4 +35,5 @@ export const useBearStore = create<AppState>(set => ({
 			console.error(e);
 		}
 	},
+	fetchServer,
 }));

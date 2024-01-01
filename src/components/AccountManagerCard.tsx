@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useBearStore } from '../GlobalState';
-import { Account } from '../account';
+import { Account, FetchServerType } from '../account';
 import { AccountsSchema } from '../Schemas';
 import FTInput from './FTInput';
 import FTButton from './FTButton';
@@ -9,10 +9,10 @@ type State = 'Closed' | 'Switch' | 'Create';
 
 const RefreshAccounts = async (
 	setAccounts: (accounts: Account[]) => void,
-	apiURL: string,
+	fetchServer: FetchServerType,
 ) => {
 	try {
-		const fetchedAccouts = await fetch(apiURL + '/accounts');
+		const fetchedAccouts = await fetchServer('/accounts');
 		const accounts = AccountsSchema.parse(await fetchedAccouts.json());
 		console.log(accounts);
 		setAccounts(accounts);
@@ -21,9 +21,12 @@ const RefreshAccounts = async (
 	}
 };
 
-const createAccount = async (newAccount: string, apiURL: string) => {
+const createAccount = async (
+	newAccount: string,
+	fetchServer: FetchServerType,
+) => {
 	try {
-		const newAccountFetched = await fetch(apiURL + '/accounts', {
+		const newAccountFetched = await fetchServer('/accounts', {
 			method: 'POST',
 			headers: {
 				'Content-type': 'application/json',
@@ -41,12 +44,12 @@ const AccountManagerCard = () => {
 	const [status, setStatus] = useState<State>('Closed');
 	const [accounts, setAccounts] = useState<Account[] | null>(null);
 	const [newAccount, setNewAccount] = useState('');
-	const { account, setAccount, refreshAccount, apiURL } = useBearStore();
+	const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
 	const [loading, setLoading] = useState(!account);
 
 	useEffect(() => {
 		if (!accounts) {
-			RefreshAccounts(setAccounts, apiURL);
+			RefreshAccounts(setAccounts, fetchServer);
 		}
 
 		if (accounts && accounts?.length == 0) {
@@ -58,7 +61,7 @@ const AccountManagerCard = () => {
 			setAccount(accounts[0]);
 			setLoading(false);
 		}
-	}, [accounts, account, apiURL, setAccount]);
+	}, [accounts, account, fetchServer, setAccount]);
 
 	return (
 		<div
@@ -94,7 +97,7 @@ const AccountManagerCard = () => {
 											status == 'Closed' ? 'hidden' : ''
 										}`}
 										onClick={() => {
-											refreshAccount(a.id, setAccount, apiURL).then(() =>
+											refreshAccount(a.id, setAccount).then(() =>
 												setStatus('Closed'),
 											);
 										}}
@@ -125,16 +128,16 @@ const AccountManagerCard = () => {
 							/>
 							<FTButton
 								onClick={() => {
-									createAccount(newAccount, apiURL).then(id => {
+									createAccount(newAccount, fetchServer).then(id => {
 										if (id) {
-											refreshAccount(id, setAccount, apiURL).then(() =>
+											refreshAccount(id, setAccount).then(() =>
 												setStatus('Closed'),
 											);
 										} else {
 											console.error("Can't create Account");
 										}
 									});
-									RefreshAccounts(setAccounts, apiURL);
+									RefreshAccounts(setAccounts, fetchServer);
 								}}
 							>
 								Create Account

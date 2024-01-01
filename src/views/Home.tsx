@@ -30,7 +30,7 @@ const Home = () => {
 					</div>
 					<div className="bg-bg-light col-start-5 col-end-10 row-start-1 row-end-4 rounded-2xl flex flex-col p-3 shadow-lg">
 						<p className="text-active-text-color">Expenses Sources</p>
-						<DistributionPieChart type='Doughnut'/>
+						<DistributionPieChart type="Doughnut" />
 					</div>
 					<div className="bg-bg-light col-start-1 col-end-5 row-start-2 row-end-5 rounded-2xl flex p-3 shadow-lg flex-col gap-3 overflow-hidden">
 						<p className="text-active-text-color text-lg">Last Transactions</p>
@@ -38,17 +38,20 @@ const Home = () => {
 							className="flex flex-col gap-3 overflow-hidden"
 							style={{ flexFlow: 'column wrap' }}
 						>
-							{[...account.transactions].sort((a,b) => b.date - a.date).slice(0, 19).map(t => (
-								<div
-									className="flex flex-row justify-between w-full"
-									key={t.id}
-								>
-									<p className="text-text-color">
-										{t.name} - {FormatDate(t.date).split(' ')[0]}
-									</p>
-									<AmountTag amount={t.amount} />
-								</div>
-							))}
+							{[...account.transactions]
+								.sort((a, b) => b.date - a.date)
+								.slice(0, 19)
+								.map(t => (
+									<div
+										className="flex flex-row justify-between w-full"
+										key={t.id}
+									>
+										<p className="text-text-color">
+											{t.name} - {FormatDate(t.date).split(' ')[0]}
+										</p>
+										<AmountTag amount={t.amount} />
+									</div>
+								))}
 						</div>
 					</div>
 					<div className="bg-bg-light col-start-1 col-end-5 row-start-5 row-end-7 rounded-2xl flex flex-col p-3 shadow-lg">

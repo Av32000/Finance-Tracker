@@ -6,13 +6,14 @@ import FTButton from '../components/FTButton';
 import TransactionsTable from '../components/TransactionsTable';
 import AddTransactionModal from '../components/AddTransactionModal';
 import FTBooleanModal from '../components/FTBooleanModal';
+import { FetchServerType } from '../account';
 
 const DeleteTransaction = async (
 	tId: string,
 	accountId: string,
-	apiURL: string,
+	fetchServer: FetchServerType,
 ) => {
-	await fetch(apiURL + '/accounts/' + accountId + '/transactions/' + tId, {
+	await fetchServer('/accounts/' + accountId + '/transactions/' + tId, {
 		method: 'DELETE',
 	});
 };
@@ -26,7 +27,7 @@ const Transactions = () => {
 		confirmDeleteTransactionModalIsOpen,
 		setConfirmDeleteTransactionModalIsOpen,
 	] = useState(false);
-	const { account, setAccount, refreshAccount, apiURL } = useBearStore();
+	const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
 
 	useEffect(() => {
 		document.title = 'Finance Tracker - Transactions';
@@ -93,10 +94,10 @@ const Transactions = () => {
 						cancelText="Cancel"
 						callback={async () => {
 							const promises = selected.map(s =>
-								DeleteTransaction(s, account.id, apiURL),
+								DeleteTransaction(s, account.id, fetchServer),
 							);
 							await Promise.all(promises);
-							await refreshAccount(account.id, setAccount, apiURL);
+							await refreshAccount(account.id, setAccount);
 							setSelected([]);
 						}}
 						isOpen={confirmDeleteTransactionModalIsOpen}

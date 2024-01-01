@@ -35,10 +35,10 @@ const BACKEND_STATUS = {
 
 function App() {
 	const [backendStatus, setbackendStatus] = useState(BACKEND_STATUS.LOADING);
-	const { apiURL } = useBearStore();
+	const { fetchServer } = useBearStore();
 
 	const pingBackend = () => {
-		fetch(apiURL)
+		fetchServer('/')
 			.then(() => setbackendStatus(BACKEND_STATUS.CONNECTED))
 			.catch(() => setbackendStatus(BACKEND_STATUS.DISCONNECTED));
 	};

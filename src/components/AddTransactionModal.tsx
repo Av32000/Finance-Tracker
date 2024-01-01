@@ -5,13 +5,14 @@ import { useBearStore } from '../GlobalState';
 import { FileInput } from './FTFileInput';
 import { z } from 'zod';
 import TransactionTagSelect from './TransactionTagSelect';
+import { FetchServerType } from '../account';
 
-const UploadFile = async (file: File, apiURL: string) => {
+const UploadFile = async (file: File, fetchServer: FetchServerType) => {
 	try {
 		const result = { id: '', name: file.name };
 		const formData = new FormData();
 		formData.append('file', file);
-		const fetchedId = await fetch(apiURL + '/files/upload', {
+		const fetchedId = await fetchServer('/files/upload', {
 			method: 'POST',
 			body: formData,
 		});
@@ -35,9 +36,9 @@ const SaveTransaction = async (
 		id: string;
 		name: string;
 	} | null,
-	apiURL: string,
+	fetchServer: FetchServerType,
 ) => {
-	await fetch(apiURL + '/accounts/' + accountId + '/transactions', {
+	await fetchServer('/accounts/' + accountId + '/transactions', {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ name, date, tag, amount, file }),
@@ -51,7 +52,7 @@ const AddTransactionModal = ({
 	isOpen: boolean;
 	setIsOpen: (isOpen: boolean) => void;
 }) => {
-	const { account, setAccount, refreshAccount, apiURL } = useBearStore();
+	const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
 
 	const [name, setName] = useState('');
 	const [date, setDate] = useState('');
@@ -70,7 +71,7 @@ const AddTransactionModal = ({
 					setName('');
 					setDate('');
 					setAmount(0);
-					setTag(account!.tags[0].id)
+					setTag(account!.tags[0].id);
 					if (fileInput.current) {
 						fileInput.current.value = '';
 					}
@@ -123,7 +124,10 @@ const AddTransactionModal = ({
 						if (!name || !date || !tag || !amount) return;
 						let fileObject = null;
 						if (fileInput.current && fileInput.current.files) {
-							fileObject = await UploadFile(fileInput.current.files[0], apiURL);
+							fileObject = await UploadFile(
+								fileInput.current.files[0],
+								fetchServer,
+							);
 						}
 						await SaveTransaction(
 							account!.id,
@@ -132,14 +136,14 @@ const AddTransactionModal = ({
 							tag,
 							amount,
 							fileObject,
-							apiURL,
+							fetchServer,
 						);
-						await refreshAccount(account!.id, setAccount, apiURL);
+						await refreshAccount(account!.id, setAccount);
 						setIsOpen(false);
 						setName('');
 						setDate('');
 						setAmount(0);
-						setTag(account!.tags[0].id)
+						setTag(account!.tags[0].id);
 						if (fileInput.current) {
 							fileInput.current.value = '';
 						}
