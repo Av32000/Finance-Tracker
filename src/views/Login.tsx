@@ -30,10 +30,7 @@ const Login = ({ refresh }: { refresh: () => void }) => {
 
 			const verificationJSON = await verificationResp.json();
 
-			if (
-				verificationJSON &&
-				verificationJSON.authenticationInfo.userVerified
-			) {
+			if (verificationJSON) {
 				resolve();
 			} else {
 				reject(verificationJSON);
@@ -49,7 +46,7 @@ const Login = ({ refresh }: { refresh: () => void }) => {
 			let hasPasskey = await (await fetchServer('/has-passkey')).text();
 			console.log(hasPasskey);
 			if (hasPasskey == 'false') {
-				await register(fetchServer);
+				await register(fetchServer).catch(reject);
 			}
 			const resp = await fetchServer('/generate-authentication-options');
 
@@ -58,7 +55,6 @@ const Login = ({ refresh }: { refresh: () => void }) => {
 				asseResp = await startAuthentication(await resp.json());
 			} catch (error) {
 				reject(error);
-				throw error;
 			}
 			const verificationResp = await fetchServer('/verify-authentication', {
 				method: 'POST',
@@ -71,7 +67,7 @@ const Login = ({ refresh }: { refresh: () => void }) => {
 			const verificationJSON = await verificationResp.json();
 
 			if (
-				verificationJSON &&
+				verificationJSON.authenticationInfo &&
 				verificationJSON.authenticationInfo.userVerified
 			) {
 				let token = verificationJSON.authenticationInfo.token;
@@ -102,8 +98,9 @@ const Login = ({ refresh }: { refresh: () => void }) => {
 						className="px-2 py-1"
 						onClick={async () => {
 							setIsLoading(true);
-							await login(fetchServer, setAuthToken);
-							setIsLoading(false);
+							await login(fetchServer, setAuthToken).catch(() =>
+								setIsLoading(false),
+							);
 						}}
 					>
 						Continue with Passkey

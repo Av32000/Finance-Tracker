@@ -92,7 +92,85 @@ fastify.get("/", async () => {
 
 // Login
 fastify.get("/has-passkey", (request, reply) => {
-  return authAPI.PasskeyExist()
+  return authAPI.PasskeyExist() ? authAPI.GetUser().devices : false
+})
+
+fastify.get("/generate-new-key-options", async (request, reply) => {
+  const {
+    userId,
+    username,
+    devices,
+  } = authAPI.GetUser();
+
+  const opts = {
+    rpName: authAPI.rpName,
+    rpID: authAPI.rpID,
+    userID: userId,
+    userName: username,
+    timeout: 60000,
+    attestationType: 'none',
+    excludeCredentials: devices.map((dev) => ({
+      id: dev.credentialID,
+      type: 'public-key',
+      transports: dev.transports,
+    })),
+    authenticatorSelection: {
+      residentKey: 'discouraged',
+      userVerification: 'required',
+      authenticatorAttachment: 'cross-platform'
+    },
+    supportedAlgorithmIDs: [-7, -257],
+  };
+
+  const options = await generateRegistrationOptions(opts);
+  authAPI.SetChallenge(options.challenge)
+
+  return options
+})
+
+fastify.post("/verify-new-key-registration", async (request, reply) => {
+  const body = request.body
+  const user = authAPI.GetUser()
+  const expectedChallenge = authAPI.GetChallenge()
+
+  try {
+    const opts = {
+      response: body,
+      expectedChallenge: `${expectedChallenge}`,
+      expectedOrigin: authAPI.GetOrigin(),
+      expectedRPID: authAPI.rpID,
+      requireUserVerification: true,
+    };
+    verification = await verifyRegistrationResponse(opts);
+  } catch (error) {
+    console.error(error);
+    return reply.status(400).send({ error: error.message });
+  }
+
+  const { verified, registrationInfo } = verification;
+
+  if (verified && registrationInfo) {
+    const { credentialPublicKey, credentialID, counter } = registrationInfo;
+
+    const existingDevice = user.devices.find((device) =>
+      isoUint8Array.areEqual(device.credentialID, credentialID)
+    );
+
+    if (!existingDevice) {
+      const newDevice = {
+        credentialPublicKey,
+        credentialID,
+        counter,
+        transports: body.response.transports,
+      };
+      user.devices.push(newDevice);
+    }
+  }
+
+  authAPI.SaveData()
+  authAPI.SetChallenge(null)
+
+  return verified
 })
 
 fastify.get("/generate-registration-options", async (request, reply) => {
@@ -118,7 +196,7 @@ fastify.get("/generate-registration-options", async (request, reply) => {
       authenticatorSelection: {
         residentKey: 'discouraged',
         userVerification: 'required',
-        authenticatorAttachment: 'cross-platform'
+        authenticatorAttachment: 'platform'
       },
       supportedAlgorithmIDs: [-7, -257],
     };

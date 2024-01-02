@@ -3,7 +3,8 @@ import { useBearStore } from '../GlobalState';
 import NavBar from '../components/NavBar';
 import FTInput from '../components/FTInput';
 import FTButton from '../components/FTButton';
-import { Account } from '../account';
+import { Account, FetchServerType } from '../account';
+import { startRegistration } from '@simplewebauthn/browser';
 
 const Settings = () => {
 	const { account, refreshAccount, setAccount, fetchServer } = useBearStore();
@@ -13,6 +14,38 @@ const Settings = () => {
 	const Reset = (account: Account) => {
 		setNewAccountName(account.name);
 		setNewMonthly(account.monthly);
+	};
+
+	const register = async (fetchServer: FetchServerType) => {
+		return new Promise<void>(async (resolve, reject) => {
+			const resp = await fetchServer('/generate-new-key-options');
+			let attResp;
+			try {
+				attResp = await startRegistration(await resp.json());
+			} catch (error) {
+				reject(error);
+				throw error;
+			}
+
+			const verificationResp = await fetchServer(
+				'/verify-new-key-registration',
+				{
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+					body: JSON.stringify(attResp),
+				},
+			);
+
+			const verificationJSON = await verificationResp.json();
+
+			if (verificationJSON) {
+				resolve();
+			} else {
+				reject(verificationJSON);
+			}
+		});
 	};
 
 	const Save = async (account: Account) => {
@@ -90,6 +123,15 @@ const Settings = () => {
 										setNewMonthly(Number(e.target.value));
 								}}
 							/>
+						</div>
+						<div>
+							<FTButton
+								onClick={() => {
+									register(fetchServer);
+								}}
+							>
+								Add New Passkey
+							</FTButton>
 						</div>
 					</div>
 				</div>
