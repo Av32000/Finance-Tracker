@@ -47,14 +47,14 @@ const SaveTransaction = async (
 			{
 				method: 'PATCH',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name, description, date, tag, amount, file }),
+				body: JSON.stringify({ name, description, date, tag, amount }),
 			},
 		);
 	} else {
 		await fetchServer('/accounts/' + accountId + '/transactions', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ name, description, date, tag, amount }),
+			body: JSON.stringify({ name, description, date, tag, amount, file }),
 		});
 	}
 };

@@ -1,4 +1,4 @@
-import { TextareaHTMLAttributes, useEffect, useRef, useState } from 'react';
+import { TextareaHTMLAttributes, useEffect, useRef } from 'react';
 
 export const useAutosizeTextArea = (
 	textAreaRef: HTMLTextAreaElement | null,

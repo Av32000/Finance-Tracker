@@ -35,7 +35,11 @@ fastify.register(require('@fastify/static'), {
   root: path.join(__dirname, "../", filesPath),
 })
 
-fastify.register(multipart);
+fastify.register(multipart, {
+  limits: {
+    fileSize: 1000 * 1024 * 1024,
+  }
+});
 if (existsSync(path.join(__dirname, "keys/publicKey.pem")) && existsSync(path.join(__dirname, "keys/privateKey.pem"))) {
   const privateKey = readFileSync(path.join(__dirname, "keys/privateKey.pem"), 'utf-8');
   const publicKey = readFileSync(path.join(__dirname, "keys/publicKey.pem"), 'utf-8');
@@ -75,7 +79,6 @@ fastify.addHook("onRequest", async (request, reply) => {
 
 const pump = util.promisify(pipeline);
 
-// TODO : Add Passkey Auth
 const accountsPath = path.join(__dirname, "../", "datas");
 const accountsAPI = new AccountsAPI(accountsPath);
 const authAPI = new AuthAPI(accountsPath)
@@ -411,14 +414,26 @@ fastify.delete(
 );
 
 // Files
+const mimeTypes = require('mime-types');
 fastify.get("/files/:file", async (request, reply) => {
   let file = request.params.file;
   file = file.replace(/[\\/]/g, "");
   let fullPath = path.join(__dirname, "../", filesPath, file);
-  if (!file || !existsSync(fullPath)) throw new Error("File not found");
+
+  if (!file || !existsSync(fullPath)) {
+    throw new Error("File not found");
+  }
+
   const fileContent = readFileSync(fullPath);
 
-  reply.type('text/plain').send(fileContent);
+  // Use mimeTypes.lookup to determine the content type
+  const mimeType = mimeTypes.lookup(file);
+
+  if (mimeType) {
+    reply.type(mimeType).send(fileContent);
+  } else {
+    reply.type('application/octet-stream').send(fileContent);
+  }
 });
 
 // Monthly

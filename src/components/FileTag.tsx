@@ -1,14 +1,12 @@
 import { useBearStore } from '../GlobalState';
 
 const FileTag = ({ file }: { file: { id: string; name: string } }) => {
-	const { apiURL } = useBearStore();
+	const { openFileFromAPI } = useBearStore();
 	return (
 		<div
 			className="flex items-center justify-center"
 			onClick={() => {
-				window.open(
-					apiURL + '/files/' + file.id + '.' + file.name.split('.').pop(),
-				);
+				openFileFromAPI(file.id, file.name.split('.').pop() || '');
 			}}
 		>
 			<p

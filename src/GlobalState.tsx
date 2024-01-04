@@ -11,6 +11,7 @@ type AppState = {
 	) => Promise<void>;
 	fetchServer: FetchServerType;
 	setAuthToken: (token: string) => void;
+	openFileFromAPI: (id: string, ext: string) => void;
 };
 
 const apiURL = 'http://localhost:3000';
@@ -55,5 +56,17 @@ export const useBearStore = create<AppState>(set => ({
 	fetchServer,
 	setAuthToken: token => {
 		authToken = token;
+	},
+	openFileFromAPI: (id, ext) => {
+		const url = '/files/' + id + '.' + ext;
+		fetchServer(url)
+			.then(response => response.blob())
+			.then(blob => {
+				const fileUrl = URL.createObjectURL(blob);
+				window.open(fileUrl, '_blank');
+			})
+			.catch(error => {
+				console.error('File Error :', error);
+			});
 	},
 }));

@@ -10,7 +10,7 @@ const TransactionTagSelect = (
 		<>
 			<select
 				{...props}
-				className={`bg-bg-light border-text-color border rounded text-active-text-color outline-none px-3 py-1 appearance-none ${className}`}
+				className={`bg-bg-light border-text-color border rounded text-active-text-color outline-none px-3 py-1 appearance-none ${className} text-center`}
 			>
 				{account.tags.map(t => (
 					<option

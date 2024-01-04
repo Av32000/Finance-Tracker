@@ -20,6 +20,7 @@
     "@simplewebauthn/server": "^8.3.6",
     "chart.js": "^4.4.0",
     "fastify": "^4.24.3",
+    "mime-types": "^2.1.35",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.2.0",
