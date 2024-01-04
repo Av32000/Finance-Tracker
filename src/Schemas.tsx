@@ -16,6 +16,7 @@ const TransactionSchema = z.object({
 	id: z.string(),
 	created_at: z.number(),
 	name: z.string(),
+	description: z.string(),
 	amount: z.number(),
 	date: z.number(),
 	tag: z.string(),
@@ -32,11 +33,15 @@ const ChartSchema = z.object({
 	title: z.string(),
 	filter: z.array(z.custom<Filter>()),
 	type: z.custom<ChartType>(),
-	options: z.array(z.object({
-		name:z.string(),
-		value: z.string()
-	})).optional()
-})
+	options: z
+		.array(
+			z.object({
+				name: z.string(),
+				value: z.string(),
+			}),
+		)
+		.optional(),
+});
 
 const AccountSchema = z.object({
 	id: z.string(),
@@ -47,7 +52,7 @@ const AccountSchema = z.object({
 	currentMonthly: z.number(),
 	settings: z.array(SettingSchema),
 	tags: z.array(TransactionTagSchema),
-	charts: z.array(ChartSchema)
+	charts: z.array(ChartSchema),
 });
 
 const AccountsSchema = z.array(AccountSchema);
@@ -58,5 +63,5 @@ export {
 	TransactionSchema,
 	SettingSchema,
 	TransactionTagSchema,
-	ChartSchema
+	ChartSchema,
 };

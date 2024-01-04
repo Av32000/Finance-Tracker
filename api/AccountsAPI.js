@@ -107,12 +107,13 @@ module.exports = class AccountsAPI {
   }
 
   // Transactions
-  AddTransaction(accountId, name, amount, date, tag, file) {
+  AddTransaction(accountId, name, description, amount, date, tag, file) {
     const id = randomUUID()
     const transaction = {
       id,
       created_at: Date.now(),
       name,
+      description,
       amount,
       date,
       tag

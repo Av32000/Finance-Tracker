@@ -6,6 +6,7 @@ import { FileInput } from './FTFileInput';
 import { z } from 'zod';
 import TransactionTagSelect from './TransactionTagSelect';
 import { FetchServerType } from '../account';
+import FTTextArea from './FTTextArea';
 
 const UploadFile = async (file: File, fetchServer: FetchServerType) => {
 	try {
@@ -29,6 +30,7 @@ const UploadFile = async (file: File, fetchServer: FetchServerType) => {
 const SaveTransaction = async (
 	accountId: string,
 	name: string,
+	description: string,
 	date: number,
 	tag: string,
 	amount: number,
@@ -45,14 +47,14 @@ const SaveTransaction = async (
 			{
 				method: 'PATCH',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ name, date, tag, amount, file }),
+				body: JSON.stringify({ name, description, date, tag, amount, file }),
 			},
 		);
 	} else {
 		await fetchServer('/accounts/' + accountId + '/transactions', {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
-			body: JSON.stringify({ name, date, tag, amount }),
+			body: JSON.stringify({ name, description, date, tag, amount }),
 		});
 	}
 };
@@ -69,6 +71,7 @@ const AddTransactionModal = ({
 	const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
 
 	const [name, setName] = useState('');
+	const [description, setDescription] = useState('');
 	const [date, setDate] = useState('');
 	const [tag, setTag] = useState(account!.tags[0].id);
 	const [amount, setAmount] = useState(0);
@@ -79,6 +82,7 @@ const AddTransactionModal = ({
 			let transaction = account.transactions.find(t => t.id === transactionId);
 			if (transaction) {
 				setName(transaction.name);
+				setDescription(transaction.description);
 				setDate(new Date(transaction.date).toISOString().split('.')[0]);
 				setTag(
 					account.tags.find(t => t.id === transaction?.tag)?.id ||
@@ -141,6 +145,12 @@ const AddTransactionModal = ({
 						onChange={e => setTag(e.target.value)}
 					/>
 				</div>
+				<FTTextArea
+					placeholder="Description"
+					className="m-2"
+					value={description}
+					onChange={e => setDescription(e.target.value)}
+				/>
 				{!transactionId && (
 					<FileInput
 						className="m-2"
@@ -165,6 +175,7 @@ const AddTransactionModal = ({
 						await SaveTransaction(
 							account!.id,
 							name,
+							description,
 							new Date(date).getTime(),
 							tag,
 							amount,
@@ -175,6 +186,7 @@ const AddTransactionModal = ({
 						await refreshAccount(account!.id, setAccount);
 						setIsOpen(false);
 						setName('');
+						setDescription('');
 						setDate('');
 						setAmount(0);
 						setTag(account!.tags[0].id);
