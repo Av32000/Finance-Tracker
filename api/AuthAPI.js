@@ -18,22 +18,36 @@ module.exports = class AuthAPI {
     }
     else this.data = JSON.parse(readFileSync(this.dataPath).toString())
 
-    if (!this.data.user) this.data.user = { userId: randomUUID(), username: "Finance Tracker", devices: [] }
-    if (!this.data.user.userId) this.data.userId = randomUUID()
-    if (!this.data.user.username) this.data.username = "Fiance Tracker"
-    if (!this.data.user.devices) this.data.devices = []
+    if (!this.data.userId) this.data.userId = randomUUID()
+    if (!this.data.username) this.data.username = "Fiance Tracker"
+    if (!this.data.devices) {
+      console.error("\x1b[33m%s\x1b[0m", "No Passkeys found => Data not protected");
+      this.data.devices = []
+    }
+    else {
+      this.data.devices.forEach(device => {
+        let keyJson = device.credentialPublicKey
+        let credentialJson = device.credentialID
+
+        let key = new Uint8Array(Object.values(keyJson))
+        let credential = new Uint8Array(Object.values(credentialJson))
+
+        device.credentialPublicKey = key
+        device.credentialID = credential
+      });
+    }
+
 
     this.SaveData()
   }
 
 
   GetUser() {
-    console.log(this.data.user);
-    return this.data.user
+    return this.data
   }
 
   PasskeyExist() {
-    return this.data.user.devices.length > 0
+    return this.data.devices.length > 0
   }
 
   SetChallenge(challenge) { this.currentChallenge = challenge }

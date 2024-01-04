@@ -167,8 +167,8 @@ fastify.post("/verify-new-key-registration", async (request, reply) => {
     }
   }
 
-  authAPI.SaveData()
   authAPI.SetChallenge(null)
+  authAPI.SaveData()
 
   return verified
 })
@@ -250,8 +250,8 @@ fastify.post("/verify-registration", async (request, reply) => {
       }
     }
 
-    authAPI.SaveData()
     authAPI.SetChallenge(null)
+    authAPI.SaveData()
 
     return verified
   }
