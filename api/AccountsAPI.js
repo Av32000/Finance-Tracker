@@ -157,7 +157,7 @@ module.exports = class AccountsAPI {
       balance += t.amount
     })
 
-    account.balance = balance
+    account.balance = parseFloat(balance.toFixed(2))
     this.ComputeCurrentMonthly(accountId)
     this.SaveAccounts()
   }

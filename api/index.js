@@ -62,7 +62,7 @@ if (existsSync(path.join(__dirname, "keys/publicKey.pem")) && existsSync(path.jo
   });
 }
 
-const unauthenticatedRoutes = ["/login", "/has-passkey", "/generate-registration-options", "/verify-registration", '/generate-authentication-options', '/verify-authentication']
+const unauthenticatedRoutes = ["/has-passkey", "/generate-registration-options", "/verify-registration", '/generate-authentication-options', '/verify-authentication']
 fastify.addHook("onRequest", async (request, reply) => {
   try {
     if (!unauthenticatedRoutes.includes(request.raw.url)) {

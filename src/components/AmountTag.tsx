@@ -1,3 +1,5 @@
+import { FormatMoney } from '../Utils';
+
 const AmountTag = ({ amount }: { amount: number }) => {
 	return (
 		<div className="flex items-center justify-center">
@@ -6,7 +8,7 @@ const AmountTag = ({ amount }: { amount: number }) => {
 					amount > 0 ? 'bg-green' : 'bg-red'
 				}`}
 			>
-				{amount} €
+				{FormatMoney(amount)} €
 			</p>
 		</div>
 	);

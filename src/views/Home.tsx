@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import NavBar from '../components/NavBar';
 import { useBearStore } from '../GlobalState';
-import { FormatDate } from '../Utils';
+import { FormatDate, FormatMoney } from '../Utils';
 import AmountTag from '../components/AmountTag';
 import EvolutionChart from '../components/charts/EvolutionChart';
 import DistributionPieChart from '../components/charts/DistributionPieChart';
@@ -24,7 +24,7 @@ const Home = () => {
 						<div className="flex flex-col p-2">
 							<p className="text-text-color text-xs">Your Balance</p>
 							<p className="text-active-text-color text-2xl">
-								{account.balance} €
+								{FormatMoney(account.balance)} €
 							</p>
 						</div>
 					</div>
@@ -84,7 +84,7 @@ const Home = () => {
 										<div className="flex flex-col p-2">
 											<p className="text-text-color text-xs">Used</p>
 											<p className="text-active-text-color text-2xl">
-												{account.currentMonthly} €
+												{FormatMoney(account.currentMonthly)} €
 											</p>
 										</div>
 									</div>
@@ -97,7 +97,7 @@ const Home = () => {
 										<div className="flex flex-col p-2">
 											<p className="text-text-color text-xs">Monthly Budget</p>
 											<p className="text-active-text-color text-2xl">
-												{account.monthly} €
+												{FormatMoney(account.monthly)} €
 											</p>
 										</div>
 									</div>
@@ -108,7 +108,8 @@ const Home = () => {
 										<div className="flex flex-col p-2">
 											<p className="text-text-color text-xs">Remaining</p>
 											<p className="text-active-text-color text-2xl">
-												{account.monthly - account.currentMonthly} €
+												{FormatMoney(account.monthly - account.currentMonthly)}{' '}
+												€
 											</p>
 										</div>
 									</div>
