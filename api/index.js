@@ -394,7 +394,7 @@ fastify.patch(
   async (request, reply) => {
     const accountId = request.params.accountId;
     const transactionId = request.params.transactionId;
-    accountsAPI.PatchTransaction(accountId, transactionId, req.body);
+    accountsAPI.PatchTransaction(accountId, transactionId, request.body);
     reply.status(200);
   }
 );

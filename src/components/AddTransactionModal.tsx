@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import FTButton from './FTButton';
 import FTInput from './FTInput';
 import { useBearStore } from '../GlobalState';
@@ -37,20 +37,34 @@ const SaveTransaction = async (
 		name: string;
 	} | null,
 	fetchServer: FetchServerType,
+	transactionId?: string,
 ) => {
-	await fetchServer('/accounts/' + accountId + '/transactions', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify({ name, date, tag, amount, file }),
-	});
+	if (transactionId) {
+		await fetchServer(
+			'/accounts/' + accountId + '/transactions/' + transactionId,
+			{
+				method: 'PATCH',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ name, date, tag, amount, file }),
+			},
+		);
+	} else {
+		await fetchServer('/accounts/' + accountId + '/transactions', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ name, date, tag, amount }),
+		});
+	}
 };
 
 const AddTransactionModal = ({
 	isOpen,
 	setIsOpen,
+	transactionId,
 }: {
 	isOpen: boolean;
 	setIsOpen: (isOpen: boolean) => void;
+	transactionId?: string;
 }) => {
 	const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
 
@@ -59,6 +73,21 @@ const AddTransactionModal = ({
 	const [tag, setTag] = useState(account!.tags[0].id);
 	const [amount, setAmount] = useState(0);
 	const fileInput = useRef<HTMLInputElement | null>();
+
+	useEffect(() => {
+		if (transactionId && account) {
+			let transaction = account.transactions.find(t => t.id === transactionId);
+			if (transaction) {
+				setName(transaction.name);
+				setDate(new Date(transaction.date).toISOString().split('.')[0]);
+				setTag(
+					account.tags.find(t => t.id === transaction?.tag)?.id ||
+						account.tags[0].id,
+				);
+				setAmount(transaction.amount);
+			}
+		}
+	}, [transactionId, account, isOpen]);
 
 	return (
 		<div
@@ -79,7 +108,9 @@ const AddTransactionModal = ({
 			}}
 		>
 			<div className="p-10 bg-bg-light rounded-xl flex flex-col items-center justify-center">
-				<p className="m-2 text-active-text-color text-xl">Add Transaction</p>
+				<p className="m-2 text-active-text-color text-xl">
+					{transactionId ? 'Edit' : 'Add'} Transaction
+				</p>
 				<FTInput
 					placeholder="Name"
 					className="m-2"
@@ -110,14 +141,16 @@ const AddTransactionModal = ({
 						onChange={e => setTag(e.target.value)}
 					/>
 				</div>
-				<FileInput
-					className="m-2"
-					ref={element => {
-						if (element) {
-							fileInput.current = element;
-						}
-					}}
-				/>
+				{!transactionId && (
+					<FileInput
+						className="m-2"
+						ref={element => {
+							if (element) {
+								fileInput.current = element;
+							}
+						}}
+					/>
+				)}
 				<FTButton
 					className="m-2"
 					onClick={async () => {
@@ -137,6 +170,7 @@ const AddTransactionModal = ({
 							amount,
 							fileObject,
 							fetchServer,
+							transactionId,
 						);
 						await refreshAccount(account!.id, setAccount);
 						setIsOpen(false);

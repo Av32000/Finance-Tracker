@@ -21,6 +21,8 @@ const DeleteTransaction = async (
 const Transactions = () => {
 	const [addNewTransactionModalIsOpen, setAddNewTransactionModalIsOpen] =
 		useState(false);
+	const [editTransactionModalIsOpen, setEditTransactionModalIsOpen] =
+		useState(false);
 	const [filter, setFilter] = useState('');
 	const [selected, setSelected] = useState<string[]>([]);
 	const [
@@ -66,12 +68,22 @@ const Transactions = () => {
 									</FTButton>
 								</>
 							) : (
-								<FTButton
-									className="h-10 bg-red"
-									onClick={() => setConfirmDeleteTransactionModalIsOpen(true)}
-								>
-									Delete Transaction{selected.length > 1 ? 's' : ''}
-								</FTButton>
+								<>
+									{selected.length == 1 && (
+										<FTButton
+											className="h-10"
+											onClick={() => setEditTransactionModalIsOpen(true)}
+										>
+											Edit Transaction
+										</FTButton>
+									)}
+									<FTButton
+										className="h-10 bg-red"
+										onClick={() => setConfirmDeleteTransactionModalIsOpen(true)}
+									>
+										Delete Transaction{selected.length > 1 ? 's' : ''}
+									</FTButton>
+								</>
 							)}
 						</div>
 					</div>
@@ -83,6 +95,11 @@ const Transactions = () => {
 					<AddTransactionModal
 						setIsOpen={setAddNewTransactionModalIsOpen}
 						isOpen={addNewTransactionModalIsOpen}
+					/>
+					<AddTransactionModal
+						setIsOpen={setEditTransactionModalIsOpen}
+						isOpen={editTransactionModalIsOpen}
+						transactionId={selected[0]}
 					/>
 					<FTBooleanModal
 						title={`Are you sure you want to delete ${
