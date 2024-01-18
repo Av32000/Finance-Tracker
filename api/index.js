@@ -8,8 +8,8 @@ const multipart = require("@fastify/multipart");
 const util = require("util");
 const path = require("path");
 const AccountsAPI = require("./AccountsAPI");
-const { existsSync, createWriteStream, mkdirSync, readFileSync } = require("fs");
-const { pipeline } = require("stream");
+const { existsSync, createWriteStream, mkdirSync, readFileSync, writeFileSync } = require("fs");
+const { pipeline, PassThrough } = require("stream");
 const { randomUUID } = require("crypto");
 const fastifyJWT = require('@fastify/jwt');
 const {
@@ -341,6 +341,16 @@ fastify.get("/accounts", async () => {
 
 fastify.get("/accounts/:id", async (request, reply) => {
   return accountsAPI.GetAccount(request.params.id);
+});
+
+fastify.get("/accounts/:id/export", async (request, reply) => {
+  const buffer = await accountsAPI.ExportAccount(request.params.id)
+  if (buffer != null) {
+    reply.header('Content-Disposition', `attachment; filename=${accountsAPI.GetAccount(request.params.id).name.replace(/[^a-zA-Z0-9-_.]/g, '')}.zip`);
+    reply.type('application/zip').send(buffer);
+  } else {
+    reply.status(404)
+  }
 });
 
 fastify.post("/accounts", async (request, reply) => {

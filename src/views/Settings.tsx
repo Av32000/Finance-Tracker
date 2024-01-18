@@ -124,6 +124,27 @@ const Settings = () => {
 								}}
 							/>
 						</div>
+						<div className="flex gap-2">
+							<FTButton
+								onClick={() => {
+									fetchServer(`/accounts/${account.id}/export`)
+										.then(response => response.blob())
+										.then(blob => {
+											const url = window.URL.createObjectURL(blob);
+											const a = document.createElement('a');
+											a.href = url;
+											a.download =
+												account.name.replace(/[^a-zA-Z0-9-_.]/g, '') + '.zip';
+											document.body.appendChild(a);
+											a.click();
+											window.URL.revokeObjectURL(url);
+										});
+								}}
+							>
+								Export Account Data
+							</FTButton>
+							<FTButton onClick={() => {}}>Import Account Data</FTButton>
+						</div>
 						<div>
 							<FTButton
 								onClick={() => {

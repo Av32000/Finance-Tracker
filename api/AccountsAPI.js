@@ -1,6 +1,7 @@
 const { randomUUID } = require('crypto')
 const { existsSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync } = require('fs')
 const path = require("path")
+const JSZip = require("jszip")
 
 const newAccountSchema = {
   id: 0,
@@ -83,6 +84,25 @@ module.exports = class AccountsAPI {
 
   GetAccount(id) {
     return this.accounts.find(a => a.id === id)
+  }
+
+  async ExportAccount(id) {
+    const account = this.accounts.find(a => a.id === id)
+    if (!account) return
+
+    const zip = new JSZip()
+    zip.file("account.json", JSON.stringify(account))
+
+    const fileFolder = zip.folder("files")
+    Array.prototype
+    account.transactions.forEach(t => {
+      if (t.file) {
+        // accountFiles.push(t.file.id + "." + t.file.name.split(".").pop())
+        fileFolder.file(t.file.id + "." + t.file.name.split(".").pop(), readFileSync(path.join(this.dataPath, "files", t.file.id + "." + t.file.name.split(".").pop())))
+      }
+    })
+
+    return zip.generateAsync({ type: 'nodebuffer' });
   }
 
   CreateAccount(name) {
@@ -170,7 +190,7 @@ module.exports = class AccountsAPI {
     this.accounts.forEach(a => {
       a.transactions.forEach(t => {
         if (t.file) {
-          validFiles.push(t.file.id + "." + t.file.name.split(".")[1])
+          validFiles.push(t.file.id + "." + t.file.name.split(".").pop())
         }
       })
     })
