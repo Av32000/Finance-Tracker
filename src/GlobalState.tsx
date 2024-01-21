@@ -12,10 +12,12 @@ type AppState = {
 	fetchServer: FetchServerType;
 	setAuthToken: (token: string) => void;
 	openFileFromAPI: (id: string, ext: string) => void;
+	refreshAccountsCallback: (callback?: () => void) => void;
 };
 
 const apiURL = 'http://localhost:3000';
 let authToken: string;
+let refreshAccountsCallback: () => void;
 
 const fetchServer: FetchServerType = async (endpoint, options) => {
 	let fetchOptions = structuredClone(options);
@@ -68,5 +70,12 @@ export const useBearStore = create<AppState>(set => ({
 			.catch(error => {
 				console.error('File Error :', error);
 			});
+	},
+	refreshAccountsCallback: async (callback?) => {
+		if (callback) {
+			refreshAccountsCallback = callback;
+		} else if (refreshAccountsCallback != null) {
+			refreshAccountsCallback();
+		}
 	},
 }));

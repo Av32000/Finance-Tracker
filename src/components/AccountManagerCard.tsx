@@ -44,10 +44,19 @@ const AccountManagerCard = () => {
 	const [status, setStatus] = useState<State>('Closed');
 	const [accounts, setAccounts] = useState<Account[] | null>(null);
 	const [newAccount, setNewAccount] = useState('');
-	const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
+	const {
+		account,
+		setAccount,
+		refreshAccount,
+		fetchServer,
+		refreshAccountsCallback,
+	} = useBearStore();
 	const [loading, setLoading] = useState(!account);
 
 	useEffect(() => {
+		refreshAccountsCallback(() => {
+			RefreshAccounts(setAccounts, fetchServer);
+		});
 		if (!accounts) {
 			RefreshAccounts(setAccounts, fetchServer);
 		}

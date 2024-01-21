@@ -5,11 +5,22 @@ import FTInput from '../components/FTInput';
 import FTButton from '../components/FTButton';
 import { Account, FetchServerType } from '../account';
 import { startRegistration } from '@simplewebauthn/browser';
+import FTInfoModal from '../components/FTInfoModal';
 
 const Settings = () => {
-	const { account, refreshAccount, setAccount, fetchServer } = useBearStore();
+	const {
+		account,
+		refreshAccount,
+		setAccount,
+		fetchServer,
+		refreshAccountsCallback,
+	} = useBearStore();
 	const [newAccountName, setNewAccountName] = useState('');
 	const [newMonthly, setNewMonthly] = useState(0);
+	const [accountImportConfirmationIsOpen, setAccountImportConfirmationIsOpen] =
+		useState(false);
+	const [accountImportConfirmationText, setAccountImportConfirmationText] =
+		useState('');
 
 	const Reset = (account: Account) => {
 		setNewAccountName(account.name);
@@ -73,6 +84,7 @@ const Settings = () => {
 	useEffect(() => {
 		document.title = 'Finance Tracker - Settings';
 	});
+	// TODO : Delete Account
 	return (
 		<div className="overflow-hidden flex">
 			<NavBar />
@@ -143,7 +155,50 @@ const Settings = () => {
 							>
 								Export Account Data
 							</FTButton>
-							<FTButton onClick={() => {}}>Import Account Data</FTButton>
+							<FTButton
+								onClick={() => {
+									const input: HTMLInputElement =
+										document.createElement('input');
+									input.type = 'file';
+									input.accept = '.zip';
+
+									input.onchange = async (e: Event) => {
+										const target = e.target as HTMLInputElement;
+										const file: File | null = target.files?.[0] || null;
+
+										if (file) {
+											const formData = new FormData();
+											formData.append('zipFile', file);
+
+											try {
+												const response = await fetchServer(
+													`/accounts/${account.id}/import`,
+													{
+														method: 'POST',
+														body: formData,
+													},
+												);
+
+												if (response.status == 200) {
+													refreshAccountsCallback();
+													response.json().then(json => {
+														setAccountImportConfirmationText(
+															`Account ${json.name} successfully imported`,
+														);
+														setAccountImportConfirmationIsOpen(true);
+													});
+												}
+											} catch (error) {
+												console.error(error);
+											}
+										}
+									};
+
+									input.click();
+								}}
+							>
+								Import Account Data
+							</FTButton>
 						</div>
 						<div>
 							<FTButton
@@ -161,6 +216,12 @@ const Settings = () => {
 					<p className="text-2xl text-text-color">No Account</p>
 				</div>
 			)}
+			<FTInfoModal
+				isOpen={accountImportConfirmationIsOpen}
+				setIsOpen={setAccountImportConfirmationIsOpen}
+				confirmText="Ok"
+				title={accountImportConfirmationText}
+			/>
 		</div>
 	);
 };

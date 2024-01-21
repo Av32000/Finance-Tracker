@@ -9,7 +9,7 @@ const util = require("util");
 const path = require("path");
 const AccountsAPI = require("./AccountsAPI");
 const { existsSync, createWriteStream, mkdirSync, readFileSync, writeFileSync } = require("fs");
-const { pipeline, PassThrough } = require("stream");
+const { pipeline } = require("stream");
 const { randomUUID } = require("crypto");
 const fastifyJWT = require('@fastify/jwt');
 const {
@@ -350,6 +350,40 @@ fastify.get("/accounts/:id/export", async (request, reply) => {
     reply.type('application/zip').send(buffer);
   } else {
     reply.status(404)
+  }
+});
+
+fastify.post("/accounts/:id/import", async (request, reply) => {
+  const data = await request.file();
+
+  const bufferPromise = new Promise((resolve, reject) => {
+    const chunks = [];
+    data.file.on('data', (chunk) => {
+      chunks.push(chunk);
+    });
+
+    data.file.on('end', () => {
+      const buffer = Buffer.concat(chunks);
+      resolve(buffer);
+    });
+
+    data.file.on('error', (err) => {
+      reject(err);
+    });
+  });
+
+  const buffer = await bufferPromise;
+
+  const importResult = await accountsAPI.ImportAccount(buffer)
+
+  if (typeof importResult == "string") {
+    reply.code(200).send(importResult)
+  } else if (importResult == 1) {
+    reply.code(400).send("Invalid zip file")
+  } else if (importResult == 2) {
+    reply.status(403)
+  } else if (importResult == 3) {
+    reply.code(400).send("Missing files")
   }
 });
 
