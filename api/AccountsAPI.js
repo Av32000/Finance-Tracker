@@ -104,36 +104,47 @@ module.exports = class AccountsAPI {
     return zip.generateAsync({ type: 'nodebuffer' });
   }
 
-  async ImportAccount(file) {
+  async ImportAccount(file, force) {
     const zip = new JSZip();
 
     try {
       const zipData = await zip.loadAsync(file);
       let accountFile = zipData.file("account.json")
+      let exist = false
       if (accountFile) {
         try {
           const content = JSON.parse(await accountFile.async("string"))
           if (content.id == null || content.name == null || content.transactions == null) return 1
           if (this.accounts.find(a => a.id === content.id)) {
-            console.log(this.accounts.find(a => a.id === content.id));
-            return 2
+            if (force) {
+              const account = this.accounts.find(a => a.id === content.id)
+              Object.keys(account).forEach(k => {
+                if (content[k] != null) account[k] = content[k]
+                else Object.keys(account).filter(key => k !== key)
+              })
+              exist = true
+            } else {
+              return 2
+            }
           }
-          else {
-            content.transactions.forEach(t => {
-              if (t.file) {
-                if (zip.file("files/" + t.file.id + "." + t.file.name.split(".").pop()) == null) return 3
-              }
-            })
 
+          content.transactions.forEach(t => {
+            if (t.file) {
+              if (zip.file("files/" + t.file.id + "." + t.file.name.split(".").pop()) == null) return 3
+            }
+          })
+
+          if (!exist) {
             this.accounts.push(content)
             this.SaveAccounts()
-
-            zip.folder("files").forEach(async (relativePath, file) => {
-              writeFileSync(path.join(this.dataPath, file.name), await file.async("nodebuffer"))
-            })
-
-            return JSON.stringify(content)
           }
+
+          zip.folder("files").forEach(async (relativePath, file) => {
+            writeFileSync(path.join(this.dataPath, file.name), await file.async("nodebuffer"))
+          })
+
+          return JSON.stringify(content)
+
         } catch (error) {
           console.log(error);
           return 1

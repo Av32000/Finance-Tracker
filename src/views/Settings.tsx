@@ -6,6 +6,45 @@ import FTButton from '../components/FTButton';
 import { Account, FetchServerType } from '../account';
 import { startRegistration } from '@simplewebauthn/browser';
 import FTInfoModal from '../components/FTInfoModal';
+import FTBooleanModal from '../components/FTBooleanModal';
+
+const importAccount = (
+	successCallback: (response: Response) => void,
+	fetchServer: FetchServerType,
+	account: Account,
+	force: boolean = false,
+) => {
+	const input: HTMLInputElement = document.createElement('input');
+	input.type = 'file';
+	input.accept = '.zip';
+
+	input.onchange = async (e: Event) => {
+		const target = e.target as HTMLInputElement;
+		const file: File | null = target.files?.[0] || null;
+
+		if (file) {
+			const formData = new FormData();
+			formData.append('zipFile', file);
+			formData.append('force', force.toString());
+
+			try {
+				const response = await fetchServer(
+					`/accounts/${account.id}/import?force=${force}`,
+					{
+						method: 'POST',
+						body: formData,
+					},
+				);
+
+				successCallback(response);
+			} catch (error) {
+				console.error(error);
+			}
+		}
+	};
+
+	input.click();
+};
 
 const Settings = () => {
 	const {
@@ -21,6 +60,7 @@ const Settings = () => {
 		useState(false);
 	const [accountImportConfirmationText, setAccountImportConfirmationText] =
 		useState('');
+	const [forceImportIsOpen, setForceImportIsOpen] = useState(false);
 
 	const Reset = (account: Account) => {
 		setNewAccountName(account.name);
@@ -157,44 +197,29 @@ const Settings = () => {
 							</FTButton>
 							<FTButton
 								onClick={() => {
-									const input: HTMLInputElement =
-										document.createElement('input');
-									input.type = 'file';
-									input.accept = '.zip';
-
-									input.onchange = async (e: Event) => {
-										const target = e.target as HTMLInputElement;
-										const file: File | null = target.files?.[0] || null;
-
-										if (file) {
-											const formData = new FormData();
-											formData.append('zipFile', file);
-
-											try {
-												const response = await fetchServer(
-													`/accounts/${account.id}/import`,
-													{
-														method: 'POST',
-														body: formData,
-													},
+									importAccount(
+										async (response: Response) => {
+											if (response.status == 200) {
+												refreshAccountsCallback();
+												response.json().then(json => {
+													setAccountImportConfirmationText(
+														`Account ${json.name} successfully imported`,
+													);
+													setAccountImportConfirmationIsOpen(true);
+												});
+											} else if (response.status == 403) {
+												setForceImportIsOpen(true);
+											} else if (response.status == 400) {
+												const text = await response.text();
+												setAccountImportConfirmationText(
+													'Import Error : ' + text,
 												);
-
-												if (response.status == 200) {
-													refreshAccountsCallback();
-													response.json().then(json => {
-														setAccountImportConfirmationText(
-															`Account ${json.name} successfully imported`,
-														);
-														setAccountImportConfirmationIsOpen(true);
-													});
-												}
-											} catch (error) {
-												console.error(error);
+												setAccountImportConfirmationIsOpen(true);
 											}
-										}
-									};
-
-									input.click();
+										},
+										fetchServer,
+										account,
+									);
 								}}
 							>
 								Import Account Data
@@ -221,6 +246,37 @@ const Settings = () => {
 				setIsOpen={setAccountImportConfirmationIsOpen}
 				confirmText="Ok"
 				title={accountImportConfirmationText}
+			/>
+			<FTBooleanModal
+				callback={() => {
+					importAccount(
+						async (response: Response) => {
+							if (response.status == 200) {
+								refreshAccountsCallback();
+								response.json().then(json => {
+									setAccountImportConfirmationText(
+										`Account ${json.name} successfully imported`,
+									);
+									setAccountImportConfirmationIsOpen(true);
+								});
+							} else if (response.status == 403) {
+								setForceImportIsOpen(true);
+							} else if (response.status == 400) {
+								const text = await response.text();
+								setAccountImportConfirmationText('Import Error : ' + text);
+								setAccountImportConfirmationIsOpen(true);
+							}
+						},
+						fetchServer,
+						account!,
+						true,
+					);
+				}}
+				cancelText="Cancel"
+				confirmText="Replace"
+				isOpen={forceImportIsOpen}
+				setIsOpen={setForceImportIsOpen}
+				title="An account with the same ID already exists. Would you like to replace the existing account?"
 			/>
 		</div>
 	);

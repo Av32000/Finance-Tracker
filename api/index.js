@@ -355,6 +355,7 @@ fastify.get("/accounts/:id/export", async (request, reply) => {
 
 fastify.post("/accounts/:id/import", async (request, reply) => {
   const data = await request.file();
+  const force = request.query.force === "true"
 
   const bufferPromise = new Promise((resolve, reject) => {
     const chunks = [];
@@ -374,7 +375,7 @@ fastify.post("/accounts/:id/import", async (request, reply) => {
 
   const buffer = await bufferPromise;
 
-  const importResult = await accountsAPI.ImportAccount(buffer)
+  const importResult = await accountsAPI.ImportAccount(buffer, force)
 
   if (typeof importResult == "string") {
     reply.code(200).send(importResult)
