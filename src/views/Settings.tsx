@@ -61,7 +61,8 @@ const Settings = () => {
 	const [accountImportConfirmationText, setAccountImportConfirmationText] =
 		useState('');
 	const [forceImportIsOpen, setForceImportIsOpen] = useState(false);
-
+	const [accountDeleteIsOpen, setAccountDeleteIsOpen] =
+	useState(false);
 	const Reset = (account: Account) => {
 		setNewAccountName(account.name);
 		setNewMonthly(account.monthly);
@@ -124,7 +125,7 @@ const Settings = () => {
 	useEffect(() => {
 		document.title = 'Finance Tracker - Settings';
 	});
-	// TODO : Delete Account
+
 	return (
 		<div className="overflow-hidden flex">
 			<NavBar />
@@ -225,13 +226,21 @@ const Settings = () => {
 								Import Account Data
 							</FTButton>
 						</div>
-						<div>
+						<div className="flex gap-2">
 							<FTButton
 								onClick={() => {
 									register(fetchServer);
 								}}
 							>
 								Add New Passkey
+							</FTButton>
+							<FTButton
+								className="bg-red"
+								onClick={() => {
+									setAccountDeleteIsOpen(true)
+								}}
+							>
+								Delete Account
 							</FTButton>
 						</div>
 					</div>
@@ -277,6 +286,16 @@ const Settings = () => {
 				isOpen={forceImportIsOpen}
 				setIsOpen={setForceImportIsOpen}
 				title="An account with the same ID already exists. Would you like to replace the existing account?"
+			/>
+			<FTBooleanModal
+				callback={() => {
+					fetchServer(`/accounts/${account!.id}`, {method:"DELETE"}).then(() => {window.location.reload()})
+				}}
+				cancelText="Cancel"
+				confirmText="Delete Account"
+				isOpen={accountDeleteIsOpen}
+				setIsOpen={setAccountDeleteIsOpen}
+				title={`Are you sure you want to delete the account ${account?.name}?`}
 			/>
 		</div>
 	);
