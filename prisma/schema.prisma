@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Setting {
+  id        String  @unique
+  name      String
+  value     Json
+  settingId String
+  Account   Account @relation(fields: [settingId], references: [id])
+}
+
+model TransactionTag {
+  id    String @unique
+  name  String
+  color String
+  tagId String
+  Account Account @relation(fields: [tagId], references: [id])
+}
+
+model Transaction {
+  id            String  @unique
+  created_at    Float
+  name          String
+  description   String
+  amount        Float
+  date          Float
+  tag           String
+  fileId        String?
+  transactionId String
+  file          File?   @relation(fields: [fileId], references: [id])
+  Account       Account @relation(fields: [transactionId], references: [id])
+}
+
+model File {
+  id          String        @unique
+  name        String
+  Transaction Transaction[]
+}
+
+model Chart {
+  id      String  @unique
+  title   String
+  filter  Json[]
+  type    String
+  options Json[]
+  chartId String
+  Account Account @relation(fields: [chartId], references: [id])
+}
+
+model Account {
+  id             String          @unique
+  name           String
+  balance        Float
+  monthly        Float
+  currentMonthly Float
+  Chart          Chart[]
+  Setting        Setting[]
+  Transaction    Transaction[]
+  tags           TransactionTag[]
+}
