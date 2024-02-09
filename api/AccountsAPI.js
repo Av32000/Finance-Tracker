@@ -45,7 +45,7 @@ module.exports = class AccountsAPI {
     this.accountsPath = path.join(dataPath, "accounts.json");
 
     this.SetupFiles();
-    this.LoadDatabase()
+    this.LoadDatabase();
   }
 
   LoadAccounts() {
@@ -395,7 +395,7 @@ module.exports = class AccountsAPI {
         });
 
         // Tags
-        account.tags.forEach(async t => {
+        account.tags.forEach(async (t) => {
           const prismaTag = {
             id: t.id,
             color: t.color,
@@ -405,13 +405,35 @@ module.exports = class AccountsAPI {
                 id: account.id,
               },
             },
-          }
+          };
           await prisma.transactionTag.upsert({
             where: { id: t.id },
             create: prismaTag,
-            update: prismaTag
-          })
-        })
+            update: prismaTag,
+          });
+        });
+      });
+
+      (await prisma.account.findMany()).forEach(async (a) => {
+        const localAccount = this.accounts.find(
+          (account) => account.id === a.id
+        );
+        if (!localAccount) {
+          // Delete Transactions
+          await prisma.transaction.deleteMany({
+            where: {
+              Account: {
+                id: a.id,
+              },
+            },
+          });
+
+          await prisma.account.delete({
+            where: {
+              id: a.id,
+            },
+          });
+        }
       });
     } catch (e) {
       console.error(e);
@@ -420,22 +442,46 @@ module.exports = class AccountsAPI {
 
   async LoadDatabase() {
     try {
-      this.accounts = []
+      this.accounts = [];
       const prisma = new PrismaClient();
-      (await (prisma.account.findMany())).forEach(async account => {
-        this.accounts.push({
-          ...account,
-          transactions: (await prisma.transaction.findMany({ where: { Account: { id: account.id } } })).map(t => {
-            delete t["transactionId"]
-            return t
-          }),
-          tags: (await prisma.transactionTag.findMany({ where: { Account: { id: account.id } } })).map(t => {
-            delete t["tagId"]
-            return t
-          })
-        })
-        this.SaveAccounts(false)
-      })
+      const accountsPromises = (await prisma.account.findMany()).map(
+        async (account) => {
+          const transactionsPromise = prisma.transaction.findMany({
+            where: { Account: { id: account.id } },
+          });
+          const tagsPromise = prisma.transactionTag.findMany({
+            where: { Account: { id: account.id } },
+          });
+
+          const [transactions, tags] = await Promise.all([
+            transactionsPromise,
+            tagsPromise,
+          ]);
+
+          const formattedTransactions = transactions.map((t) => {
+            delete t["transactionId"];
+            delete t["fileId"];
+            t.file = null;
+            return t;
+          });
+
+          const formattedTags = tags.map((t) => {
+            delete t["tagId"];
+            return t;
+          });
+
+          return {
+            ...account,
+            charts: [],
+            settings: [],
+            transactions: formattedTransactions || [],
+            tags: formattedTags || [],
+          };
+        }
+      );
+
+      this.accounts = await Promise.all(accountsPromises);
+      this.SaveAccounts(false);
     } catch (e) {
       console.error(e);
     }
