@@ -392,6 +392,24 @@ module.exports = class AccountsAPI {
             create: prismaTransaction,
             update: prismaTransaction,
           });
+
+          if (t.file) {
+            const prismaFile = {
+              id: t.file.id,
+              name: t.file.name,
+              Transaction: {
+                connect: {
+                  id: t.id,
+                },
+              },
+            };
+
+            await prisma.file.upsert({
+              where: { id: t.id },
+              create: prismaFile,
+              update: prismaFile,
+            });
+          }
         });
 
         // Tags
@@ -419,6 +437,19 @@ module.exports = class AccountsAPI {
           (account) => account.id === a.id
         );
         if (!localAccount) {
+          // Delete File
+          (
+            await prisma.transaction.findMany({
+              where: { Account: { id: a.id } },
+            })
+          ).forEach((t) => {
+            if (t.file) {
+              prisma.file.delete({
+                where: { Transaction: { every: { id: t.id } } },
+              });
+            }
+          });
+
           // Delete Transactions
           await prisma.transaction.deleteMany({
             where: {
@@ -461,7 +492,7 @@ module.exports = class AccountsAPI {
           const formattedTransactions = transactions.map((t) => {
             delete t["transactionId"];
             delete t["fileId"];
-            t.file = null;
+            if (!Object.keys(t).includes("file")) t.file = null;
             return t;
           });
 
