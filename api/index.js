@@ -21,6 +21,11 @@ const {
 const { isoBase64URL, isoUint8Array } = require("@simplewebauthn/server/helpers");
 const AuthAPI = require("./AuthAPI");
 
+const insecure = process.argv.includes("--insecure")
+if (insecure) {
+  console.warn("\x1b[33m%s\x1b[0m", "--insecure flag used => Insecure server");
+}
+
 const filesPath = "datas/files/";
 if (!existsSync("datas")) mkdirSync("datas");
 if (!existsSync(filesPath)) mkdirSync(filesPath);
@@ -69,7 +74,7 @@ if (existsSync(path.join(__dirname, "keys/publicKey.pem")) && existsSync(path.jo
 const unauthenticatedRoutes = ["/has-passkey", "/generate-registration-options", "/verify-registration", '/generate-authentication-options', '/verify-authentication']
 fastify.addHook("onRequest", async (request, reply) => {
   try {
-    if (!unauthenticatedRoutes.includes(request.raw.url)) {
+    if (!unauthenticatedRoutes.includes(request.raw.url) && !insecure) {
       await request.jwtVerify()
     }
   } catch (err) {
