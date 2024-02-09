@@ -45,7 +45,7 @@ module.exports = class AccountsAPI {
     this.accountsPath = path.join(dataPath, "accounts.json");
 
     this.SetupFiles();
-    this.LoadAccounts();
+    this.LoadDatabase()
   }
 
   LoadAccounts() {
@@ -348,9 +348,9 @@ module.exports = class AccountsAPI {
   }
 
   // Data
-  SaveAccounts() {
+  SaveAccounts(saveDb = true) {
     writeFileSync(this.accountsPath, JSON.stringify(this.accounts));
-    this.UpdateDatabase();
+    if (saveDb) this.UpdateDatabase();
   }
 
   async UpdateDatabase() {
@@ -397,9 +397,9 @@ module.exports = class AccountsAPI {
         // Tags
         account.tags.forEach(async t => {
           const prismaTag = {
-            id:t.id,
-            color:t.color,
-            name:t.name,
+            id: t.id,
+            color: t.color,
+            name: t.name,
             Account: {
               connect: {
                 id: account.id,
@@ -407,12 +407,35 @@ module.exports = class AccountsAPI {
             },
           }
           await prisma.transactionTag.upsert({
-            where: {id: t.id},
-            create:prismaTag,
+            where: { id: t.id },
+            create: prismaTag,
             update: prismaTag
           })
         })
       });
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  async LoadDatabase() {
+    try {
+      this.accounts = []
+      const prisma = new PrismaClient();
+      (await (prisma.account.findMany())).forEach(async account => {
+        this.accounts.push({
+          ...account,
+          transactions: (await prisma.transaction.findMany({ where: { Account: { id: account.id } } })).map(t => {
+            delete t["transactionId"]
+            return t
+          }),
+          tags: (await prisma.transactionTag.findMany({ where: { Account: { id: account.id } } })).map(t => {
+            delete t["tagId"]
+            return t
+          })
+        })
+        this.SaveAccounts(false)
+      })
     } catch (e) {
       console.error(e);
     }

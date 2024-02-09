@@ -16,10 +16,10 @@ model Setting {
 }
 
 model TransactionTag {
-  id    String @unique
-  name  String
-  color String
-  tagId String
+  id      String  @unique
+  name    String
+  color   String
+  tagId   String
   Account Account @relation(fields: [tagId], references: [id])
 }
 
@@ -54,7 +54,7 @@ model Chart {
 }
 
 model Account {
-  id             String          @unique
+  id             String           @unique
   name           String
   balance        Float
   monthly        Float

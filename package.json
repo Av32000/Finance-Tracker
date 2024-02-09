@@ -8,6 +8,8 @@
     "start:server": "node api/index.js",
     "generate-keys": "node api/KeysGenerator.js",
     "build": "tsc && vite build",
+    "prisma:pull": "prisma db pull && prisma generate",
+    "prisma:push":"prisma migrate dev && prisma generate",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
