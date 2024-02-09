@@ -40,8 +40,9 @@ const newAccountSchema = {
 };
 
 module.exports = class AccountsAPI {
-  constructor(dataPath) {
+  constructor(dataPath, filesPath) {
     this.dataPath = dataPath;
+    this.filesPath = filesPath;
     this.accountsPath = path.join(dataPath, "accounts.json");
 
     this.SetupFiles();
@@ -276,9 +277,9 @@ module.exports = class AccountsAPI {
     this.SaveAccounts();
   }
 
-  CleanFile(filePath) {
+  CleanFile() {
     let count = 0;
-    const existingFiles = readdirSync(filePath);
+    const existingFiles = readdirSync(this.filesPath);
     const validFiles = [];
     this.accounts.forEach((a) => {
       a.transactions.forEach((t) => {
@@ -290,7 +291,7 @@ module.exports = class AccountsAPI {
 
     existingFiles.forEach((f) => {
       if (validFiles.indexOf(f) == -1) {
-        rmSync(path.join(__dirname, "../", filePath + f));
+        rmSync(path.join(__dirname, "../", this.filesPath + f));
         count++;
       }
     });
@@ -350,6 +351,7 @@ module.exports = class AccountsAPI {
   // Data
   SaveAccounts(saveDb = true) {
     writeFileSync(this.accountsPath, JSON.stringify(this.accounts));
+    this.CleanFile();
     if (saveDb) this.UpdateDatabase();
   }
 
@@ -405,11 +407,29 @@ module.exports = class AccountsAPI {
             };
 
             await prisma.file.upsert({
-              where: { id: t.id },
+              where: { id: t.file.id },
               create: prismaFile,
               update: prismaFile,
             });
           }
+        });
+
+        await prisma.transaction.deleteMany({
+          where: {
+            id: {
+              notIn: account.transactions.map((t) => t.id),
+            },
+          },
+        });
+
+        await prisma.file.deleteMany({
+          where: {
+            id: {
+              notIn: account.transactions
+                .map((t) => t.file?.id)
+                .filter((e) => e != undefined),
+            },
+          },
         });
 
         // Tags
@@ -429,6 +449,14 @@ module.exports = class AccountsAPI {
             create: prismaTag,
             update: prismaTag,
           });
+        });
+
+        await prisma.transactionTag.deleteMany({
+          where: {
+            id: {
+              notIn: account.tags.map((t) => t.id),
+            },
+          },
         });
       });
 
@@ -489,12 +517,22 @@ module.exports = class AccountsAPI {
             tagsPromise,
           ]);
 
-          const formattedTransactions = transactions.map((t) => {
-            delete t["transactionId"];
-            delete t["fileId"];
-            if (!Object.keys(t).includes("file")) t.file = null;
-            return t;
-          });
+          const formattedTransactions = await Promise.all(
+            transactions.map(async (t) => {
+              if (t.fileId == null) {
+                t.file = null;
+              } else {
+                t.file = await prisma.file.findUnique({
+                  where: {
+                    id: t.fileId,
+                  },
+                });
+              }
+              delete t["transactionId"];
+              delete t["fileId"];
+              return t;
+            })
+          );
 
           const formattedTags = tags.map((t) => {
             delete t["tagId"];

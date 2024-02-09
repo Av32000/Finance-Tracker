@@ -85,10 +85,9 @@ fastify.addHook("onRequest", async (request, reply) => {
 const pump = util.promisify(pipeline);
 
 const accountsPath = path.join(__dirname, "../", "datas");
-const accountsAPI = new AccountsAPI(accountsPath);
+const accountsAPI = new AccountsAPI(accountsPath,filesPath);
 const authAPI = new AuthAPI(accountsPath)
 accountsAPI.FixAccounts();
-accountsAPI.CleanFile(filesPath);
 
 const port = parseInt(
   process.argv.find((s) => s.startsWith("--port"))?.split("=")[1] || "3000"
@@ -471,7 +470,7 @@ fastify.get("/files/:file", async (request, reply) => {
   let fullPath = path.join(__dirname, "../", filesPath, file);
 
   if (!file || !existsSync(fullPath)) {
-    throw new Error("File not found");
+    return reply.code(404).send("File not found");
   }
 
   const fileContent = readFileSync(fullPath);
