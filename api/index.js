@@ -85,7 +85,7 @@ fastify.addHook("onRequest", async (request, reply) => {
 const pump = util.promisify(pipeline);
 
 const accountsPath = path.join(__dirname, "../", "datas");
-const accountsAPI = new AccountsAPI(accountsPath,filesPath);
+const accountsAPI = new AccountsAPI(accountsPath, filesPath);
 const authAPI = new AuthAPI(accountsPath)
 accountsAPI.FixAccounts();
 
@@ -575,7 +575,9 @@ fastify.post("/files/upload", async (request, reply) => {
   return newName;
 });
 
-fastify.listen({ port, host: "localhost" }, function (err, address) {
+const hostArg = process.argv.find(arg => arg.startsWith('--host='));
+
+fastify.listen({ port, host: (hostArg != null ? hostArg.split('=')[1] : "localhost") }, function (err, address) {
   authAPI.SetOrigin(`http://localhost:5173`)
   if (err) {
     fastify.log.error(err);
