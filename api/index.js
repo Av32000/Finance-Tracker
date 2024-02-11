@@ -26,6 +26,11 @@ if (insecure) {
   console.warn("\x1b[33m%s\x1b[0m", "--insecure flag used => Insecure server");
 }
 
+const offline = process.argv.includes("--offline")
+if (offline) {
+  console.warn("\x1b[33m%s\x1b[0m", "--offline flag used => Unsynchronised data");
+}
+
 const filesPath = "datas/files/";
 if (!existsSync("datas")) mkdirSync("datas");
 if (!existsSync(filesPath)) mkdirSync(filesPath);
@@ -85,7 +90,7 @@ fastify.addHook("onRequest", async (request, reply) => {
 const pump = util.promisify(pipeline);
 
 const accountsPath = path.join(__dirname, "../", "datas");
-const accountsAPI = new AccountsAPI(accountsPath, filesPath);
+const accountsAPI = new AccountsAPI(accountsPath, filesPath, offline);
 const authAPI = new AuthAPI(accountsPath)
 accountsAPI.FixAccounts();
 

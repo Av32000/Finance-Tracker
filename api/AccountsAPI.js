@@ -40,17 +40,20 @@ const newAccountSchema = {
 };
 
 module.exports = class AccountsAPI {
-  constructor(dataPath, filesPath) {
+  constructor(dataPath, filesPath, offline) {
     this.dataPath = dataPath;
     this.filesPath = filesPath;
+    this.offline = offline;
     this.accountsPath = path.join(dataPath, "accounts.json");
 
     this.SetupFiles();
-    this.LoadDatabase();
+    if (offline) this.LoadAccounts();
+    else this.LoadDatabase();
   }
 
   LoadAccounts() {
     this.accounts = JSON.parse(readFileSync(this.accountsPath).toString());
+    this.CleanFiles();
   }
 
   // Fix Accounts when account newAccountSchema was changed
@@ -277,7 +280,7 @@ module.exports = class AccountsAPI {
     this.SaveAccounts();
   }
 
-  CleanFile() {
+  CleanFiles() {
     let count = 0;
     const existingFiles = readdirSync(this.filesPath);
     const validFiles = [];
@@ -351,8 +354,8 @@ module.exports = class AccountsAPI {
   // Data
   SaveAccounts(saveDb = true) {
     writeFileSync(this.accountsPath, JSON.stringify(this.accounts));
-    this.CleanFile();
-    if (saveDb) this.UpdateDatabase();
+    this.CleanFiles();
+    if (saveDb && !this.offline) this.UpdateDatabase();
   }
 
   async UpdateDatabase() {
@@ -425,9 +428,11 @@ module.exports = class AccountsAPI {
         await prisma.file.deleteMany({
           where: {
             id: {
-              notIn: account.transactions
-                .map((t) => t.file?.id)
-                .filter((e) => e != undefined),
+              notIn: this.accounts.map((a) =>
+                a.transactions
+                  .map((t) => t.file?.id)
+                  .filter((e) => e != undefined)
+              ),
             },
           },
         });
@@ -454,7 +459,7 @@ module.exports = class AccountsAPI {
         await prisma.transactionTag.deleteMany({
           where: {
             id: {
-              notIn: account.tags.map((t) => t.id),
+              notIn: this.accounts.map(a => a.tags.map((t) => t.id)),
             },
           },
         });
