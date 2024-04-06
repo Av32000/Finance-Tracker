@@ -46,6 +46,6 @@
     "prisma": "5.9.1",
     "tailwindcss": "^3.3.5",
     "typescript": "^5.2.2",
-    "vite": "^4.5.2"
+    "vite": "^4.5.3"
   }
 }
