@@ -73,7 +73,7 @@ const AddTransactionModal = ({
 	const [name, setName] = useState('');
 	const [description, setDescription] = useState('');
 	const [date, setDate] = useState('');
-	const [tag, setTag] = useState(account!.tags[0].id);
+	const [tag, setTag] = useState(account!.tags[0]?.id);
 	const [amount, setAmount] = useState(0);
 	const fileInput = useRef<HTMLInputElement | null>();
 

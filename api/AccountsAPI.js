@@ -420,7 +420,7 @@ module.exports = class AccountsAPI {
         await prisma.transaction.deleteMany({
           where: {
             id: {
-              notIn: account.transactions.map((t) => t.id),
+              notIn: this.accounts.flatMap(a => a.transactions.map((t) => t.id)),
             },
           },
         });
@@ -428,7 +428,7 @@ module.exports = class AccountsAPI {
         await prisma.file.deleteMany({
           where: {
             id: {
-              notIn: this.accounts.map((a) =>
+              notIn: this.accounts.flatMap((a) =>
                 a.transactions
                   .map((t) => t.file?.id)
                   .filter((e) => e != undefined)
@@ -459,7 +459,7 @@ module.exports = class AccountsAPI {
         await prisma.transactionTag.deleteMany({
           where: {
             id: {
-              notIn: this.accounts.map(a => a.tags.map((t) => t.id)),
+              notIn: this.accounts.flatMap(a => a.tags.map((t) => t.id)),
             },
           },
         });
