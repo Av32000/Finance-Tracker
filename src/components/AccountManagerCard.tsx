@@ -139,9 +139,10 @@ const AccountManagerCard = () => {
 								onClick={() => {
 									createAccount(newAccount, fetchServer).then(id => {
 										if (id) {
-											refreshAccount(id, setAccount).then(() =>
-												setStatus('Closed'),
-											);
+											refreshAccount(id, setAccount).then(() => {
+												setNewAccount('');
+												setStatus('Closed');
+											});
 										} else {
 											console.error("Can't create Account");
 										}

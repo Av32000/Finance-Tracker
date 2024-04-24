@@ -19,23 +19,7 @@ const newAccountSchema = {
   settings: [],
   monthly: 1000,
   currentMonthly: 0,
-  tags: [
-    {
-      id: "bde71bb0-28ae-491c-ad88-358f83758eca",
-      name: "Monthly",
-      color: "#6366F1",
-    },
-    {
-      id: "eb1de408-85a9-404a-90dd-6705748b3fd5",
-      name: "Food",
-      color: "#25B14C",
-    },
-    {
-      id: "30d0edb1-e1c0-423b-82d7-b0c9ca615973",
-      name: "Other",
-      color: "#646769",
-    },
-  ],
+  tags: [],
   charts: [],
 };
 
@@ -196,7 +180,7 @@ module.exports = class AccountsAPI {
 
   CreateAccount(name) {
     let id = randomUUID();
-    let newAccount = { ...newAccountSchema };
+    let newAccount = { ...JSON.parse(JSON.stringify(newAccountSchema)) };
     newAccount.id = id;
     newAccount.name = name;
     this.accounts.push(newAccount);

@@ -73,7 +73,7 @@ const AddTransactionModal = ({
 	const [name, setName] = useState('');
 	const [description, setDescription] = useState('');
 	const [date, setDate] = useState('');
-	const [tag, setTag] = useState(account!.tags[0]?.id);
+	const [tag, setTag] = useState('no_tag');
 	const [amount, setAmount] = useState(0);
 	const fileInput = useRef<HTMLInputElement | null>();
 
@@ -85,8 +85,7 @@ const AddTransactionModal = ({
 				setDescription(transaction.description);
 				setDate(new Date(transaction.date).toISOString().split('.')[0]);
 				setTag(
-					account.tags.find(t => t.id === transaction?.tag)?.id ||
-						account.tags[0].id,
+					account.tags.find(t => t.id === transaction?.tag)?.id || 'no_tag',
 				);
 				setAmount(transaction.amount);
 			}
@@ -189,7 +188,7 @@ const AddTransactionModal = ({
 						setDescription('');
 						setDate('');
 						setAmount(0);
-						setTag(account!.tags[0].id);
+						setTag('no_tag');
 						if (fileInput.current) {
 							fileInput.current.value = '';
 						}

@@ -8,18 +8,24 @@ const TransactionTagElement = ({
 	accountTags: TransactionTag[];
 }) => {
 	const tag = accountTags.find(t => t.id === tagId);
-	return tag ? (
+	return (
 		<>
 			<div className="flex items-center justify-center">
-				<p
-					className="text-active-text-color p-2 text-center w-28 h-7 rounded-2xl flex items-center justify-center"
-					style={{ backgroundColor: tag.color }}
-				>
-					{tag.name}
-				</p>
+				{tag ? (
+					<p
+						className="text-active-text-color p-2 text-center w-28 h-7 rounded-2xl flex items-center justify-center"
+						style={{ backgroundColor: tag.color }}
+					>
+						{tag.name}
+					</p>
+				) : (
+					<p className="text-active-text-color p-2 text-center w-28 h-7 rounded-2xl flex items-center justify-center">
+						No Tag
+					</p>
+				)}
 			</div>
 		</>
-	) : null;
+	);
 };
 
 export default TransactionTagElement;
