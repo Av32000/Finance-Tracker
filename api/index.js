@@ -538,6 +538,53 @@ fastify.delete("/accounts/:accountId/charts/:chartId", async (request, reply) =>
   return reply.status(200)
 })
 
+// Tags
+fastify.get("/accounts/:accountId/tags", async (request, reply) => {
+  const accountId = request.params.accountId;
+  if (!accountId)
+    throw new Error("Invalid Account ID");
+  const account = accountsAPI.GetAccount(accountId);
+  if (!account) return reply.status(400);
+  return account.tags
+});
+
+fastify.post("/accounts/:accountId/tags", async (request, reply) => {
+  const accountId = request.params.accountId;
+  const tagName = request.body?.tagName;
+  const tagColor = request.body?.tagColor;
+  if (!accountId)
+    throw new Error("Invalid Account ID");
+  const account = accountsAPI.GetAccount(accountId);
+  if (!account) return reply.status(400);
+  return accountsAPI.CreateTag(accountId, tagName, tagColor)
+});
+
+fastify.patch("/accounts/:accountId/tags/:tagId", async (request, reply) => {
+  const accountId = request.params.accountId;
+  const tagId = request.params.tagId;
+  const tagName = request.body?.tagName;
+  const tagColor = request.body?.tagColor;
+  if (!accountId || !tagId)
+    throw new Error("Invalid Props");
+  const account = accountsAPI.GetAccount(accountId);
+  if (!account) return reply.status(400);
+  const isValid = accountsAPI.UpdateTag(accountId, tagId, tagName, tagColor)
+  if (isValid) reply.status(200)
+  else reply.status(400)
+});
+
+fastify.delete("/accounts/:accountId/tags/:tagId", async (request, reply) => {
+  const accountId = request.params.accountId;
+  const tagId = request.params.tagId;
+  if (!accountId || !tagId)
+    throw new Error("Invalid Propos");
+  const account = accountsAPI.GetAccount(accountId);
+  if (!account) return reply.status(400);
+  accountsAPI.DeleteTag(accountId, tagId)
+  reply.status(200)
+
+});
+
 // Settigns
 fastify.get("/accounts/:accountId/settings", async (request, reply) => {
   const accountId = request.params.accountId;

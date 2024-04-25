@@ -23,6 +23,8 @@ const newAccountSchema = {
   charts: [],
 };
 
+const prisma = new PrismaClient();
+
 module.exports = class AccountsAPI {
   constructor(dataPath, filesPath, offline) {
     this.dataPath = dataPath;
@@ -326,6 +328,40 @@ module.exports = class AccountsAPI {
     this.SaveAccounts();
   }
 
+  // Tags
+  CreateTag(accountId, tagName, tagColor) {
+    const id = randomUUID();
+    this.accounts
+      .find((a) => a.id === accountId)
+      .tags.push({ id, name: tagName || "Default", color: tagColor || "#000000" });
+    this.SaveAccounts();
+    return id;
+  }
+
+  UpdateTag(accountId, tagId, tagName, tagColor) {
+    const account = this.accounts.find((a) => a.id === accountId);
+    if (account) {
+      const tag = account.tags.find((t) => t.id === tagId);
+      if (tag) {
+        if (tagName) tag.name = tagName;
+        if (tagColor) tag.color = tagColor;
+        this.SaveAccounts();
+        return tag;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+
+  DeleteTag(accountId, tagId) {
+    const account = this.accounts
+      .find((a) => a.id === accountId)
+    account.tags = account.tags.filter(t => t.id !== tagId)
+    this.SaveAccounts();
+  }
+
   // Settings
   SetSetting(accountId, newSetting) {
     let settings = this.accounts.find((a) => a.id === accountId).settings;
@@ -344,7 +380,6 @@ module.exports = class AccountsAPI {
 
   async UpdateDatabase() {
     try {
-      const prisma = new PrismaClient();
       this.accounts.forEach(async (account) => {
         // Account
         const prismaAccount = {

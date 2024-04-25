@@ -7,6 +7,7 @@ import { Account, FetchServerType } from '../account';
 import { startRegistration } from '@simplewebauthn/browser';
 import FTInfoModal from '../components/FTInfoModal';
 import FTBooleanModal from '../components/FTBooleanModal';
+import TagsManager from '../components/TagsManager';
 
 const importAccount = (
 	successCallback: (response: Response) => void,
@@ -61,8 +62,7 @@ const Settings = () => {
 	const [accountImportConfirmationText, setAccountImportConfirmationText] =
 		useState('');
 	const [forceImportIsOpen, setForceImportIsOpen] = useState(false);
-	const [accountDeleteIsOpen, setAccountDeleteIsOpen] =
-	useState(false);
+	const [accountDeleteIsOpen, setAccountDeleteIsOpen] = useState(false);
 	const Reset = (account: Account) => {
 		setNewAccountName(account.name);
 		setNewMonthly(account.monthly);
@@ -177,6 +177,7 @@ const Settings = () => {
 								}}
 							/>
 						</div>
+						<TagsManager />
 						<div className="flex gap-2">
 							<FTButton
 								onClick={() => {
@@ -237,7 +238,7 @@ const Settings = () => {
 							<FTButton
 								className="bg-red"
 								onClick={() => {
-									setAccountDeleteIsOpen(true)
+									setAccountDeleteIsOpen(true);
 								}}
 							>
 								Delete Account
@@ -289,7 +290,11 @@ const Settings = () => {
 			/>
 			<FTBooleanModal
 				callback={() => {
-					fetchServer(`/accounts/${account!.id}`, {method:"DELETE"}).then(() => {window.location.reload()})
+					fetchServer(`/accounts/${account!.id}`, { method: 'DELETE' }).then(
+						() => {
+							window.location.reload();
+						},
+					);
 				}}
 				cancelText="Cancel"
 				confirmText="Delete Account"

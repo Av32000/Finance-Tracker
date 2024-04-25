@@ -8,3 +8,20 @@ input[type=file]::file-selector-button {
   margin-inline-start: -1rem;
   margin-inline-end: 1rem;
 }
+
+input[type=color] {
+  appearance: none;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+input[type=color]::-webkit-color-swatch {
+  border-radius: 10px;
+  border: none;
+}
+
+input[type=color]::-moz-color-swatch {
+  border-radius: 10px;
+  border: none;
+}

@@ -2,7 +2,7 @@ import { InputHTMLAttributes } from 'react';
 
 const FTInput = (params: InputHTMLAttributes<HTMLInputElement>) => {
 	const className = params.className;
-	return (
+	return params.type != 'color' ? (
 		<input
 			type="text"
 			{...params}
@@ -11,6 +11,17 @@ const FTInput = (params: InputHTMLAttributes<HTMLInputElement>) => {
 				className
 			}
 		/>
+	) : (
+		params.type == 'color' && (
+			<input
+				type="text"
+				{...params}
+				className={
+					'bg-transparent border-text-color border outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none w-10 h-10 rounded-md ' +
+					className
+				}
+			/>
+		)
 	);
 };
 
