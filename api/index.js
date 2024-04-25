@@ -469,6 +469,7 @@ fastify.delete(
 
 // Files
 const mimeTypes = require('mime-types');
+const Cmd = require("./cmd");
 fastify.get("/files/:file", async (request, reply) => {
   let file = request.params.file;
   file = file.replace(/[\\/]/g, "");
@@ -636,4 +637,5 @@ fastify.listen({ port, host: (hostArg != null ? hostArg.split('=')[1] : "localho
     process.exit(1);
   }
   console.log(`Finance Tracker API listening on ${address}`);
+  new Cmd(accountsAPI)
 });

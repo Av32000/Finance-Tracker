@@ -12,7 +12,7 @@ model Setting {
   name      String
   value     Json
   settingId String
-  Account   Account @relation(fields: [settingId], references: [id])
+  Account   Account @relation(fields: [settingId], references: [id], onDelete: Cascade)
 }
 
 model TransactionTag {
@@ -20,7 +20,7 @@ model TransactionTag {
   name    String
   color   String
   tagId   String
-  Account Account @relation(fields: [tagId], references: [id])
+  Account Account @relation(fields: [tagId], references: [id], onDelete: Cascade)
 }
 
 model Transaction {
@@ -34,7 +34,7 @@ model Transaction {
   fileId        String?
   transactionId String
   file          File?   @relation(fields: [fileId], references: [id])
-  Account       Account @relation(fields: [transactionId], references: [id])
+  Account       Account @relation(fields: [transactionId], references: [id], onDelete: Cascade)
 }
 
 model File {
@@ -50,7 +50,7 @@ model Chart {
   type    String
   options Json[]
   chartId String
-  Account Account @relation(fields: [chartId], references: [id])
+  Account Account @relation(fields: [chartId], references: [id], onDelete: Cascade)
 }
 
 model Account {
