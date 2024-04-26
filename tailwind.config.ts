@@ -14,6 +14,10 @@ export default {
 			'cta-primarly': '#6366F1',
 			transparent: 'transparent',
 		},
+		screens: {
+			mobile: { max: '1248px' },
+			desktop: { min: '1248px' },
+		},
 	},
 	plugins: [],
 } satisfies Config;

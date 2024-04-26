@@ -3,6 +3,7 @@ import { useBearStore } from '../GlobalState';
 import { Transaction } from '../account';
 import AmountTag from './AmountTag';
 import { FormatDate } from '../Utils';
+import FileTag from './FileTag';
 
 const TransactionModal = ({
 	isOpen,
@@ -35,10 +36,15 @@ const TransactionModal = ({
 					}
 				}}
 			>
-				<div className="px-9 py-8 bg-bg-light rounded-xl flex flex-col w-1/2">
-					<div className="w-full flex flex-row justify-between">
+				<div className="px-9 py-8 bg-bg-light rounded-xl flex flex-col w-1/2 mobile:w-2/3">
+					<div className="w-full flex flex-row justify-between mobile:flex-col mobile:gap-3 mobile:my-3">
 						<p className="text-active-text-color text-xl">{transaction.name}</p>
-						<AmountTag amount={transaction.amount} />
+						<div className="flex flex-col mobile:flex-row mobile:gap-3">
+							<AmountTag amount={transaction.amount} />
+							<span className="desktop:hidden">
+								{transaction.file && <FileTag file={transaction.file} />}
+							</span>
+						</div>
 					</div>
 					<p className="text-text-color">{FormatDate(transaction.date)}</p>
 					{transaction.description && (
@@ -46,6 +52,9 @@ const TransactionModal = ({
 							{transaction.description}
 						</p>
 					)}
+					<span className="self-start mobile:hidden">
+						{transaction.file && <FileTag file={transaction.file} />}
+					</span>
 				</div>
 			</div>
 		)

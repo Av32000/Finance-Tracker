@@ -25,9 +25,9 @@ const FTInfoModal = ({
 				}
 			}}
 		>
-			<div className="p-10 bg-bg-light rounded-xl flex flex-col items-center justify-center">
-				<p className="p-3 text-active-text-color">{title}</p>
-				<div className="flex flex-row-reverse gap-2">
+			<div className="p-10 bg-bg-light rounded-xl flex flex-col items-center justify-center mobile:w-5/6">
+				<p className="p-3 text-active-text-color mobile:text-center">{title}</p>
+				<div className="flex flex-row-reverse gap-2 mobile:mt-2">
 					<FTButton
 						onClick={() => {
 							if (callback) callback();

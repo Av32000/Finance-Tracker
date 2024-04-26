@@ -77,9 +77,9 @@ const TransactionsTable = ({
 									/>
 								</th>
 								<th className="font-medium p-2">Name</th>
-								<th className="font-medium p-2">Files</th>
+								<th className="font-medium p-2 mobile:hidden">Files</th>
 								<th className="font-medium p-2">Date</th>
-								<th className="font-medium p-2">Tag</th>
+								<th className="font-medium p-2 mobile:hidden">Tag</th>
 								<th className="font-medium p-2">Amount</th>
 							</tr>
 						</thead>
@@ -95,7 +95,7 @@ const TransactionsTable = ({
 											<tr
 												key={t.id}
 												className={
-													'hover:bg-bg-light ' +
+													'hover:bg-bg-light' +
 													(selected.indexOf(t.id) != -1 ? 'bg-bg-light' : '')
 												}
 											>
@@ -125,7 +125,7 @@ const TransactionsTable = ({
 												>
 													{t.name}
 												</td>
-												<td>
+												<td className="mobile:hidden">
 													{t.file ? (
 														<FileTag file={t.file} />
 													) : (
@@ -137,7 +137,7 @@ const TransactionsTable = ({
 												<td className="text-center text-text-color">
 													{FormatDate(t.date)}
 												</td>
-												<td className="text-center text-active-text-color">
+												<td className="text-center text-active-text-color mobile:hidden">
 													<TransactionTagElement
 														tagId={t.tag}
 														accountTags={account.tags}

@@ -8,6 +8,7 @@ import { startRegistration } from '@simplewebauthn/browser';
 import FTInfoModal from '../components/FTInfoModal';
 import FTBooleanModal from '../components/FTBooleanModal';
 import TagsManager from '../components/TagsManager';
+import AccountManagerCard from '../components/AccountManagerCard';
 
 const importAccount = (
 	successCallback: (response: Response) => void,
@@ -130,19 +131,24 @@ const Settings = () => {
 		<div className="overflow-hidden flex">
 			<NavBar />
 			{account ? (
-				<div className="bg-bg flex-1 h-screen flex flex-col relative">
-					<div className="w-full p-4 flex flex-row justify-between">
-						<div className="flex items-start">
-							<img src="/pages/settings.svg" className="w-6 m-2" />
+				<div className="bg-bg flex-1 h-screen flex flex-col desktop:relative">
+					<div className="w-full p-4 flex flex-row justify-between mobile:flex-col mobile:items-center mobile:mt-2 mobile:w-screen">
+						<div className="flex items-start mobile:gap-2">
+							<img
+								src="/pages/settings.svg"
+								className="w-6 m-2 mobile:my-1 mobile:mx-0"
+							/>
 							<div className="flex flex-col">
 								<h1 className="text-active-text-color text-2xl">Settings</h1>
-								<p className="text-text-color">Edit account settings</p>
+								<p className="text-text-color mobile:hidden">
+									Edit account settings
+								</p>
 							</div>
 						</div>
 						<div className="flex flex-row items-center gap-3">
 							{newAccountName != account.name ||
 							newMonthly != account.monthly ? (
-								<>
+								<div className="mobile:mt-3 flex flex-row gap-3">
 									<FTButton className="h-10" onClick={() => Save(account)}>
 										Save Settings
 									</FTButton>
@@ -152,7 +158,7 @@ const Settings = () => {
 									>
 										Clear Modifications
 									</FTButton>
-								</>
+								</div>
 							) : null}
 						</div>
 					</div>
@@ -245,10 +251,16 @@ const Settings = () => {
 							</FTButton>
 						</div>
 					</div>
+					<div className="desktop:hidden">
+						<AccountManagerCard />
+					</div>
 				</div>
 			) : (
 				<div className="flex-1 h-screen bg-bg flex items-center justify-center">
 					<p className="text-2xl text-text-color">No Account</p>
+					<div className="desktop:hidden">
+						<AccountManagerCard />
+					</div>
 				</div>
 			)}
 			<FTInfoModal

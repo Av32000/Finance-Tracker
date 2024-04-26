@@ -26,9 +26,14 @@ const NavBar = () => {
 	const navigate = useNavigate();
 
 	return (
-		<div className="w-[280px] h-screen bg-bg-dark">
-			<img src="logo.svg" width={50} height={50} className="m-4" />
-			<div className="p-6">
+		<div className="w-[280px] h-screen bg-bg-dark mobile:fixed mobile:bottom-0 mobile:h-16 mobile:w-full mobile:flex mobile:flex-row">
+			<img
+				src="logo.svg"
+				width={50}
+				height={50}
+				className="m-4 mobile:hidden"
+			/>
+			<div className="p-6 mobile:flex mobile:flex-row mobile:p-1 mobile:justify-around mobile:w-full">
 				{menu.map(m => (
 					<div
 						className={`flex items-center px-3 py-1 rounded bg-[#ffffff] cursor-pointer my-2 h-10 ${
@@ -43,7 +48,7 @@ const NavBar = () => {
 							height={30}
 						/>
 						<p
-							className={`pl-2 ${
+							className={`pl-2 mobile:hidden ${
 								location.pathname == m.path
 									? 'text-active-text-color'
 									: 'text-text-color'
@@ -54,7 +59,9 @@ const NavBar = () => {
 					</div>
 				))}
 			</div>
-			<AccountManagerCard />
+			<span className="mobile:hidden">
+				<AccountManagerCard />
+			</span>
 		</div>
 	);
 };

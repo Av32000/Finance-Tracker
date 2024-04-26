@@ -38,7 +38,6 @@ module.exports = class Cmd {
       case "exit":
       case "quit":
         process.exit(0)
-        break;
       default:
         break;
     }

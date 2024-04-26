@@ -74,7 +74,7 @@ const AccountManagerCard = () => {
 
 	return (
 		<div
-			className={`flex items-center justify-center rounded-t-[10px] text-active-text-color absolute bottom-0 bg-bg-light w-[280px] ${
+			className={`flex items-center justify-center rounded-t-[10px] text-active-text-color absolute bottom-0 bg-bg-light w-[280px] mobile:fixed mobile:mb-16 mobile:w-screen mobile:left-0 ${
 				status == 'Closed' ? 'h-[5rem]' : status == 'Create' ? 'h-[10rem]' : ''
 			}`}
 		>

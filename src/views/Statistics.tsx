@@ -5,6 +5,7 @@ import FTButton from '../components/FTButton';
 import ChartSelector from '../components/ChartSelector';
 import ChartBuilder from '../components/charts/ChartBuilder';
 import { FTChart } from '../account';
+import AccountManagerCard from '../components/AccountManagerCard';
 
 const Statistics = () => {
 	const { account } = useBearStore();
@@ -23,13 +24,16 @@ const Statistics = () => {
 		<div className="overflow-hidden flex">
 			<NavBar />
 			{account ? (
-				<div className="bg-bg flex-1 h-screen flex flex-col relative">
-					<div className="w-full p-4 flex flex-row justify-between">
-						<div className="flex items-start">
-							<img src="/pages/statistics.svg" className="w-6 m-2" />
+				<div className="bg-bg flex-1 h-screen flex flex-col desktop:relative">
+					<div className="w-full p-4 flex flex-row justify-between mobile:flex-col mobile:items-center">
+						<div className="flex items-start mobile:mb-4 mobile:mt-2">
+							<img
+								src="/pages/statistics.svg"
+								className="w-6 m-2 mobile:my-1"
+							/>
 							<div className="flex flex-col">
 								<h1 className="text-active-text-color text-2xl">Statistics</h1>
-								<p className="text-text-color">
+								<p className="text-text-color mobile:hidden">
 									Creating chart to visualise data
 								</p>
 							</div>
@@ -55,7 +59,9 @@ const Statistics = () => {
 							</div>
 						) : (
 							<div className="h-screen bg-bg flex items-center justify-center">
-								<p className="text-2xl text-text-color">No Charts</p>
+								<p className="text-2xl text-text-color mobile:mb-52">
+									No Charts
+								</p>
 							</div>
 						)}
 					</div>
@@ -63,6 +69,9 @@ const Statistics = () => {
 			) : (
 				<div className="flex-1 h-screen bg-bg flex items-center justify-center">
 					<p className="text-2xl text-text-color">No Account</p>
+					<div className="desktop:hidden">
+						<AccountManagerCard />
+					</div>
 				</div>
 			)}
 		</div>

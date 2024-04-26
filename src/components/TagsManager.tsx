@@ -5,11 +5,11 @@ import FTButton from './FTButton';
 const TagsManager = () => {
 	const { account, fetchServer, refreshAccount, setAccount } = useBearStore();
 	return account ? (
-		<div className="flex flex-col w-96">
-			<p className="text-active-text-color p-1">Tags</p>
+		<div className="flex flex-col w-96 mobile:w-full">
+			<p className="text-active-text-color p-1 mobile:self-center">Tags</p>
 			{account.tags.map(tag => (
 				<div className="flex flex-row justify-between w-full p-3" key={tag.id}>
-					<div className="flex flex-row gap-2">
+					<div className="flex flex-row gap-2 w-full mobile:justify-between mobile:gap-4">
 						<FTInput
 							type="color"
 							defaultValue={tag.color}
@@ -56,10 +56,22 @@ const TagsManager = () => {
 								}
 							}}
 						/>
+						<img
+							src="/components/trash.svg"
+							className="w-6 cursor-pointer desktop:hidden"
+							onClick={() => {
+								fetchServer(`/accounts/${account.id}/tags/${tag.id}`, {
+									method: 'DELETE',
+								}).then(res => {
+									if (res.ok) refreshAccount(account.id, setAccount);
+									else console.error('Unable to delete tag');
+								});
+							}}
+						/>
 					</div>
 					<img
 						src="/components/trash.svg"
-						className="w-6 cursor-pointer"
+						className="w-6 cursor-pointer mobile:hidden"
 						onClick={() => {
 							fetchServer(`/accounts/${account.id}/tags/${tag.id}`, {
 								method: 'DELETE',
