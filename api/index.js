@@ -76,7 +76,7 @@ if (existsSync(path.join(__dirname, "keys/publicKey.pem")) && existsSync(path.jo
   });
 }
 
-const unauthenticatedRoutes = ["/has-passkey", "/generate-registration-options", "/verify-registration", '/generate-authentication-options', '/verify-authentication']
+const unauthenticatedRoutes = ["/has-passkey", "/generate-registration-options", "/verify-registration", '/generate-authentication-options', '/verify-authentication', '/verify-otp']
 fastify.addHook("onRequest", async (request, reply) => {
   try {
     if (!unauthenticatedRoutes.includes(request.raw.url) && !insecure) {
@@ -343,6 +343,29 @@ fastify.post('/verify-authentication', async (request, reply) => {
   }
 });
 
+let timeout = false
+
+fastify.post("/verify-otp", async (req, res) => {
+  if (timeout) return res.code(403).send("Timeout")
+  const token = req.body?.token
+
+  if (!token) return res.code(400)
+
+  if (authAPI.VerifyOTP(token)) {
+    const token = fastify.jwt.sign({});
+    return { token }
+  } else {
+    timeout = true
+    setTimeout(() => timeout = false, 1000)
+    return res.code(403).send("Invalid OTP")
+  }
+})
+
+fastify.get("/get-otp", async (req, res) => {
+  return authAPI.GetOtpURL()
+})
+
+
 // Account
 fastify.get("/accounts", async () => {
   return accountsAPI.GetAccounts();
@@ -470,6 +493,7 @@ fastify.delete(
 // Files
 const mimeTypes = require('mime-types');
 const Cmd = require("./cmd");
+const { time } = require("console");
 fastify.get("/files/:file", async (request, reply) => {
   let file = request.params.file;
   file = file.replace(/[\\/]/g, "");

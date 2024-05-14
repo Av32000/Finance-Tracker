@@ -1,14 +1,15 @@
+import { startRegistration } from '@simplewebauthn/browser';
 import { useEffect, useState } from 'react';
 import { useBearStore } from '../GlobalState';
-import NavBar from '../components/NavBar';
-import FTInput from '../components/FTInput';
-import FTButton from '../components/FTButton';
 import { Account, FetchServerType } from '../account';
-import { startRegistration } from '@simplewebauthn/browser';
-import FTInfoModal from '../components/FTInfoModal';
-import FTBooleanModal from '../components/FTBooleanModal';
-import TagsManager from '../components/TagsManager';
 import AccountManagerCard from '../components/AccountManagerCard';
+import FTBooleanModal from '../components/FTBooleanModal';
+import FTButton from '../components/FTButton';
+import FTInfoModal from '../components/FTInfoModal';
+import FTInput from '../components/FTInput';
+import FTOTPModal from '../components/FTOTPModal';
+import NavBar from '../components/NavBar';
+import TagsManager from '../components/TagsManager';
 
 const importAccount = (
 	successCallback: (response: Response) => void,
@@ -64,6 +65,7 @@ const Settings = () => {
 		useState('');
 	const [forceImportIsOpen, setForceImportIsOpen] = useState(false);
 	const [accountDeleteIsOpen, setAccountDeleteIsOpen] = useState(false);
+	const [otpModalIsOpen, setOtpModalIsOpen] = useState(false);
 	const Reset = (account: Account) => {
 		setNewAccountName(account.name);
 		setNewMonthly(account.monthly);
@@ -242,6 +244,13 @@ const Settings = () => {
 								Add New Passkey
 							</FTButton>
 							<FTButton
+								onClick={() => {
+									setOtpModalIsOpen(true);
+								}}
+							>
+								Get OTP QrCode
+							</FTButton>
+							<FTButton
 								className="bg-red"
 								onClick={() => {
 									setAccountDeleteIsOpen(true);
@@ -314,6 +323,7 @@ const Settings = () => {
 				setIsOpen={setAccountDeleteIsOpen}
 				title={`Are you sure you want to delete the account ${account?.name}?`}
 			/>
+			<FTOTPModal isOpen={otpModalIsOpen} setIsOpen={setOtpModalIsOpen} />
 		</div>
 	);
 };

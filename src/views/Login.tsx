@@ -1,12 +1,13 @@
+import {
+	startAuthentication,
+	startRegistration,
+} from '@simplewebauthn/browser';
 import { useState } from 'react';
 import { useBearStore } from '../GlobalState';
 import { FetchServerType } from '../account';
 import FTButton from '../components/FTButton';
+import FTPinInput from '../components/FTPinInput';
 import Loader from '../components/Loader';
-import {
-	startRegistration,
-	startAuthentication,
-} from '@simplewebauthn/browser';
 
 const Login = ({ refresh }: { refresh: () => void }) => {
 	const register = async (fetchServer: FetchServerType) => {
@@ -81,8 +82,38 @@ const Login = ({ refresh }: { refresh: () => void }) => {
 		});
 	};
 
+	const checkOTP = async (token: number, fetchServer: FetchServerType) => {
+		return new Promise<void>(async (resolve, reject) => {
+			let isValid = await fetchServer('/verify-otp', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify({ token }),
+			});
+
+			if (isValid.ok) {
+				setAuthToken((await isValid.json()).token);
+				resolve();
+			} else if ((await isValid.text()) == 'Timeout') {
+				setOtpError('Timeout please wait');
+				setIsLoading(false);
+				reject();
+			} else if ((await isValid.text()) == 'Invalid OTP') {
+				setOtpError('Invalid OTP');
+				setIsLoading(false);
+				reject();
+			} else {
+				setOtpError('Unknow Error');
+				setIsLoading(false);
+				reject();
+			}
+		});
+	};
+
 	const { fetchServer, setAuthToken } = useBearStore();
 	const [isLoading, setIsLoading] = useState(false);
+	const [otpError, setOtpError] = useState('');
 
 	return (
 		<div className="bg-bg h-screen overflow-hidden flex justify-center items-center flex-col">
@@ -94,17 +125,33 @@ const Login = ({ refresh }: { refresh: () => void }) => {
 				{isLoading ? (
 					<Loader />
 				) : (
-					<FTButton
-						className="px-2 py-1"
-						onClick={async () => {
-							setIsLoading(true);
-							await login(fetchServer, setAuthToken).catch(() =>
-								setIsLoading(false),
-							);
-						}}
-					>
-						Continue with Passkey
-					</FTButton>
+					<>
+						<FTButton
+							className="px-2 py-1"
+							onClick={async () => {
+								setIsLoading(true);
+								await login(fetchServer, setAuthToken).catch(() =>
+									setIsLoading(false),
+								);
+							}}
+						>
+							Continue with Passkey
+						</FTButton>
+						<div className="flex flex-col m-4 gap-2">
+							<p className="text-active-text-color text-lg">
+								Or use an OTP Code
+							</p>
+							<FTPinInput
+								callback={async code => {
+									setIsLoading(true);
+									await checkOTP(code, fetchServer).catch(() =>
+										setIsLoading(false),
+									);
+								}}
+							/>
+							{otpError && <p className="text-red text-xs">{otpError}</p>}
+						</div>
+					</>
 				)}
 			</h1>
 		</div>
