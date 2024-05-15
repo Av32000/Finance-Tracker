@@ -3,11 +3,9 @@ import { useEffect, useState } from 'react';
 import { useBearStore } from '../GlobalState';
 import { Account, FetchServerType } from '../account';
 import AccountManagerCard from '../components/AccountManagerCard';
-import FTBooleanModal from '../components/FTBooleanModal';
 import FTButton from '../components/FTButton';
-import FTInfoModal from '../components/FTInfoModal';
 import FTInput from '../components/FTInput';
-import FTOTPModal from '../components/FTOTPModal';
+import { useModal } from '../components/ModalProvider';
 import NavBar from '../components/NavBar';
 import TagsManager from '../components/TagsManager';
 
@@ -59,13 +57,7 @@ const Settings = () => {
 	} = useBearStore();
 	const [newAccountName, setNewAccountName] = useState('');
 	const [newMonthly, setNewMonthly] = useState(0);
-	const [accountImportConfirmationIsOpen, setAccountImportConfirmationIsOpen] =
-		useState(false);
-	const [accountImportConfirmationText, setAccountImportConfirmationText] =
-		useState('');
-	const [forceImportIsOpen, setForceImportIsOpen] = useState(false);
-	const [accountDeleteIsOpen, setAccountDeleteIsOpen] = useState(false);
-	const [otpModalIsOpen, setOtpModalIsOpen] = useState(false);
+	const { showModal } = useModal();
 	const Reset = (account: Account) => {
 		setNewAccountName(account.name);
 		setNewMonthly(account.monthly);
@@ -212,19 +204,53 @@ const Settings = () => {
 											if (response.status == 200) {
 												refreshAccountsCallback();
 												response.json().then(json => {
-													setAccountImportConfirmationText(
-														`Account ${json.name} successfully imported`,
-													);
-													setAccountImportConfirmationIsOpen(true);
+													showModal({
+														type: 'Info',
+														title: `Account ${json.name} successfully imported`,
+													});
 												});
 											} else if (response.status == 403) {
-												setForceImportIsOpen(true);
+												const showForceImportModal = () =>
+													showModal({
+														type: 'Boolean',
+														title:
+															'An account with the same ID already exists. Would you like to replace the existing account?',
+														confirmText: 'Replace',
+														cancelText: 'Cancel',
+														callback: () => {
+															importAccount(
+																async (response: Response) => {
+																	if (response.status == 200) {
+																		refreshAccountsCallback();
+																		response.json().then(json => {
+																			showModal({
+																				type: 'Info',
+																				title: `Account ${json.name} successfully imported`,
+																			});
+																		});
+																	} else if (response.status == 403) {
+																		showForceImportModal();
+																	} else if (response.status == 400) {
+																		const text = await response.text();
+																		showModal({
+																			type: 'Info',
+																			title: 'Import Error : ' + text,
+																		});
+																	}
+																},
+																fetchServer,
+																account!,
+																true,
+															);
+														},
+													});
+												showForceImportModal();
 											} else if (response.status == 400) {
 												const text = await response.text();
-												setAccountImportConfirmationText(
-													'Import Error : ' + text,
-												);
-												setAccountImportConfirmationIsOpen(true);
+												showModal({
+													type: 'Info',
+													title: 'Import Error : ' + text,
+												});
 											}
 										},
 										fetchServer,
@@ -245,7 +271,7 @@ const Settings = () => {
 							</FTButton>
 							<FTButton
 								onClick={() => {
-									setOtpModalIsOpen(true);
+									showModal({ type: 'OTP' });
 								}}
 							>
 								Get OTP QrCode
@@ -253,7 +279,19 @@ const Settings = () => {
 							<FTButton
 								className="bg-red"
 								onClick={() => {
-									setAccountDeleteIsOpen(true);
+									showModal({
+										type: 'Boolean',
+										title: `Are you sure you want to delete the account ${account?.name}?`,
+										confirmText: 'Delete Account',
+										cancelText: 'Cancel',
+										callback: () => {
+											fetchServer(`/accounts/${account!.id}`, {
+												method: 'DELETE',
+											}).then(() => {
+												window.location.reload();
+											});
+										},
+									});
 								}}
 							>
 								Delete Account
@@ -272,58 +310,6 @@ const Settings = () => {
 					</div>
 				</div>
 			)}
-			<FTInfoModal
-				isOpen={accountImportConfirmationIsOpen}
-				setIsOpen={setAccountImportConfirmationIsOpen}
-				confirmText="Ok"
-				title={accountImportConfirmationText}
-			/>
-			<FTBooleanModal
-				callback={() => {
-					importAccount(
-						async (response: Response) => {
-							if (response.status == 200) {
-								refreshAccountsCallback();
-								response.json().then(json => {
-									setAccountImportConfirmationText(
-										`Account ${json.name} successfully imported`,
-									);
-									setAccountImportConfirmationIsOpen(true);
-								});
-							} else if (response.status == 403) {
-								setForceImportIsOpen(true);
-							} else if (response.status == 400) {
-								const text = await response.text();
-								setAccountImportConfirmationText('Import Error : ' + text);
-								setAccountImportConfirmationIsOpen(true);
-							}
-						},
-						fetchServer,
-						account!,
-						true,
-					);
-				}}
-				cancelText="Cancel"
-				confirmText="Replace"
-				isOpen={forceImportIsOpen}
-				setIsOpen={setForceImportIsOpen}
-				title="An account with the same ID already exists. Would you like to replace the existing account?"
-			/>
-			<FTBooleanModal
-				callback={() => {
-					fetchServer(`/accounts/${account!.id}`, { method: 'DELETE' }).then(
-						() => {
-							window.location.reload();
-						},
-					);
-				}}
-				cancelText="Cancel"
-				confirmText="Delete Account"
-				isOpen={accountDeleteIsOpen}
-				setIsOpen={setAccountDeleteIsOpen}
-				title={`Are you sure you want to delete the account ${account?.name}?`}
-			/>
-			<FTOTPModal isOpen={otpModalIsOpen} setIsOpen={setOtpModalIsOpen} />
 		</div>
 	);
 };

@@ -1,29 +1,27 @@
 import FTButton from './FTButton';
 
 const FTBooleanModal = ({
-	isOpen,
-	setIsOpen,
+	hideModal,
 	callback,
+	cancelCallback,
 	title,
 	confirmText,
 	cancelText,
 }: {
-	isOpen: boolean;
-	setIsOpen: (isOpen: boolean) => void;
+	hideModal: () => void;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	callback: (...args: any) => void;
+	callback?: () => void;
+	cancelCallback?: () => void;
 	title: string;
 	confirmText: string;
 	cancelText: string;
 }) => {
 	return (
 		<div
-			className={`${
-				isOpen ? 'flex' : 'hidden'
-			} absolute items-center justify-center h-screen w-full bg-[black] bg-opacity-60`}
+			className="absolute flex items-center justify-center h-screen w-full bg-[black] bg-opacity-60"
 			onClick={e => {
 				if (e.target === e.currentTarget) {
-					setIsOpen(false);
+					hideModal();
 				}
 			}}
 		>
@@ -32,8 +30,8 @@ const FTBooleanModal = ({
 				<div className="flex flex-row-reverse gap-2 mobile:flex-col mobile:mt-2">
 					<FTButton
 						onClick={() => {
-							callback();
-							setIsOpen(false);
+							if (callback) callback();
+							hideModal();
 						}}
 					>
 						{confirmText}
@@ -41,7 +39,8 @@ const FTBooleanModal = ({
 					<FTButton
 						className="bg-red"
 						onClick={() => {
-							setIsOpen(false);
+							if (cancelCallback) cancelCallback();
+							hideModal();
 						}}
 					>
 						{cancelText}

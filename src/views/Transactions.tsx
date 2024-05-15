@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useBearStore } from '../GlobalState';
-import NavBar from '../components/NavBar';
-import FTInput from '../components/FTInput';
-import FTButton from '../components/FTButton';
-import TransactionsTable from '../components/TransactionsTable';
-import AddTransactionModal from '../components/AddTransactionModal';
-import FTBooleanModal from '../components/FTBooleanModal';
 import { FetchServerType } from '../account';
 import AccountManagerCard from '../components/AccountManagerCard';
+import AddTransactionModal from '../components/AddTransactionModal';
+import FTButton from '../components/FTButton';
+import FTInput from '../components/FTInput';
+import { useModal } from '../components/ModalProvider';
+import NavBar from '../components/NavBar';
+import TransactionsTable from '../components/TransactionsTable';
 
 const DeleteTransaction = async (
 	tId: string,
@@ -26,11 +26,8 @@ const Transactions = () => {
 		useState(false);
 	const [filter, setFilter] = useState('');
 	const [selected, setSelected] = useState<string[]>([]);
-	const [
-		confirmDeleteTransactionModalIsOpen,
-		setConfirmDeleteTransactionModalIsOpen,
-	] = useState(false);
 	const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
+	const { showModal } = useModal();
 
 	useEffect(() => {
 		document.title = 'Finance Tracker - Transactions';
@@ -83,7 +80,26 @@ const Transactions = () => {
 									)}
 									<FTButton
 										className="h-10 bg-red"
-										onClick={() => setConfirmDeleteTransactionModalIsOpen(true)}
+										onClick={() =>
+											showModal({
+												type: 'Boolean',
+												title: `Are you sure you want to delete ${
+													selected.length
+												} transaction${selected.length > 1 ? 's' : ''} ?`,
+												confirmText: `Delete ${selected.length} transaction${
+													selected.length > 1 ? 's' : ''
+												}`,
+												cancelText: 'Cancel',
+												callback: async () => {
+													const promises = selected.map(s =>
+														DeleteTransaction(s, account.id, fetchServer),
+													);
+													await Promise.all(promises);
+													await refreshAccount(account.id, setAccount);
+													setSelected([]);
+												},
+											})
+										}
 									>
 										Delete Transaction{selected.length > 1 ? 's' : ''}
 									</FTButton>
@@ -104,25 +120,6 @@ const Transactions = () => {
 						setIsOpen={setEditTransactionModalIsOpen}
 						isOpen={editTransactionModalIsOpen}
 						transactionId={selected[0]}
-					/>
-					<FTBooleanModal
-						title={`Are you sure you want to delete ${
-							selected.length
-						} transaction${selected.length > 1 ? 's' : ''} ?`}
-						confirmText={`Delete ${selected.length} transaction${
-							selected.length > 1 ? 's' : ''
-						}`}
-						cancelText="Cancel"
-						callback={async () => {
-							const promises = selected.map(s =>
-								DeleteTransaction(s, account.id, fetchServer),
-							);
-							await Promise.all(promises);
-							await refreshAccount(account.id, setAccount);
-							setSelected([]);
-						}}
-						isOpen={confirmDeleteTransactionModalIsOpen}
-						setIsOpen={setConfirmDeleteTransactionModalIsOpen}
 					/>
 				</div>
 			) : (

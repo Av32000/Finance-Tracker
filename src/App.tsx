@@ -1,13 +1,14 @@
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import Home from './views/Home';
 import { useEffect, useState } from 'react';
-import Loading from './views/Loading';
-import NoBackend from './views/NoBackend';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { useBearStore } from './GlobalState';
-import Transactions from './views/Transactions';
+import { ModalProvider } from './components/ModalProvider';
+import Home from './views/Home';
+import Loading from './views/Loading';
+import Login from './views/Login';
+import NoBackend from './views/NoBackend';
 import Settings from './views/Settings';
 import Statistics from './views/Statistics';
-import Login from './views/Login';
+import Transactions from './views/Transactions';
 
 const router = createBrowserRouter([
 	{
@@ -62,7 +63,9 @@ function App() {
 			{backendStatus == BACKEND_STATUS.LOADING && <Loading />}
 
 			{backendStatus == BACKEND_STATUS.CONNECTED && (
-				<RouterProvider router={router} />
+				<ModalProvider>
+					<RouterProvider router={router} />
+				</ModalProvider>
 			)}
 
 			{backendStatus == BACKEND_STATUS.UNAUTHENTICATED && (

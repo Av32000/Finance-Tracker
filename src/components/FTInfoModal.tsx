@@ -1,14 +1,12 @@
 import FTButton from './FTButton';
 
 const FTInfoModal = ({
-	isOpen,
-	setIsOpen,
+	hideModal,
 	callback,
 	title,
 	confirmText,
 }: {
-	isOpen: boolean;
-	setIsOpen: (isOpen: boolean) => void;
+	hideModal: () => void;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	callback?: (...args: any) => void;
 	title: string;
@@ -16,12 +14,10 @@ const FTInfoModal = ({
 }) => {
 	return (
 		<div
-			className={`${
-				isOpen ? 'flex' : 'hidden'
-			} absolute items-center justify-center h-screen w-full bg-[black] bg-opacity-60`}
+			className="absolute flex items-center justify-center h-screen w-full bg-[black] bg-opacity-60"
 			onClick={e => {
 				if (e.target === e.currentTarget) {
-					setIsOpen(false);
+					hideModal();
 				}
 			}}
 		>
@@ -31,7 +27,7 @@ const FTInfoModal = ({
 					<FTButton
 						onClick={() => {
 							if (callback) callback();
-							setIsOpen(false);
+							hideModal();
 						}}
 					>
 						{confirmText}
