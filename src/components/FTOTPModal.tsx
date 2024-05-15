@@ -35,15 +35,18 @@ const FTOTPModal = ({
 
 			if (isValid.ok) {
 				resolve();
-			} else if ((await isValid.text()) == 'Timeout') {
-				setOtpError('Timeout please wait');
-				reject();
-			} else if ((await isValid.text()) == 'Invalid OTP') {
-				setOtpError('Invalid OTP');
-				reject();
 			} else {
-				setOtpError('Unknow Error');
-				reject();
+				const text = await isValid.text();
+				if (text == 'Timeout') {
+					setOtpError('Timeout please wait');
+					reject();
+				} else if (text == 'Invalid OTP') {
+					setOtpError('Invalid OTP');
+					reject();
+				} else {
+					setOtpError('Unknow Error');
+					reject();
+				}
 			}
 		});
 	};
@@ -69,7 +72,7 @@ const FTOTPModal = ({
 						Add OTP App
 					</p>
 					<img src={otpURL} />
-					<p className="text-active-text-color text-xl">
+					<p className="text-active-text-color text-sm">
 						Scan the QRCode and type the OTP provided by the auth app
 					</p>
 					<FTPinInput

@@ -93,20 +93,25 @@ const Login = ({ refresh }: { refresh: () => void }) => {
 			});
 
 			if (isValid.ok) {
+				console.log('test');
+
 				setAuthToken((await isValid.json()).token);
 				resolve();
-			} else if ((await isValid.text()) == 'Timeout') {
-				setOtpError('Timeout please wait');
-				setIsLoading(false);
-				reject();
-			} else if ((await isValid.text()) == 'Invalid OTP') {
-				setOtpError('Invalid OTP');
-				setIsLoading(false);
-				reject();
 			} else {
-				setOtpError('Unknow Error');
-				setIsLoading(false);
-				reject();
+				const text = await isValid.text();
+				if (text == 'Timeout') {
+					setOtpError('Timeout please wait');
+					setIsLoading(false);
+					reject();
+				} else if (text == 'Invalid OTP') {
+					setOtpError('Invalid OTP');
+					setIsLoading(false);
+					reject();
+				} else {
+					setOtpError('Unknow Error');
+					setIsLoading(false);
+					reject();
+				}
 			}
 		});
 	};

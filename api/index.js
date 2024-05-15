@@ -346,10 +346,16 @@ fastify.post('/verify-authentication', async (request, reply) => {
 let timeout = false
 
 fastify.post("/verify-otp", async (req, res) => {
-  if (timeout) return res.code(403).send("Timeout")
+  if (timeout) {
+    res.status(403).send("Timeout")
+    return
+  }
   const token = req.body?.token
 
-  if (!token) return res.code(400)
+  if (!token) {
+    res.status(400)
+    return
+  }
 
   if (authAPI.VerifyOTP(token)) {
     const token = fastify.jwt.sign({});
@@ -357,7 +363,8 @@ fastify.post("/verify-otp", async (req, res) => {
   } else {
     timeout = true
     setTimeout(() => timeout = false, 1000)
-    return res.code(403).send("Invalid OTP")
+    res.status(403).send("Invalid OTP")
+    return
   }
 })
 
