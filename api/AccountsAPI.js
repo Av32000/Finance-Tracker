@@ -96,7 +96,11 @@ module.exports = class AccountsAPI {
     const fileFolder = zip.folder("files");
     Array.prototype;
     account.transactions.forEach((t) => {
-      if (t.file) {
+      if (t.file && existsSync(path.join(
+        this.dataPath,
+        "files",
+        t.file.id + "." + t.file.name.split(".").pop()
+      ))) {
         fileFolder.file(
           t.file.id + "." + t.file.name.split(".").pop(),
           readFileSync(
