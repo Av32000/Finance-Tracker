@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import FTButton from './FTButton';
-import FTInput from './FTInput';
-import { useBearStore } from '../GlobalState';
-import { FileInput } from './FTFileInput';
 import { z } from 'zod';
-import TransactionTagSelect from './TransactionTagSelect';
+import { useBearStore } from '../GlobalState';
 import { FetchServerType } from '../account';
+import FTButton from './FTButton';
+import { FileInput } from './FTFileInput';
+import FTInput from './FTInput';
 import FTTextArea from './FTTextArea';
+import TransactionTagSelect from './TransactionTagSelect';
 
 const UploadFile = async (file: File, fetchServer: FetchServerType) => {
 	try {
@@ -42,6 +42,8 @@ const SaveTransaction = async (
 	transactionId?: string,
 ) => {
 	if (transactionId) {
+		console.log(date);
+
 		await fetchServer(
 			'/accounts/' + accountId + '/transactions/' + transactionId,
 			{
@@ -77,13 +79,22 @@ const AddTransactionModal = ({
 	const [amount, setAmount] = useState(0);
 	const fileInput = useRef<HTMLInputElement | null>();
 
+	const adjustToLocalTime = (timestamp: number) => {
+		const date = new Date(timestamp);
+		const timezoneOffset = date.getTimezoneOffset() * 60000;
+		const localDate = new Date(date.getTime() - timezoneOffset);
+		return localDate.toISOString().split('.')[0];
+	};
+
 	useEffect(() => {
 		if (transactionId && account) {
 			let transaction = account.transactions.find(t => t.id === transactionId);
 			if (transaction) {
+				console.log(transaction);
+
 				setName(transaction.name);
 				setDescription(transaction.description);
-				setDate(new Date(transaction.date).toISOString().split('.')[0]);
+				setDate(adjustToLocalTime(transaction.date));
 				setTag(
 					account.tags.find(t => t.id === transaction?.tag)?.id || 'no_tag',
 				);

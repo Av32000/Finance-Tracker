@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
-import NavBar from '../components/NavBar';
 import { useBearStore } from '../GlobalState';
 import { FormatDate, FormatMoney } from '../Utils';
-import AmountTag from '../components/AmountTag';
-import EvolutionChart from '../components/charts/EvolutionChart';
-import DistributionPieChart from '../components/charts/DistributionPieChart';
 import AccountManagerCard from '../components/AccountManagerCard';
+import AmountTag from '../components/AmountTag';
+import NavBar from '../components/NavBar';
+import DistributionPieChart from '../components/charts/DistributionPieChart';
+import EvolutionChart from '../components/charts/EvolutionChart';
 
 const Home = () => {
 	const { account } = useBearStore();
