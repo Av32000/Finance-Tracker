@@ -79,7 +79,7 @@ if (existsSync(path.join(__dirname, "keys/publicKey.pem")) && existsSync(path.jo
 const unauthenticatedRoutes = ["/has-passkey", "/generate-registration-options", "/verify-registration", '/generate-authentication-options', '/verify-authentication', '/verify-otp']
 fastify.addHook("onRequest", async (request, reply) => {
   try {
-    if (!unauthenticatedRoutes.includes(request.raw.url) && !insecure) {
+    if (!unauthenticatedRoutes.includes(request.raw.url) && !insecure && authAPI.data.devices.length > 0) {
       await request.jwtVerify()
     }
   } catch (err) {
