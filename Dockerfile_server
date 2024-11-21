@@ -24,9 +24,14 @@ RUN --mount=type=bind,source=package.json,target=package.json \
 RUN chown node .
 RUN chown -R node:node /usr/src/app/node_modules/.pnpm/*prisma*/
 
+RUN mkdir -p /usr/src/app/api/keys && \
+    chown -R node:node /usr/src/app/api/keys && \
+    chmod -R 777 /usr/src/app/api/keys
+
 # Copy the rest of the source files into the image.
 COPY ./api ./api
 COPY ./prisma ./prisma
+
 # Run the application as a non-root user.
 USER node
 
