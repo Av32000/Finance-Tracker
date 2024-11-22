@@ -11,7 +11,7 @@
     "build": "pnpm --filter @finance-tracker/types build && pnpm -r build",
     "build:react": "pnpm --filter @finance-tracker/front build",
     "build:server": "pnpm --filter @finance-tracker/api build",
-    "build:types": "pnpm --filter @finance-tracker/types build && pnpm -r build",
+    "build:types": "pnpm --filter @finance-tracker/types build",
     "prisma:pull": "prisma db pull && prisma generate",
     "prisma:push": "prisma migrate dev && prisma generate",
     "lint": "pnpm --filter @finance-tracker/front lint",
