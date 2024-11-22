@@ -2,12 +2,16 @@
   "name": "finance-tracker",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
+    "start": "node dist/api/index.js",
+    "dev": "concurrently \"pnpm start:react\" \"pnpm start:server\"",
     "start:react": "pnpm --filter @finance-tracker/front dev",
     "start:server": "pnpm --filter @finance-tracker/api start",
     "generate-keys": "pnpm --filter @finance-tracker/api generate-keys",
     "build": "pnpm --filter @finance-tracker/types build && pnpm -r build",
+    "build:react": "pnpm --filter @finance-tracker/front build",
+    "build:server": "pnpm --filter @finance-tracker/api build",
+    "build:types": "pnpm --filter @finance-tracker/types build && pnpm -r build",
     "prisma:pull": "prisma db pull && prisma generate",
     "prisma:push": "prisma migrate dev && prisma generate",
     "lint": "pnpm --filter @finance-tracker/front lint",
@@ -17,6 +21,8 @@
     "typecheck:server": "pnpm --filter @finance-tracker/api typecheck"
   },
   "dependencies": {
+    "@prisma/client": "5.13.0",
+    "concurrently": "^9.1.0",
     "prisma": "5.13.0"
   }
 }

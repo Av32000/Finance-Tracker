@@ -59,7 +59,15 @@ fastify.register(cors, {
 
 fastify.register(require("@fastify/static"), {
   root: path.join(__dirname, "../../", filesPath),
+  prefix: "/api",
 });
+
+if (process.env.NODE_ENV == "production") {
+  fastify.register(require("@fastify/static"), {
+    root: path.join(__dirname, "..", "front"),
+    decorateReply: false,
+  });
+}
 
 fastify.register(multipart, {
   limits: {
@@ -134,578 +142,594 @@ const port = parseInt(
   process.argv.find((s) => s.startsWith("--port"))?.split("=")[1] || "3000",
 );
 
-fastify.get("/", async () => {
-  return "Finance Tracker !";
-});
+fastify.register(
+  async (api) => {
+    api.get("/", async () => {
+      return "Finance Tracker !";
+    });
 
-// Login
-fastify.get("/has-passkey", (request, reply) => {
-  return authAPI.PasskeyExist() ? authAPI.GetUser().devices : false;
-});
+    // Login
+    api.get("/has-passkey", (request, reply) => {
+      return authAPI.PasskeyExist() ? authAPI.GetUser().devices : false;
+    });
 
-fastify.get("/generate-new-key-options", async (request, reply) => {
-  const { userId, username, devices } = authAPI.GetUser();
+    api.get("/generate-new-key-options", async (request, reply) => {
+      const { userId, username, devices } = authAPI.GetUser();
 
-  const opts = {
-    rpName: authAPI.rpName,
-    rpID: authAPI.rpID,
-    userID: userId,
-    userName: username,
-    timeout: 60000,
-    attestationType: "none",
-    excludeCredentials: devices.map((dev) => ({
-      id: dev.credentialID,
-      type: "public-key" as "public-key",
-      transports: dev.transports,
-    })),
-    authenticatorSelection: {
-      residentKey: "discouraged",
-      userVerification: "required",
-      authenticatorAttachment: "cross-platform",
-    },
-    supportedAlgorithmIDs: [-7, -257],
-  } as GenerateRegistrationOptionsOpts;
-
-  const options = await generateRegistrationOptions(opts);
-  authAPI.SetChallenge(options.challenge);
-
-  return options;
-});
-
-fastify.post("/verify-new-key-registration", async (request, reply) => {
-  const body = request.body as any;
-  const user = authAPI.GetUser();
-  const expectedChallenge = authAPI.GetChallenge();
-  let verification;
-  try {
-    const opts = {
-      response: body,
-      expectedChallenge: `${expectedChallenge}`,
-      expectedOrigin: authAPI.GetOrigin(),
-      expectedRPID: authAPI.rpID,
-      requireUserVerification: true,
-    } as VerifyRegistrationResponseOpts;
-    verification = await verifyRegistrationResponse(opts);
-  } catch (error) {
-    console.error(error);
-    return reply.status(400).send({ error: (error as Error).message });
-  }
-
-  const { verified, registrationInfo } = verification;
-
-  if (verified && registrationInfo) {
-    const { credentialPublicKey, credentialID, counter } = registrationInfo;
-
-    const existingDevice = user.devices.find((device) =>
-      isoUint8Array.areEqual(device.credentialID, credentialID),
-    );
-
-    if (!existingDevice) {
-      const newDevice = {
-        credentialPublicKey,
-        credentialID,
-        counter,
-        transports: body.response.transports,
-      };
-      user.devices.push(newDevice);
-    }
-  }
-
-  authAPI.SetChallenge(null);
-  authAPI.SaveData();
-
-  return verified;
-});
-
-fastify.get("/generate-registration-options", async (request, reply) => {
-  if (!authAPI.PasskeyExist()) {
-    const { userId, username, devices } = authAPI.GetUser();
-
-    const opts = {
-      rpName: authAPI.rpName,
-      rpID: authAPI.rpID,
-      userID: userId,
-      userName: username,
-      timeout: 60000,
-      attestationType: "none",
-      excludeCredentials: devices.map((dev) => ({
-        id: dev.credentialID,
-        type: "public-key",
-        transports: dev.transports,
-      })),
-      authenticatorSelection: {
-        residentKey: "discouraged",
-        userVerification: "required",
-        authenticatorAttachment: "platform",
-      },
-      supportedAlgorithmIDs: [-7, -257],
-    } as GenerateRegistrationOptionsOpts;
-
-    const options = await generateRegistrationOptions(opts);
-    authAPI.SetChallenge(options.challenge);
-
-    return options;
-  } else {
-    reply.code(403).send("Passkey Already Setup");
-  }
-});
-
-fastify.post("/verify-registration", async (request, reply) => {
-  if (!authAPI.PasskeyExist()) {
-    const body = request.body as any;
-    const user = authAPI.GetUser();
-    const expectedChallenge = authAPI.GetChallenge();
-    let verification;
-    try {
       const opts = {
-        response: body,
-        expectedChallenge: `${expectedChallenge}`,
-        expectedOrigin: authAPI.GetOrigin(),
-        expectedRPID: authAPI.rpID,
-        requireUserVerification: true,
-      } as VerifyRegistrationResponseOpts;
-      verification = await verifyRegistrationResponse(opts);
-    } catch (error) {
-      console.error(error);
-      return reply.status(400).send({ error: (error as Error).message });
-    }
+        rpName: authAPI.rpName,
+        rpID: authAPI.rpID,
+        userID: userId,
+        userName: username,
+        timeout: 60000,
+        attestationType: "none",
+        excludeCredentials: devices.map((dev) => ({
+          id: dev.credentialID,
+          type: "public-key" as "public-key",
+          transports: dev.transports,
+        })),
+        authenticatorSelection: {
+          residentKey: "discouraged",
+          userVerification: "required",
+          authenticatorAttachment: "cross-platform",
+        },
+        supportedAlgorithmIDs: [-7, -257],
+      } as GenerateRegistrationOptionsOpts;
 
-    const { verified, registrationInfo } = verification;
+      const options = await generateRegistrationOptions(opts);
+      authAPI.SetChallenge(options.challenge);
 
-    if (verified && registrationInfo) {
-      const { credentialPublicKey, credentialID, counter } = registrationInfo;
+      return options;
+    });
 
-      const existingDevice = user.devices.find((device) =>
-        isoUint8Array.areEqual(device.credentialID, credentialID),
-      );
-
-      if (!existingDevice) {
-        const newDevice = {
-          credentialPublicKey,
-          credentialID,
-          counter,
-          transports: body.response.transports,
-        };
-        user.devices.push(newDevice);
+    api.post("/verify-new-key-registration", async (request, reply) => {
+      const body = request.body as any;
+      const user = authAPI.GetUser();
+      const expectedChallenge = authAPI.GetChallenge();
+      let verification;
+      try {
+        const opts = {
+          response: body,
+          expectedChallenge: `${expectedChallenge}`,
+          expectedOrigin: authAPI.GetOrigin(),
+          expectedRPID: authAPI.rpID,
+          requireUserVerification: true,
+        } as VerifyRegistrationResponseOpts;
+        verification = await verifyRegistrationResponse(opts);
+      } catch (error) {
+        console.error(error);
+        return reply.status(400).send({ error: (error as Error).message });
       }
-    }
 
-    authAPI.SetChallenge(null);
-    authAPI.SaveData();
+      const { verified, registrationInfo } = verification;
 
-    return verified;
-  } else {
-    reply.code(403).send("Passkey Already Setup");
-  }
-});
+      if (verified && registrationInfo) {
+        const { credentialPublicKey, credentialID, counter } = registrationInfo;
 
-fastify.get("/generate-authentication-options", async (request, reply) => {
-  const user = authAPI.GetUser();
+        const existingDevice = user.devices.find((device) =>
+          isoUint8Array.areEqual(device.credentialID, credentialID),
+        );
 
-  const opts = {
-    timeout: 60000,
-    allowCredentials: user.devices.map((dev) => ({
-      id: dev.credentialID,
-      type: "public-key",
-      transports: dev.transports,
-    })),
-    userVerification: "required",
-    rpID: authAPI.rpID,
-  } as GenerateAuthenticationOptionsOpts;
+        if (!existingDevice) {
+          const newDevice = {
+            credentialPublicKey,
+            credentialID,
+            counter,
+            transports: body.response.transports,
+          };
+          user.devices.push(newDevice);
+        }
+      }
 
-  const options = await generateAuthenticationOptions(opts);
+      authAPI.SetChallenge(null);
+      authAPI.SaveData();
 
-  authAPI.SetChallenge(options.challenge);
-
-  return options;
-});
-
-fastify.post("/verify-authentication", async (request, reply) => {
-  const body = request.body as any;
-  const user = authAPI.GetUser();
-  const expectedChallenge = authAPI.GetChallenge();
-
-  let dbAuthenticator;
-  const bodyCredIDBuffer = isoBase64URL.toBuffer(body.rawId);
-  for (const dev of user.devices) {
-    if (isoUint8Array.areEqual(dev.credentialID, bodyCredIDBuffer)) {
-      dbAuthenticator = dev;
-      break;
-    }
-  }
-
-  if (!dbAuthenticator) {
-    return reply.code(400).send({
-      error: "Authenticator is not registered with this site",
+      return verified;
     });
-  }
 
-  let verification;
-  try {
-    const opts = {
-      response: body,
-      expectedChallenge: `${expectedChallenge}`,
-      expectedOrigin: authAPI.GetOrigin(),
-      expectedRPID: authAPI.rpID,
-      authenticator: dbAuthenticator,
-      requireUserVerification: true,
-    } as VerifyAuthenticationResponseOpts;
-    verification = await verifyAuthenticationResponse(opts);
-  } catch (error) {
-    console.error(error);
-    return reply.code(400).send({ error: (error as Error).message });
-  }
+    api.get("/generate-registration-options", async (request, reply) => {
+      if (!authAPI.PasskeyExist()) {
+        const { userId, username, devices } = authAPI.GetUser();
 
-  const { verified, authenticationInfo } = verification;
+        const opts = {
+          rpName: authAPI.rpName,
+          rpID: authAPI.rpID,
+          userID: userId,
+          userName: username,
+          timeout: 60000,
+          attestationType: "none",
+          excludeCredentials: devices.map((dev) => ({
+            id: dev.credentialID,
+            type: "public-key",
+            transports: dev.transports,
+          })),
+          authenticatorSelection: {
+            residentKey: "discouraged",
+            userVerification: "required",
+            authenticatorAttachment: "platform",
+          },
+          supportedAlgorithmIDs: [-7, -257],
+        } as GenerateRegistrationOptionsOpts;
 
-  if (verified) {
-    dbAuthenticator.counter = authenticationInfo.newCounter;
-    const token = fastify.jwt.sign({});
-    authAPI.SetChallenge(null);
-    authAPI.SaveData();
-    (authenticationInfo as any).token = token;
-    reply.send({ authenticationInfo });
-  } else {
-    reply.status(401);
-  }
-});
+        const options = await generateRegistrationOptions(opts);
+        authAPI.SetChallenge(options.challenge);
 
-let timeout = false;
+        return options;
+      } else {
+        reply.code(403).send("Passkey Already Setup");
+      }
+    });
 
-fastify.post("/verify-otp", async (req, res) => {
-  if (timeout) {
-    res.status(403).send("Timeout");
-    return;
-  }
-  const token = (req.body as any)?.token;
+    api.post("/verify-registration", async (request, reply) => {
+      if (!authAPI.PasskeyExist()) {
+        const body = request.body as any;
+        const user = authAPI.GetUser();
+        const expectedChallenge = authAPI.GetChallenge();
+        let verification;
+        try {
+          const opts = {
+            response: body,
+            expectedChallenge: `${expectedChallenge}`,
+            expectedOrigin: authAPI.GetOrigin(),
+            expectedRPID: authAPI.rpID,
+            requireUserVerification: true,
+          } as VerifyRegistrationResponseOpts;
+          verification = await verifyRegistrationResponse(opts);
+        } catch (error) {
+          console.error(error);
+          return reply.status(400).send({ error: (error as Error).message });
+        }
 
-  if (!token) {
-    res.status(400);
-    return;
-  }
+        const { verified, registrationInfo } = verification;
 
-  if (authAPI.VerifyOTP(token)) {
-    const token = fastify.jwt.sign({});
-    return { token };
-  } else {
-    timeout = true;
-    setTimeout(() => (timeout = false), 1000);
-    res.status(403).send("Invalid OTP");
-    return;
-  }
-});
+        if (verified && registrationInfo) {
+          const { credentialPublicKey, credentialID, counter } =
+            registrationInfo;
 
-fastify.get("/get-otp", async (req, res) => {
-  return authAPI.GetOtpURL();
-});
+          const existingDevice = user.devices.find((device) =>
+            isoUint8Array.areEqual(device.credentialID, credentialID),
+          );
 
-// Account
-fastify.get("/accounts", async () => {
-  return accountsAPI.GetAccounts();
-});
+          if (!existingDevice) {
+            const newDevice = {
+              credentialPublicKey,
+              credentialID,
+              counter,
+              transports: body.response.transports,
+            };
+            user.devices.push(newDevice);
+          }
+        }
 
-fastify.get("/accounts/:id", async (request, reply) => {
-  return accountsAPI.GetAccount((request.params as any).id);
-});
+        authAPI.SetChallenge(null);
+        authAPI.SaveData();
 
-fastify.get("/accounts/:id/export", async (request, reply) => {
-  const buffer = await accountsAPI.ExportAccount((request.params as any).id);
-  if (buffer != null) {
-    reply.header(
-      "Content-Disposition",
-      `attachment; filename=${accountsAPI
-        .GetAccount((request.params as any).id)
-        ?.name.replace(/[^a-zA-Z0-9-_.]/g, "")}.zip`,
+        return verified;
+      } else {
+        reply.code(403).send("Passkey Already Setup");
+      }
+    });
+
+    api.get("/generate-authentication-options", async (request, reply) => {
+      const user = authAPI.GetUser();
+
+      const opts = {
+        timeout: 60000,
+        allowCredentials: user.devices.map((dev) => ({
+          id: dev.credentialID,
+          type: "public-key",
+          transports: dev.transports,
+        })),
+        userVerification: "required",
+        rpID: authAPI.rpID,
+      } as GenerateAuthenticationOptionsOpts;
+
+      const options = await generateAuthenticationOptions(opts);
+
+      authAPI.SetChallenge(options.challenge);
+
+      return options;
+    });
+
+    api.post("/verify-authentication", async (request, reply) => {
+      const body = request.body as any;
+      const user = authAPI.GetUser();
+      const expectedChallenge = authAPI.GetChallenge();
+
+      let dbAuthenticator;
+      const bodyCredIDBuffer = isoBase64URL.toBuffer(body.rawId);
+      for (const dev of user.devices) {
+        if (isoUint8Array.areEqual(dev.credentialID, bodyCredIDBuffer)) {
+          dbAuthenticator = dev;
+          break;
+        }
+      }
+
+      if (!dbAuthenticator) {
+        return reply.code(400).send({
+          error: "Authenticator is not registered with this site",
+        });
+      }
+
+      let verification;
+      try {
+        const opts = {
+          response: body,
+          expectedChallenge: `${expectedChallenge}`,
+          expectedOrigin: authAPI.GetOrigin(),
+          expectedRPID: authAPI.rpID,
+          authenticator: dbAuthenticator,
+          requireUserVerification: true,
+        } as VerifyAuthenticationResponseOpts;
+        verification = await verifyAuthenticationResponse(opts);
+      } catch (error) {
+        console.error(error);
+        return reply.code(400).send({ error: (error as Error).message });
+      }
+
+      const { verified, authenticationInfo } = verification;
+
+      if (verified) {
+        dbAuthenticator.counter = authenticationInfo.newCounter;
+        const token = fastify.jwt.sign({});
+        authAPI.SetChallenge(null);
+        authAPI.SaveData();
+        (authenticationInfo as any).token = token;
+        reply.send({ authenticationInfo });
+      } else {
+        reply.status(401);
+      }
+    });
+
+    let timeout = false;
+
+    api.post("/verify-otp", async (req, res) => {
+      if (timeout) {
+        res.status(403).send("Timeout");
+        return;
+      }
+      const token = (req.body as any)?.token;
+
+      if (!token) {
+        res.status(400);
+        return;
+      }
+
+      if (authAPI.VerifyOTP(token)) {
+        const token = fastify.jwt.sign({});
+        return { token };
+      } else {
+        timeout = true;
+        setTimeout(() => (timeout = false), 1000);
+        res.status(403).send("Invalid OTP");
+        return;
+      }
+    });
+
+    api.get("/get-otp", async (req, res) => {
+      return authAPI.GetOtpURL();
+    });
+
+    // Account
+    api.get("/accounts", async () => {
+      return accountsAPI.GetAccounts();
+    });
+
+    api.get("/accounts/:id", async (request, reply) => {
+      return accountsAPI.GetAccount((request.params as any).id);
+    });
+
+    api.get("/accounts/:id/export", async (request, reply) => {
+      const buffer = await accountsAPI.ExportAccount(
+        (request.params as any).id,
+      );
+      if (buffer != null) {
+        reply.header(
+          "Content-Disposition",
+          `attachment; filename=${accountsAPI
+            .GetAccount((request.params as any).id)
+            ?.name.replace(/[^a-zA-Z0-9-_.]/g, "")}.zip`,
+        );
+        reply.type("application/zip").send(buffer);
+      } else {
+        reply.status(404);
+      }
+    });
+
+    api.post("/accounts/:id/import", async (request, reply) => {
+      const data = await request.file();
+      if (!data) return;
+      const force = (request.query as any).force === "true";
+
+      const bufferPromise = new Promise((resolve, reject) => {
+        const chunks: Buffer[] = [];
+        data.file.on("data", (chunk) => {
+          chunks.push(chunk);
+        });
+
+        data.file.on("end", () => {
+          const buffer = Buffer.concat(chunks);
+          resolve(buffer);
+        });
+
+        data.file.on("error", (err) => {
+          reject(err);
+        });
+      });
+
+      const buffer = (await bufferPromise) as Buffer;
+
+      const importResult = await accountsAPI.ImportAccount(buffer, force);
+
+      if (typeof importResult == "string") {
+        reply.code(200).send(importResult);
+      } else if (importResult == 1) {
+        reply.code(400).send("Invalid zip file");
+      } else if (importResult == 2) {
+        reply.status(403);
+      } else if (importResult == 3) {
+        reply.code(400).send("Missing files");
+      }
+    });
+
+    api.post("/accounts", async (request, reply) => {
+      const name = (request.body as any).name;
+      if (!name) throw new Error("No name found");
+      return accountsAPI.CreateAccount(name);
+    });
+
+    api.patch("/accounts/:id", async (request, reply) => {
+      const id = (request.params as any).id;
+      const newName = (request.body as any).name;
+      if (!id || !newName) throw new Error("No ID or NewName found");
+      accountsAPI.RenameAccount(id, newName);
+      reply.status(200);
+    });
+
+    api.delete("/accounts/:id", async (request, reply) => {
+      const id = (request.params as any).id;
+      accountsAPI.DeleteAccount(id);
+      reply.status(200);
+    });
+
+    // Transaction
+    api.get("/accounts/:accountId/transactions", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      return accountsAPI.GetTransactions(accountId);
+    });
+
+    api.get(
+      "/accounts/:accountId/transactions/:transactionId",
+      async (request, reply) => {
+        const accountId = (request.params as any).accountId;
+        const transactionId = (request.params as any).transactionId;
+        return accountsAPI.GetTransaction(accountId, transactionId);
+      },
     );
-    reply.type("application/zip").send(buffer);
-  } else {
-    reply.status(404);
-  }
-});
 
-fastify.post("/accounts/:id/import", async (request, reply) => {
-  const data = await request.file();
-  if (!data) return;
-  const force = (request.query as any).force === "true";
+    api.post("/accounts/:accountId/transactions", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      const name = (request.body as any).name;
+      const description = (request.body as any).description;
+      const amount = (request.body as any).amount;
+      const date = (request.body as any).date;
+      const tag = (request.body as any).tag;
+      const file = (request.body as any).file;
 
-  const bufferPromise = new Promise((resolve, reject) => {
-    const chunks: Buffer[] = [];
-    data.file.on("data", (chunk) => {
-      chunks.push(chunk);
+      if (!accountId || !name || !amount || !date || !tag)
+        throw new Error("Required field not found");
+      if (file && (!file.id || !file.name)) throw new Error("File not found");
+      return accountsAPI.AddTransaction(
+        accountId,
+        name,
+        description,
+        amount,
+        date,
+        tag,
+        file,
+      );
     });
 
-    data.file.on("end", () => {
-      const buffer = Buffer.concat(chunks);
-      resolve(buffer);
+    api.patch(
+      "/accounts/:accountId/transactions/:transactionId",
+      async (request, reply) => {
+        const accountId = (request.params as any).accountId;
+        const transactionId = (request.params as any).transactionId;
+        accountsAPI.PatchTransaction(
+          accountId,
+          transactionId,
+          request.body as any,
+        );
+        reply.status(200);
+      },
+    );
+
+    api.delete(
+      "/accounts/:accountId/transactions/:transactionId",
+      async (request, reply) => {
+        const accountId = (request.params as any).accountId;
+        const transactionId = (request.params as any).transactionId;
+        accountsAPI.DeleteTransaction(accountId, transactionId);
+        reply.status(200);
+      },
+    );
+
+    // Files
+    api.get("/files/:file", async (request, reply) => {
+      let file = (request.params as any).file;
+      file = file.replace(/[\\/]/g, "");
+      let fullPath = path.join(__dirname, "../", filesPath, file);
+
+      if (!file || !existsSync(fullPath)) {
+        return reply.code(404).send("File not found");
+      }
+
+      const fileContent = readFileSync(fullPath);
+
+      // Use mimeTypes.lookup to determine the content type
+      const mimeType = mimeTypes.lookup(file);
+
+      if (mimeType) {
+        reply.type(mimeType).send(fileContent);
+      } else {
+        reply.type("application/octet-stream").send(fileContent);
+      }
     });
 
-    data.file.on("error", (err) => {
-      reject(err);
+    // Monthly
+    api.patch("/accounts/:accountId/monthly", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      const newMonthly = (request.body as any).monthly;
+      if (!accountId || !newMonthly || typeof newMonthly !== "number")
+        throw new Error("Invalid newMonthly");
+      accountsAPI.SetMonthly(accountId, newMonthly);
+      reply.status(200);
     });
-  });
 
-  const buffer = (await bufferPromise) as Buffer;
+    // Charts
+    api.get("/accounts/:accountId/charts", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      const account = accountsAPI.GetAccount(accountId);
+      if (!account) return reply.status(400);
+      return account.charts;
+    });
 
-  const importResult = await accountsAPI.ImportAccount(buffer, force);
+    api.get("/accounts/:accountId/charts/:chartId", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      const chartId = (request.params as any).chartId;
+      const account = accountsAPI.GetAccount(accountId);
+      if (!account) return reply.status(400);
+      const chart = account.charts.find((c) => c.id === chartId);
+      if (!chart) return reply.status(404);
+      return chart;
+    });
 
-  if (typeof importResult == "string") {
-    reply.code(200).send(importResult);
-  } else if (importResult == 1) {
-    reply.code(400).send("Invalid zip file");
-  } else if (importResult == 2) {
-    reply.status(403);
-  } else if (importResult == 3) {
-    reply.code(400).send("Missing files");
-  }
-});
+    api.post("/accounts/:accountId/charts", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      const title = (request.body as any).title;
+      const filters = (request.body as any).filters;
+      const type = (request.body as any).type;
+      const options = (request.body as any).options;
+      const account = accountsAPI.GetAccount(accountId);
+      if (!account || !title || filters === null || !type)
+        return reply.status(400);
+      return accountsAPI.CreateChart(accountId, title, filters, type, options);
+    });
 
-fastify.post("/accounts", async (request, reply) => {
-  const name = (request.body as any).name;
-  if (!name) throw new Error("No name found");
-  return accountsAPI.CreateAccount(name);
-});
+    api.delete(
+      "/accounts/:accountId/charts/:chartId",
+      async (request, reply) => {
+        const accountId = (request.params as any).accountId;
+        const chartId = (request.params as any).chartId;
+        const account = accountsAPI.GetAccount(accountId);
+        if (!account) return reply.status(400);
+        accountsAPI.DeleteChart(accountId, chartId);
+        return reply.status(200);
+      },
+    );
 
-fastify.patch("/accounts/:id", async (request, reply) => {
-  const id = (request.params as any).id;
-  const newName = (request.body as any).name;
-  if (!id || !newName) throw new Error("No ID or NewName found");
-  accountsAPI.RenameAccount(id, newName);
-  reply.status(200);
-});
+    // Tags
+    api.get("/accounts/:accountId/tags", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      if (!accountId) throw new Error("Invalid Account ID");
+      const account = accountsAPI.GetAccount(accountId);
+      if (!account) return reply.status(400);
+      return account.tags;
+    });
 
-fastify.delete("/accounts/:id", async (request, reply) => {
-  const id = (request.params as any).id;
-  accountsAPI.DeleteAccount(id);
-  reply.status(200);
-});
+    api.post("/accounts/:accountId/tags", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      const tagName = (request.body as any)?.tagName;
+      const tagColor = (request.body as any)?.tagColor;
+      if (!accountId) throw new Error("Invalid Account ID");
+      const account = accountsAPI.GetAccount(accountId);
+      if (!account) return reply.status(400);
+      return accountsAPI.CreateTag(accountId, tagName, tagColor);
+    });
 
-// Transaction
-fastify.get("/accounts/:accountId/transactions", async (request, reply) => {
-  const accountId = (request.params as any).accountId;
-  return accountsAPI.GetTransactions(accountId);
-});
+    api.patch("/accounts/:accountId/tags/:tagId", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      const tagId = (request.params as any).tagId;
+      const tagName = (request.body as any)?.tagName;
+      const tagColor = (request.body as any)?.tagColor;
+      if (!accountId || !tagId) throw new Error("Invalid Props");
+      const account = accountsAPI.GetAccount(accountId);
+      if (!account) return reply.status(400);
+      const isValid = accountsAPI.UpdateTag(
+        accountId,
+        tagId,
+        tagName,
+        tagColor,
+      );
+      if (isValid) reply.status(200);
+      else reply.status(400);
+    });
 
-fastify.get(
-  "/accounts/:accountId/transactions/:transactionId",
-  async (request, reply) => {
-    const accountId = (request.params as any).accountId;
-    const transactionId = (request.params as any).transactionId;
-    return accountsAPI.GetTransaction(accountId, transactionId);
+    api.delete("/accounts/:accountId/tags/:tagId", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      const tagId = (request.params as any).tagId;
+      if (!accountId || !tagId) throw new Error("Invalid Propos");
+      const account = accountsAPI.GetAccount(accountId);
+      if (!account) return reply.status(400);
+      accountsAPI.DeleteTag(accountId, tagId);
+      reply.status(200);
+    });
+
+    // Settigns
+    api.get("/accounts/:accountId/settings", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      const account = accountsAPI.GetAccount(accountId);
+      if (!account) return reply.status(400);
+      return account.settings;
+    });
+
+    api.get(
+      "/accounts/:accountId/settings/:setting",
+      async (request, reply) => {
+        const accountId = (request.params as any).accountId;
+        const settingName = (request.params as any).setting;
+        const account = accountsAPI.GetAccount(accountId);
+        if (!account) return reply.status(400);
+        const setting = account.settings.find((s) => s.name === settingName);
+        if (!setting) return reply.status(400);
+        return setting;
+      },
+    );
+
+    api.post("/accounts/:accountId/settings", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      const newSetting = request.body as any;
+      if (!accountId || !newSetting || !newSetting.name || !newSetting.value)
+        throw new Error("Invalid Setting");
+      accountsAPI.SetSetting(accountId, newSetting);
+      reply.status(200);
+    });
+
+    api.post("/files/upload", async (request, reply) => {
+      const data = await request.file();
+      if (!data) return;
+      const newName = randomUUID();
+      await pump(
+        data.file,
+        createWriteStream(
+          path.join(filesPath, newName + "." + data.filename.split(".").pop()),
+        ),
+      );
+      return newName;
+    });
   },
+  { prefix: "/api" },
 );
-
-fastify.post("/accounts/:accountId/transactions", async (request, reply) => {
-  const accountId = (request.params as any).accountId;
-  const name = (request.body as any).name;
-  const description = (request.body as any).description;
-  const amount = (request.body as any).amount;
-  const date = (request.body as any).date;
-  const tag = (request.body as any).tag;
-  const file = (request.body as any).file;
-
-  if (!accountId || !name || !amount || !date || !tag)
-    throw new Error("Required field not found");
-  if (file && (!file.id || !file.name)) throw new Error("File not found");
-  return accountsAPI.AddTransaction(
-    accountId,
-    name,
-    description,
-    amount,
-    date,
-    tag,
-    file,
-  );
-});
-
-fastify.patch(
-  "/accounts/:accountId/transactions/:transactionId",
-  async (request, reply) => {
-    const accountId = (request.params as any).accountId;
-    const transactionId = (request.params as any).transactionId;
-    accountsAPI.PatchTransaction(accountId, transactionId, request.body as any);
-    reply.status(200);
-  },
-);
-
-fastify.delete(
-  "/accounts/:accountId/transactions/:transactionId",
-  async (request, reply) => {
-    const accountId = (request.params as any).accountId;
-    const transactionId = (request.params as any).transactionId;
-    accountsAPI.DeleteTransaction(accountId, transactionId);
-    reply.status(200);
-  },
-);
-
-// Files
-fastify.get("/files/:file", async (request, reply) => {
-  let file = (request.params as any).file;
-  file = file.replace(/[\\/]/g, "");
-  let fullPath = path.join(__dirname, "../", filesPath, file);
-
-  if (!file || !existsSync(fullPath)) {
-    return reply.code(404).send("File not found");
-  }
-
-  const fileContent = readFileSync(fullPath);
-
-  // Use mimeTypes.lookup to determine the content type
-  const mimeType = mimeTypes.lookup(file);
-
-  if (mimeType) {
-    reply.type(mimeType).send(fileContent);
-  } else {
-    reply.type("application/octet-stream").send(fileContent);
-  }
-});
-
-// Monthly
-fastify.patch("/accounts/:accountId/monthly", async (request, reply) => {
-  const accountId = (request.params as any).accountId;
-  const newMonthly = (request.body as any).monthly;
-  if (!accountId || !newMonthly || typeof newMonthly !== "number")
-    throw new Error("Invalid newMonthly");
-  accountsAPI.SetMonthly(accountId, newMonthly);
-  reply.status(200);
-});
-
-// Charts
-fastify.get("/accounts/:accountId/charts", async (request, reply) => {
-  const accountId = (request.params as any).accountId;
-  const account = accountsAPI.GetAccount(accountId);
-  if (!account) return reply.status(400);
-  return account.charts;
-});
-
-fastify.get("/accounts/:accountId/charts/:chartId", async (request, reply) => {
-  const accountId = (request.params as any).accountId;
-  const chartId = (request.params as any).chartId;
-  const account = accountsAPI.GetAccount(accountId);
-  if (!account) return reply.status(400);
-  const chart = account.charts.find((c) => c.id === chartId);
-  if (!chart) return reply.status(404);
-  return chart;
-});
-
-fastify.post("/accounts/:accountId/charts", async (request, reply) => {
-  const accountId = (request.params as any).accountId;
-  const title = (request.body as any).title;
-  const filters = (request.body as any).filters;
-  const type = (request.body as any).type;
-  const options = (request.body as any).options;
-  const account = accountsAPI.GetAccount(accountId);
-  if (!account || !title || filters === null || !type) return reply.status(400);
-  return accountsAPI.CreateChart(accountId, title, filters, type, options);
-});
-
-fastify.delete(
-  "/accounts/:accountId/charts/:chartId",
-  async (request, reply) => {
-    const accountId = (request.params as any).accountId;
-    const chartId = (request.params as any).chartId;
-    const account = accountsAPI.GetAccount(accountId);
-    if (!account) return reply.status(400);
-    accountsAPI.DeleteChart(accountId, chartId);
-    return reply.status(200);
-  },
-);
-
-// Tags
-fastify.get("/accounts/:accountId/tags", async (request, reply) => {
-  const accountId = (request.params as any).accountId;
-  if (!accountId) throw new Error("Invalid Account ID");
-  const account = accountsAPI.GetAccount(accountId);
-  if (!account) return reply.status(400);
-  return account.tags;
-});
-
-fastify.post("/accounts/:accountId/tags", async (request, reply) => {
-  const accountId = (request.params as any).accountId;
-  const tagName = (request.body as any)?.tagName;
-  const tagColor = (request.body as any)?.tagColor;
-  if (!accountId) throw new Error("Invalid Account ID");
-  const account = accountsAPI.GetAccount(accountId);
-  if (!account) return reply.status(400);
-  return accountsAPI.CreateTag(accountId, tagName, tagColor);
-});
-
-fastify.patch("/accounts/:accountId/tags/:tagId", async (request, reply) => {
-  const accountId = (request.params as any).accountId;
-  const tagId = (request.params as any).tagId;
-  const tagName = (request.body as any)?.tagName;
-  const tagColor = (request.body as any)?.tagColor;
-  if (!accountId || !tagId) throw new Error("Invalid Props");
-  const account = accountsAPI.GetAccount(accountId);
-  if (!account) return reply.status(400);
-  const isValid = accountsAPI.UpdateTag(accountId, tagId, tagName, tagColor);
-  if (isValid) reply.status(200);
-  else reply.status(400);
-});
-
-fastify.delete("/accounts/:accountId/tags/:tagId", async (request, reply) => {
-  const accountId = (request.params as any).accountId;
-  const tagId = (request.params as any).tagId;
-  if (!accountId || !tagId) throw new Error("Invalid Propos");
-  const account = accountsAPI.GetAccount(accountId);
-  if (!account) return reply.status(400);
-  accountsAPI.DeleteTag(accountId, tagId);
-  reply.status(200);
-});
-
-// Settigns
-fastify.get("/accounts/:accountId/settings", async (request, reply) => {
-  const accountId = (request.params as any).accountId;
-  const account = accountsAPI.GetAccount(accountId);
-  if (!account) return reply.status(400);
-  return account.settings;
-});
-
-fastify.get(
-  "/accounts/:accountId/settings/:setting",
-  async (request, reply) => {
-    const accountId = (request.params as any).accountId;
-    const settingName = (request.params as any).setting;
-    const account = accountsAPI.GetAccount(accountId);
-    if (!account) return reply.status(400);
-    const setting = account.settings.find((s) => s.name === settingName);
-    if (!setting) return reply.status(400);
-    return setting;
-  },
-);
-
-fastify.post("/accounts/:accountId/settings", async (request, reply) => {
-  const accountId = (request.params as any).accountId;
-  const newSetting = request.body as any;
-  if (!accountId || !newSetting || !newSetting.name || !newSetting.value)
-    throw new Error("Invalid Setting");
-  accountsAPI.SetSetting(accountId, newSetting);
-  reply.status(200);
-});
-
-fastify.post("/files/upload", async (request, reply) => {
-  const data = await request.file();
-  if (!data) return;
-  const newName = randomUUID();
-  await pump(
-    data.file,
-    createWriteStream(
-      path.join(filesPath, newName + "." + data.filename.split(".").pop()),
-    ),
-  );
-  return newName;
-});
-
 const hostArg = process.argv.find((arg) => arg.startsWith("--host="));
 
 fastify.listen(
   { port, host: hostArg != null ? hostArg.split("=")[1] : "localhost" },
   function (err, address) {
-    authAPI.SetOrigin(`http://localhost:5173`);
     if (err) {
       fastify.log.error(err);
       process.exit(1);
     }
-    console.log(`Finance Tracker API listening on ${address}`);
+    console.log(`Finance Tracker listening on ${address}`);
     new Cmd(accountsAPI);
   },
 );

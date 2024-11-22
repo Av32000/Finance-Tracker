@@ -18,7 +18,7 @@ type AppState = {
   refreshAccountsCallback: (callback?: () => void) => void;
 };
 
-const apiURL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+const apiURL = import.meta.env.VITE_API_URL || "/api";
 let authToken: string;
 let refreshAccountsCallback: () => void;
 
