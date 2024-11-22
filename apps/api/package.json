@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node ../../dist/api/index.js",
     "build": "tsc && cp -r node_modules/ ../../dist/api/node_modules && ./fix-esm-ext.sh && cp KeysGenerator.cjs ../../dist/api/",
-    "generate-keys": "node KeysGenerator.cjs",
+    "generate-keys": "node ../../dist/api/KeysGenerator.cjs",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
