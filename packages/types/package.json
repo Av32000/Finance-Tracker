@@ -1,12 +1,13 @@
 {
   "name": "@finance-tracker/types",
   "version": "1.0.0",
+  "types": "./dist/types/index.d.ts",
   "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc"
   },
   "dependencies": {
+    "@types/node": "^22.9.1",
     "typescript": "^5.6.3",
     "zod": "^3.23.8"
   }

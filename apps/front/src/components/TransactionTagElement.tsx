@@ -1,4 +1,4 @@
-import { TransactionTag } from "@ft-types/account";
+import { TransactionTag } from "@finance-tracker/types";
 
 const TransactionTagElement = ({
   tagId,

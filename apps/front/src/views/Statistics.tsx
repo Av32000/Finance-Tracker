@@ -1,4 +1,4 @@
-import { FTChart } from "@ft-types/account";
+import { FTChart } from "@finance-tracker/types";
 import { useEffect, useState } from "react";
 import { useBearStore } from "../GlobalState";
 import AccountManagerCard from "../components/AccountManagerCard";

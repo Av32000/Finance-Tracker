@@ -1,13 +1,13 @@
 import { writeFileSync } from "fs";
 import { join } from "path";
-import { AccountsAPI } from "./AccountsAPI";
+import AccountsAPI from "./AccountsAPI";
 
 const readline = require("readline").createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-export class Cmd {
+export default class Cmd {
   accountsAPI: AccountsAPI;
   constructor(accountsAPI: AccountsAPI) {
     this.accountsAPI = accountsAPI;
@@ -57,7 +57,7 @@ export class Cmd {
                   path = join(path, accountData.name + ".zip");
                 writeFileSync(
                   path,
-                  await this.accountsAPI.ExportAccount(accountId),
+                  (await this.accountsAPI.ExportAccount(accountId)) as Buffer,
                 );
                 console.log("Account exported in " + path);
               } catch (error) {
@@ -66,7 +66,7 @@ export class Cmd {
             } else {
               writeFileSync(
                 join(__dirname, accountData.name + ".zip"),
-                await this.accountsAPI.ExportAccount(accountId),
+                (await this.accountsAPI.ExportAccount(accountId)) as Buffer,
               );
               console.log(
                 "Account exported in " +

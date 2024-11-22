@@ -1,4 +1,4 @@
-import { FetchServerType } from "@ft-types/account";
+import { FetchServerType } from "@finance-tracker/types";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { useBearStore } from "../GlobalState";

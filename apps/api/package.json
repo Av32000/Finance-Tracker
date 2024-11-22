@@ -3,9 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "typecheck": "sc --noEmit"
+    "start": "pnpm build && node dist/index.js",
+    "build": "tsc",
+    "generate-keys": "node KeysGenerator.js",
+    "typecheck": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
@@ -18,13 +21,15 @@
     "@finance-tracker/types": "link:../../packages/types",
     "@prisma/client": "5.13.0",
     "@simplewebauthn/server": "^8.3.7",
+    "@types/mime-types": "^2.1.4",
     "@types/node": "^22.9.1",
     "@types/qrcode": "^1.5.5",
     "@types/speakeasy": "^2.0.10",
-    "fastify": "^4.28.1",
+    "fastify": "^5.1.0",
     "jszip": "^3.10.1",
     "mime-types": "^2.1.35",
     "speakeasy": "^2.0.0",
+    "types": "link:packages/types",
     "typescript": "^5.6.3"
   },
   "devDependencies": {

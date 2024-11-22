@@ -1,4 +1,4 @@
-import { DistributionChartType } from "@ft-types/account";
+import { DistributionChartType } from "@finance-tracker/types";
 import {
   ArcElement,
   Chart as ChartJS,

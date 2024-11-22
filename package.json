@@ -7,11 +7,11 @@
     "start:react": "pnpm --filter @finance-tracker/front dev",
     "start:server": "pnpm --filter @finance-tracker/api start",
     "generate-keys": "pnpm --filter @finance-tracker/api generate-keys",
-    "build": "pnpm -r build",
+    "build": "pnpm --filter @finance-tracker/types build && pnpm -r build",
     "prisma:pull": "prisma db pull && prisma generate",
     "prisma:push": "prisma migrate dev && prisma generate",
     "lint": "pnpm --filter @finance-tracker/front lint",
-    "preview": "pnpm --filter @finance-tracker/api preview",
+    "preview": "pnpm --filter @finance-tracker/front preview",
     "typecheck": "pnpm -r exec tsc --noEmit",
     "typecheck:front": "pnpm --filter @finance-tracker/front typecheck",
     "typecheck:server": "pnpm --filter @finance-tracker/api typecheck"

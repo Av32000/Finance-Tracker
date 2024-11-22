@@ -1,34 +1,38 @@
-const fastify = require("fastify")({
+import cors from "@fastify/cors";
+import { FastifyJwtNamespace } from "@fastify/jwt";
+import multipart from "@fastify/multipart";
+import {
+  generateAuthenticationOptions,
+  GenerateAuthenticationOptionsOpts,
+  generateRegistrationOptions,
+  GenerateRegistrationOptionsOpts,
+  verifyAuthenticationResponse,
+  VerifyAuthenticationResponseOpts,
+  verifyRegistrationResponse,
+  VerifyRegistrationResponseOpts,
+} from "@simplewebauthn/server";
+import { isoBase64URL, isoUint8Array } from "@simplewebauthn/server/helpers";
+import { randomUUID } from "crypto";
+import Fastify from "fastify";
+import { createWriteStream, existsSync, mkdirSync, readFileSync } from "fs";
+import mimeTypes from "mime-types";
+import path from "path";
+import { pipeline } from "stream";
+import util from "util";
+import AccountsAPI from "./AccountsAPI";
+import AuthAPI from "./AuthAPI";
+import Cmd from "./cmd";
+
+declare module "fastify" {
+  interface FastifyInstance
+    extends FastifyJwtNamespace<{ namespace: "security" }> {}
+}
+
+const fastify = Fastify({
   logger: {
     level: "error",
   },
 });
-const cors = require("@fastify/cors");
-const multipart = require("@fastify/multipart");
-const util = require("util");
-const path = require("path");
-const AccountsAPI = require("./AccountsAPI");
-const {
-  existsSync,
-  createWriteStream,
-  mkdirSync,
-  readFileSync,
-  writeFileSync,
-} = require("fs");
-const { pipeline } = require("stream");
-const { randomUUID } = require("crypto");
-const fastifyJWT = require("@fastify/jwt");
-const {
-  generateAuthenticationOptions,
-  generateRegistrationOptions,
-  verifyAuthenticationResponse,
-  verifyRegistrationResponse,
-} = require("@simplewebauthn/server");
-const {
-  isoBase64URL,
-  isoUint8Array,
-} = require("@simplewebauthn/server/helpers");
-const AuthAPI = require("./AuthAPI");
 
 const insecure = process.argv.includes("--insecure");
 if (insecure) {
@@ -75,7 +79,7 @@ if (
     "utf-8",
   );
 
-  fastify.register(fastifyJWT, {
+  fastify.register(require("@fastify/jwt"), {
     secret: {
       private: privateKey,
       public: publicKey,
@@ -91,7 +95,7 @@ if (
   });
 } else {
   console.error("\x1b[33m%s\x1b[0m", "No RSA keys found => Insecure server");
-  fastify.register(fastifyJWT, {
+  fastify.register(require("@fastify/jwt"), {
     secret: randomUUID(),
     expiresIn: "7d",
   });
@@ -108,7 +112,7 @@ const unauthenticatedRoutes = [
 fastify.addHook("onRequest", async (request, reply) => {
   try {
     if (
-      !unauthenticatedRoutes.includes(request.raw.url) &&
+      !unauthenticatedRoutes.includes(request.raw.url as string) &&
       !insecure &&
       authAPI.data.devices.length > 0
     ) {
@@ -151,7 +155,7 @@ fastify.get("/generate-new-key-options", async (request, reply) => {
     attestationType: "none",
     excludeCredentials: devices.map((dev) => ({
       id: dev.credentialID,
-      type: "public-key",
+      type: "public-key" as "public-key",
       transports: dev.transports,
     })),
     authenticatorSelection: {
@@ -160,7 +164,7 @@ fastify.get("/generate-new-key-options", async (request, reply) => {
       authenticatorAttachment: "cross-platform",
     },
     supportedAlgorithmIDs: [-7, -257],
-  };
+  } as GenerateRegistrationOptionsOpts;
 
   const options = await generateRegistrationOptions(opts);
   authAPI.SetChallenge(options.challenge);
@@ -169,10 +173,10 @@ fastify.get("/generate-new-key-options", async (request, reply) => {
 });
 
 fastify.post("/verify-new-key-registration", async (request, reply) => {
-  const body = request.body;
+  const body = request.body as any;
   const user = authAPI.GetUser();
   const expectedChallenge = authAPI.GetChallenge();
-
+  let verification;
   try {
     const opts = {
       response: body,
@@ -180,11 +184,11 @@ fastify.post("/verify-new-key-registration", async (request, reply) => {
       expectedOrigin: authAPI.GetOrigin(),
       expectedRPID: authAPI.rpID,
       requireUserVerification: true,
-    };
+    } as VerifyRegistrationResponseOpts;
     verification = await verifyRegistrationResponse(opts);
   } catch (error) {
     console.error(error);
-    return reply.status(400).send({ error: error.message });
+    return reply.status(400).send({ error: (error as Error).message });
   }
 
   const { verified, registrationInfo } = verification;
@@ -235,7 +239,7 @@ fastify.get("/generate-registration-options", async (request, reply) => {
         authenticatorAttachment: "platform",
       },
       supportedAlgorithmIDs: [-7, -257],
-    };
+    } as GenerateRegistrationOptionsOpts;
 
     const options = await generateRegistrationOptions(opts);
     authAPI.SetChallenge(options.challenge);
@@ -248,10 +252,10 @@ fastify.get("/generate-registration-options", async (request, reply) => {
 
 fastify.post("/verify-registration", async (request, reply) => {
   if (!authAPI.PasskeyExist()) {
-    const body = request.body;
+    const body = request.body as any;
     const user = authAPI.GetUser();
     const expectedChallenge = authAPI.GetChallenge();
-
+    let verification;
     try {
       const opts = {
         response: body,
@@ -259,11 +263,11 @@ fastify.post("/verify-registration", async (request, reply) => {
         expectedOrigin: authAPI.GetOrigin(),
         expectedRPID: authAPI.rpID,
         requireUserVerification: true,
-      };
+      } as VerifyRegistrationResponseOpts;
       verification = await verifyRegistrationResponse(opts);
     } catch (error) {
       console.error(error);
-      return reply.status(400).send({ error: error.message });
+      return reply.status(400).send({ error: (error as Error).message });
     }
 
     const { verified, registrationInfo } = verification;
@@ -307,7 +311,7 @@ fastify.get("/generate-authentication-options", async (request, reply) => {
     })),
     userVerification: "required",
     rpID: authAPI.rpID,
-  };
+  } as GenerateAuthenticationOptionsOpts;
 
   const options = await generateAuthenticationOptions(opts);
 
@@ -317,7 +321,7 @@ fastify.get("/generate-authentication-options", async (request, reply) => {
 });
 
 fastify.post("/verify-authentication", async (request, reply) => {
-  const body = request.body;
+  const body = request.body as any;
   const user = authAPI.GetUser();
   const expectedChallenge = authAPI.GetChallenge();
 
@@ -345,11 +349,11 @@ fastify.post("/verify-authentication", async (request, reply) => {
       expectedRPID: authAPI.rpID,
       authenticator: dbAuthenticator,
       requireUserVerification: true,
-    };
+    } as VerifyAuthenticationResponseOpts;
     verification = await verifyAuthenticationResponse(opts);
   } catch (error) {
     console.error(error);
-    return reply.code(400).send({ error: error.message });
+    return reply.code(400).send({ error: (error as Error).message });
   }
 
   const { verified, authenticationInfo } = verification;
@@ -359,7 +363,7 @@ fastify.post("/verify-authentication", async (request, reply) => {
     const token = fastify.jwt.sign({});
     authAPI.SetChallenge(null);
     authAPI.SaveData();
-    authenticationInfo.token = token;
+    (authenticationInfo as any).token = token;
     reply.send({ authenticationInfo });
   } else {
     reply.status(401);
@@ -373,7 +377,7 @@ fastify.post("/verify-otp", async (req, res) => {
     res.status(403).send("Timeout");
     return;
   }
-  const token = req.body?.token;
+  const token = (req.body as any)?.token;
 
   if (!token) {
     res.status(400);
@@ -401,17 +405,17 @@ fastify.get("/accounts", async () => {
 });
 
 fastify.get("/accounts/:id", async (request, reply) => {
-  return accountsAPI.GetAccount(request.params.id);
+  return accountsAPI.GetAccount((request.params as any).id);
 });
 
 fastify.get("/accounts/:id/export", async (request, reply) => {
-  const buffer = await accountsAPI.ExportAccount(request.params.id);
+  const buffer = await accountsAPI.ExportAccount((request.params as any).id);
   if (buffer != null) {
     reply.header(
       "Content-Disposition",
       `attachment; filename=${accountsAPI
-        .GetAccount(request.params.id)
-        .name.replace(/[^a-zA-Z0-9-_.]/g, "")}.zip`,
+        .GetAccount((request.params as any).id)
+        ?.name.replace(/[^a-zA-Z0-9-_.]/g, "")}.zip`,
     );
     reply.type("application/zip").send(buffer);
   } else {
@@ -421,10 +425,11 @@ fastify.get("/accounts/:id/export", async (request, reply) => {
 
 fastify.post("/accounts/:id/import", async (request, reply) => {
   const data = await request.file();
-  const force = request.query.force === "true";
+  if (!data) return;
+  const force = (request.query as any).force === "true";
 
   const bufferPromise = new Promise((resolve, reject) => {
-    const chunks = [];
+    const chunks: Buffer[] = [];
     data.file.on("data", (chunk) => {
       chunks.push(chunk);
     });
@@ -439,7 +444,7 @@ fastify.post("/accounts/:id/import", async (request, reply) => {
     });
   });
 
-  const buffer = await bufferPromise;
+  const buffer = (await bufferPromise) as Buffer;
 
   const importResult = await accountsAPI.ImportAccount(buffer, force);
 
@@ -455,48 +460,48 @@ fastify.post("/accounts/:id/import", async (request, reply) => {
 });
 
 fastify.post("/accounts", async (request, reply) => {
-  const name = request.body.name;
+  const name = (request.body as any).name;
   if (!name) throw new Error("No name found");
   return accountsAPI.CreateAccount(name);
 });
 
 fastify.patch("/accounts/:id", async (request, reply) => {
-  const id = request.params.id;
-  const newName = request.body.name;
+  const id = (request.params as any).id;
+  const newName = (request.body as any).name;
   if (!id || !newName) throw new Error("No ID or NewName found");
   accountsAPI.RenameAccount(id, newName);
   reply.status(200);
 });
 
 fastify.delete("/accounts/:id", async (request, reply) => {
-  const id = request.params.id;
+  const id = (request.params as any).id;
   accountsAPI.DeleteAccount(id);
   reply.status(200);
 });
 
 // Transaction
 fastify.get("/accounts/:accountId/transactions", async (request, reply) => {
-  const accountId = request.params.accountId;
+  const accountId = (request.params as any).accountId;
   return accountsAPI.GetTransactions(accountId);
 });
 
 fastify.get(
   "/accounts/:accountId/transactions/:transactionId",
   async (request, reply) => {
-    const accountId = request.params.accountId;
-    const transactionId = request.params.transactionId;
+    const accountId = (request.params as any).accountId;
+    const transactionId = (request.params as any).transactionId;
     return accountsAPI.GetTransaction(accountId, transactionId);
   },
 );
 
 fastify.post("/accounts/:accountId/transactions", async (request, reply) => {
-  const accountId = request.params.accountId;
-  const name = request.body.name;
-  const description = request.body.description;
-  const amount = request.body.amount;
-  const date = request.body.date;
-  const tag = request.body.tag;
-  const file = request.body.file;
+  const accountId = (request.params as any).accountId;
+  const name = (request.body as any).name;
+  const description = (request.body as any).description;
+  const amount = (request.body as any).amount;
+  const date = (request.body as any).date;
+  const tag = (request.body as any).tag;
+  const file = (request.body as any).file;
 
   if (!accountId || !name || !amount || !date || !tag)
     throw new Error("Required field not found");
@@ -515,9 +520,9 @@ fastify.post("/accounts/:accountId/transactions", async (request, reply) => {
 fastify.patch(
   "/accounts/:accountId/transactions/:transactionId",
   async (request, reply) => {
-    const accountId = request.params.accountId;
-    const transactionId = request.params.transactionId;
-    accountsAPI.PatchTransaction(accountId, transactionId, request.body);
+    const accountId = (request.params as any).accountId;
+    const transactionId = (request.params as any).transactionId;
+    accountsAPI.PatchTransaction(accountId, transactionId, request.body as any);
     reply.status(200);
   },
 );
@@ -525,19 +530,16 @@ fastify.patch(
 fastify.delete(
   "/accounts/:accountId/transactions/:transactionId",
   async (request, reply) => {
-    const accountId = request.params.accountId;
-    const transactionId = request.params.transactionId;
+    const accountId = (request.params as any).accountId;
+    const transactionId = (request.params as any).transactionId;
     accountsAPI.DeleteTransaction(accountId, transactionId);
     reply.status(200);
   },
 );
 
 // Files
-const mimeTypes = require("mime-types");
-const Cmd = require("./cmd");
-const { time } = require("console");
 fastify.get("/files/:file", async (request, reply) => {
-  let file = request.params.file;
+  let file = (request.params as any).file;
   file = file.replace(/[\\/]/g, "");
   let fullPath = path.join(__dirname, "../", filesPath, file);
 
@@ -559,8 +561,8 @@ fastify.get("/files/:file", async (request, reply) => {
 
 // Monthly
 fastify.patch("/accounts/:accountId/monthly", async (request, reply) => {
-  const accountId = request.params.accountId;
-  const newMonthly = request.body.monthly;
+  const accountId = (request.params as any).accountId;
+  const newMonthly = (request.body as any).monthly;
   if (!accountId || !newMonthly || typeof newMonthly !== "number")
     throw new Error("Invalid newMonthly");
   accountsAPI.SetMonthly(accountId, newMonthly);
@@ -569,15 +571,15 @@ fastify.patch("/accounts/:accountId/monthly", async (request, reply) => {
 
 // Charts
 fastify.get("/accounts/:accountId/charts", async (request, reply) => {
-  const accountId = request.params.accountId;
+  const accountId = (request.params as any).accountId;
   const account = accountsAPI.GetAccount(accountId);
   if (!account) return reply.status(400);
   return account.charts;
 });
 
 fastify.get("/accounts/:accountId/charts/:chartId", async (request, reply) => {
-  const accountId = request.params.accountId;
-  const chartId = request.params.chartId;
+  const accountId = (request.params as any).accountId;
+  const chartId = (request.params as any).chartId;
   const account = accountsAPI.GetAccount(accountId);
   if (!account) return reply.status(400);
   const chart = account.charts.find((c) => c.id === chartId);
@@ -586,11 +588,11 @@ fastify.get("/accounts/:accountId/charts/:chartId", async (request, reply) => {
 });
 
 fastify.post("/accounts/:accountId/charts", async (request, reply) => {
-  const accountId = request.params.accountId;
-  const title = request.body.title;
-  const filters = request.body.filters;
-  const type = request.body.type;
-  const options = request.body.options;
+  const accountId = (request.params as any).accountId;
+  const title = (request.body as any).title;
+  const filters = (request.body as any).filters;
+  const type = (request.body as any).type;
+  const options = (request.body as any).options;
   const account = accountsAPI.GetAccount(accountId);
   if (!account || !title || filters === null || !type) return reply.status(400);
   return accountsAPI.CreateChart(accountId, title, filters, type, options);
@@ -599,8 +601,8 @@ fastify.post("/accounts/:accountId/charts", async (request, reply) => {
 fastify.delete(
   "/accounts/:accountId/charts/:chartId",
   async (request, reply) => {
-    const accountId = request.params.accountId;
-    const chartId = request.params.chartId;
+    const accountId = (request.params as any).accountId;
+    const chartId = (request.params as any).chartId;
     const account = accountsAPI.GetAccount(accountId);
     if (!account) return reply.status(400);
     accountsAPI.DeleteChart(accountId, chartId);
@@ -610,7 +612,7 @@ fastify.delete(
 
 // Tags
 fastify.get("/accounts/:accountId/tags", async (request, reply) => {
-  const accountId = request.params.accountId;
+  const accountId = (request.params as any).accountId;
   if (!accountId) throw new Error("Invalid Account ID");
   const account = accountsAPI.GetAccount(accountId);
   if (!account) return reply.status(400);
@@ -618,9 +620,9 @@ fastify.get("/accounts/:accountId/tags", async (request, reply) => {
 });
 
 fastify.post("/accounts/:accountId/tags", async (request, reply) => {
-  const accountId = request.params.accountId;
-  const tagName = request.body?.tagName;
-  const tagColor = request.body?.tagColor;
+  const accountId = (request.params as any).accountId;
+  const tagName = (request.body as any)?.tagName;
+  const tagColor = (request.body as any)?.tagColor;
   if (!accountId) throw new Error("Invalid Account ID");
   const account = accountsAPI.GetAccount(accountId);
   if (!account) return reply.status(400);
@@ -628,10 +630,10 @@ fastify.post("/accounts/:accountId/tags", async (request, reply) => {
 });
 
 fastify.patch("/accounts/:accountId/tags/:tagId", async (request, reply) => {
-  const accountId = request.params.accountId;
-  const tagId = request.params.tagId;
-  const tagName = request.body?.tagName;
-  const tagColor = request.body?.tagColor;
+  const accountId = (request.params as any).accountId;
+  const tagId = (request.params as any).tagId;
+  const tagName = (request.body as any)?.tagName;
+  const tagColor = (request.body as any)?.tagColor;
   if (!accountId || !tagId) throw new Error("Invalid Props");
   const account = accountsAPI.GetAccount(accountId);
   if (!account) return reply.status(400);
@@ -641,8 +643,8 @@ fastify.patch("/accounts/:accountId/tags/:tagId", async (request, reply) => {
 });
 
 fastify.delete("/accounts/:accountId/tags/:tagId", async (request, reply) => {
-  const accountId = request.params.accountId;
-  const tagId = request.params.tagId;
+  const accountId = (request.params as any).accountId;
+  const tagId = (request.params as any).tagId;
   if (!accountId || !tagId) throw new Error("Invalid Propos");
   const account = accountsAPI.GetAccount(accountId);
   if (!account) return reply.status(400);
@@ -652,7 +654,7 @@ fastify.delete("/accounts/:accountId/tags/:tagId", async (request, reply) => {
 
 // Settigns
 fastify.get("/accounts/:accountId/settings", async (request, reply) => {
-  const accountId = request.params.accountId;
+  const accountId = (request.params as any).accountId;
   const account = accountsAPI.GetAccount(accountId);
   if (!account) return reply.status(400);
   return account.settings;
@@ -661,8 +663,8 @@ fastify.get("/accounts/:accountId/settings", async (request, reply) => {
 fastify.get(
   "/accounts/:accountId/settings/:setting",
   async (request, reply) => {
-    const accountId = request.params.accountId;
-    const settingName = request.params.setting;
+    const accountId = (request.params as any).accountId;
+    const settingName = (request.params as any).setting;
     const account = accountsAPI.GetAccount(accountId);
     if (!account) return reply.status(400);
     const setting = account.settings.find((s) => s.name === settingName);
@@ -672,8 +674,8 @@ fastify.get(
 );
 
 fastify.post("/accounts/:accountId/settings", async (request, reply) => {
-  const accountId = request.params.accountId;
-  const newSetting = request.body;
+  const accountId = (request.params as any).accountId;
+  const newSetting = request.body as any;
   if (!accountId || !newSetting || !newSetting.name || !newSetting.value)
     throw new Error("Invalid Setting");
   accountsAPI.SetSetting(accountId, newSetting);
@@ -682,6 +684,7 @@ fastify.post("/accounts/:accountId/settings", async (request, reply) => {
 
 fastify.post("/files/upload", async (request, reply) => {
   const data = await request.file();
+  if (!data) return;
   const newName = randomUUID();
   await pump(
     data.file,

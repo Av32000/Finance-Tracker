@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ChartType, Filter } from "./DataBuilder.d";
+import { ChartType, Filter } from "./DataBuilder";
 
 const SettingSchema = z.object({
   name: z.string(),

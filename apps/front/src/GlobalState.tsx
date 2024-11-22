@@ -1,5 +1,8 @@
-import { Account, FetchServerType } from "@ft-types/account";
-import { AccountSchema } from "@ft-types/Schemas";
+import {
+  Account,
+  AccountSchema,
+  FetchServerType,
+} from "@finance-tracker/types";
 import { create } from "zustand";
 type AppState = {
   account: Account | null;

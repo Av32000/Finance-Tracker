@@ -1,4 +1,4 @@
-import { ChartFrequency } from "@ft-types/account";
+import { ChartFrequency } from "@finance-tracker/types";
 import {
   CategoryScale,
   Chart as ChartJS,

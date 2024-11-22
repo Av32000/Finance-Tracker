@@ -1,5 +1,4 @@
-import { Filter } from "@ft-types/DataBuilder.d";
-import { Account } from "@ft-types/account";
+import { Account, Filter } from "@finance-tracker/types";
 
 const FormatDate = (date: number) => {
   return new Date(date).toLocaleDateString(undefined, {

@@ -2,7 +2,7 @@ import {
   ChartFrequency,
   DistributionChartType,
   FTChart,
-} from "@ft-types/account";
+} from "@finance-tracker/types";
 import { useEffect, useState } from "react";
 import { ChartProps } from "../../ChartProps";
 import { useBearStore } from "../../GlobalState";

@@ -1,4 +1,4 @@
-import { FetchServerType } from "@ft-types/account";
+import { FetchServerType } from "@finance-tracker/types";
 import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 import { useBearStore } from "../GlobalState";

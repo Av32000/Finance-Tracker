@@ -1,4 +1,4 @@
-import { ChartFrequency, DistributionChartType } from "@ft-types/account";
+import { ChartFrequency, DistributionChartType } from "@finance-tracker/types";
 
 type ChartProps = {
   EvolutionChart: {

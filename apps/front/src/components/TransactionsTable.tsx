@@ -1,4 +1,4 @@
-import { Account, Transaction } from "@ft-types/account";
+import { Account, Transaction } from "@finance-tracker/types";
 import { useState } from "react";
 import { useBearStore } from "../GlobalState";
 import { FormatDate } from "../Utils";

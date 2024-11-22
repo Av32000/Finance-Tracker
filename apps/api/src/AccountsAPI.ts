@@ -1,6 +1,11 @@
-import { Account, Setting, Transaction } from "@ft-types/account";
-import { ChartType, Filter } from "@ft-types/DataBuilder";
-import { PrismaClient } from "@prisma/client";
+import {
+  Account,
+  ChartType,
+  Filter,
+  Setting,
+  Transaction,
+} from "@finance-tracker/types";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { randomUUID } from "crypto";
 import {
   existsSync,
@@ -10,8 +15,8 @@ import {
   rmSync,
   writeFileSync,
 } from "fs";
-import path = require("path");
-import JSZip = require("jszip");
+import JSZip from "jszip";
+import path from "path";
 
 const newAccountSchema = {
   id: 0,
@@ -27,7 +32,7 @@ const newAccountSchema = {
 
 const prisma = new PrismaClient();
 
-export class AccountsAPI {
+export default class AccountsAPI {
   accounts: Account[] = [];
   dataPath: string;
   filesPath: string;
@@ -611,7 +616,24 @@ export class AccountsAPI {
         async (account) => {
           const transactionsPromise = prisma.transaction.findMany({
             where: { Account: { id: account.id } },
-          });
+          }) as Prisma.PrismaPromise<
+            ({
+              id: string;
+              created_at: number;
+              name: string;
+              description: string;
+              amount: number;
+              date: number;
+              tag: string;
+              fileId: string | null;
+              transactionId: string;
+            } & {
+              file: {
+                id: string;
+                name: string;
+              } | null;
+            })[]
+          >;
           const tagsPromise = prisma.transactionTag.findMany({
             where: { Account: { id: account.id } },
           });
@@ -624,13 +646,13 @@ export class AccountsAPI {
           const formattedTransactions = await Promise.all(
             transactions.map(async (t) => {
               if (t.fileId == null) {
-                t.fileId = null;
+                t.file = null;
               } else {
-                t.fileId = (await prisma.file.findUnique({
+                t.file = await prisma.file.findUnique({
                   where: {
                     id: t.fileId,
                   },
-                }))!.id;
+                });
               }
               delete (t as any)["transactionId"];
               delete (t as any)["fileId"];

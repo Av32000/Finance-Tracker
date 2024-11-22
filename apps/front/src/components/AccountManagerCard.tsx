@@ -1,5 +1,8 @@
-import { Account, FetchServerType } from "@ft-types/account";
-import { AccountsSchema } from "@ft-types/Schemas";
+import {
+  Account,
+  AccountsSchema,
+  FetchServerType,
+} from "@finance-tracker/types";
 import { useEffect, useState } from "react";
 import { useBearStore } from "../GlobalState";
 import FTButton from "./FTButton";
