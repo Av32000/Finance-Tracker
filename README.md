@@ -10,6 +10,7 @@ To install Finance Tracker locally, you can run the following commands:
 git clone https://github.com/Av32000/Finance-Tracker
 cd Finance-Tracker
 pnpm install
+pnpm prisma:generate
 pnpm build
 ```
 
@@ -23,7 +24,7 @@ To use Docker hosting, run the following commands:
 
 ```sh
 POSTGRES_PASSWORD="<your_password>" # Replace this with a custom password for the database
-echo $'POSTGRES_USER="postgres"\nPOSTGRES_PASSWORD="$POSTGRES_PASSWORD"\nPOSTGRES_DB="ft"' >> .env
+echo -e "POSTGRES_USER=postgres\nPOSTGRES_PASSWORD=$POSTGRES_PASSWORD\nPOSTGRES_DB=ft" >> .env
 docker compose build
 docker compose up
 ```
@@ -39,7 +40,7 @@ DATABASE_URL="<your_connection_string>" # Replace this with the connection strin
 echo "DATABASE_URL=$DATABASE_URL" >> .env
 pnpm prisma:push
 pnpm generate-keys
-pnpm start
+NODE_ENV="production" pnpm start
 ```
 
 You're ready to open `http://localhost:3000` and start using Finance Tracker.
