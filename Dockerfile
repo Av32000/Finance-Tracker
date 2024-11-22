@@ -7,28 +7,22 @@ RUN --mount=type=cache,target=/root/.npm \
 
 WORKDIR /usr/src/app
 
-COPY . .
+COPY dist dist
+COPY prisma prisma
 
-RUN --mount=type=bind,source=package.json,target=package.json \
-    --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
-    --mount=type=cache,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile
+COPY package.json package.json
+COPY apps/api/package.json dist/api/package.json
 
-RUN pnpm build:types
+RUN echo $'packages:\n  - "dist/api/"' >> pnpm-workspace.yaml
+
+RUN pnpm install
 
 RUN chown node .
 RUN chown -R node:node /usr/src/app/node_modules/.pnpm/*prisma*/
 
-RUN chown -R node:node /usr/src/app/packages/types && \
-    chmod -R 700 /usr/src/app/packages/types
-
 RUN mkdir -p /usr/src/app/dist && \
     chown -R node:node /usr/src/app/dist && \
     chmod -R 700 /usr/src/app/dist
-
-
-RUN chown -R node:node /usr/src/app/apps/front && \
-    chmod -R 700 /usr/src/app/apps/front
 
 RUN mkdir -p /usr/src/app/datas && \
     chown -R node:node /usr/src/app/datas && \
@@ -39,6 +33,5 @@ USER node
 EXPOSE 3000
 
 CMD pnpm prisma:push &&\
-    pnpm build &&\
-    pnpm run generate-keys && \
+    node dist/api/KeysGenerator.cjs && \
     node dist/api/index.js --host=0.0.0.0
