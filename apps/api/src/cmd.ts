@@ -1,6 +1,8 @@
 import { writeFileSync } from "fs";
 import { join } from "path";
 import AccountsAPI from "./AccountsAPI";
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
 
 const readline = require("readline").createInterface({
   input: process.stdin,
@@ -36,10 +38,10 @@ export default class Cmd {
         console.log("All data is deleted !");
         break;
       case "db-status":
-        if (this.accountsAPI.offline) {
-          console.log("Not connected !");
-        } else {
+        if (await this.accountsAPI.checkConnection()) {
           console.log("Connected !");
+        } else {
+          console.log("Not connected !");
         }
         break;
       case "export":
@@ -70,7 +72,7 @@ export default class Cmd {
               );
               console.log(
                 "Account exported in " +
-                  join(__dirname, accountData.name + ".zip"),
+                join(__dirname, accountData.name + ".zip"),
               );
             }
           } else {
