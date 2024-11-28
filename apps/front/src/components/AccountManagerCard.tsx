@@ -12,7 +12,7 @@ type State = "Closed" | "Switch" | "Create";
 
 const RefreshAccounts = async (
   setAccounts: (accounts: Account[]) => void,
-  fetchServer: FetchServerType,
+  fetchServer: FetchServerType
 ) => {
   try {
     const fetchedAccouts = await fetchServer("/accounts");
@@ -26,7 +26,7 @@ const RefreshAccounts = async (
 
 const createAccount = async (
   newAccount: string,
-  fetchServer: FetchServerType,
+  fetchServer: FetchServerType
 ) => {
   try {
     const newAccountFetched = await fetchServer("/accounts", {
@@ -55,6 +55,20 @@ const AccountManagerCard = () => {
     refreshAccountsCallback,
   } = useBearStore();
   const [loading, setLoading] = useState(!account);
+
+  const handleInputAccountCreation = () => {
+    createAccount(newAccount, fetchServer).then((id) => {
+      if (id) {
+        refreshAccount(id, setAccount).then(() => {
+          setNewAccount("");
+          setStatus("Closed");
+        });
+      } else {
+        console.error("Can't create Account");
+      }
+    });
+    RefreshAccounts(setAccounts, fetchServer);
+  };
 
   useEffect(() => {
     refreshAccountsCallback(() => {
@@ -110,7 +124,7 @@ const AccountManagerCard = () => {
                     }`}
                     onClick={() => {
                       refreshAccount(a.id, setAccount).then(() =>
-                        setStatus("Closed"),
+                        setStatus("Closed")
                       );
                     }}
                   >
@@ -136,23 +150,12 @@ const AccountManagerCard = () => {
                 value={newAccount}
                 placeholder="Account Name"
                 onChange={(e) => setNewAccount(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key == "Enter") handleInputAccountCreation();
+                }}
                 className=""
               />
-              <FTButton
-                onClick={() => {
-                  createAccount(newAccount, fetchServer).then((id) => {
-                    if (id) {
-                      refreshAccount(id, setAccount).then(() => {
-                        setNewAccount("");
-                        setStatus("Closed");
-                      });
-                    } else {
-                      console.error("Can't create Account");
-                    }
-                  });
-                  RefreshAccounts(setAccounts, fetchServer);
-                }}
-              >
+              <FTButton onClick={() => handleInputAccountCreation()}>
                 Create Account
               </FTButton>
             </div>
