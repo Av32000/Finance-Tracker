@@ -36,7 +36,7 @@ export default class AccountsAPI {
   filesPath: string;
   offline: boolean;
   accountsPath: string;
-  prisma: PrismaClient | null = null
+  prisma: PrismaClient | null = null;
 
   constructor(dataPath: string, filesPath: string, offline: boolean) {
     this.dataPath = dataPath;
@@ -375,9 +375,9 @@ export default class AccountsAPI {
     type: ChartType,
     options:
       | {
-        name: string;
-        value: string;
-      }[]
+          name: string;
+          value: string;
+        }[]
       | undefined,
   ) {
     const id = randomUUID();
@@ -461,26 +461,25 @@ export default class AccountsAPI {
   }
 
   async checkConnection() {
-    if (!this.prisma) this.prisma = new PrismaClient()
+    if (!this.prisma) this.prisma = new PrismaClient();
     try {
       await this.prisma.$queryRaw`SELECT 1`;
-      return true
+      return true;
     } catch (error) {
-      this.prisma = null
-      return false
+      this.prisma = null;
+      return false;
     }
   }
 
   async checkPrismaClient() {
-    const connected = await this.checkConnection()
-    console.log(connected);
-    return this.prisma
+    await this.checkConnection();
+    return this.prisma;
   }
 
   async UpdateDatabase() {
     try {
-      const prisma = await this.checkPrismaClient()
-      if (!prisma) return
+      const prisma = await this.checkPrismaClient();
+      if (!prisma) return;
       this.accounts.forEach(async (account) => {
         // Account
         const prismaAccount = {
@@ -629,8 +628,8 @@ export default class AccountsAPI {
   async LoadDatabase() {
     try {
       this.accounts = [];
-      const prisma = await this.checkPrismaClient()
-      if (!prisma) return
+      const prisma = await this.checkPrismaClient();
+      if (!prisma) return;
       const accountsPromises = (await prisma.account.findMany()).map(
         async (account) => {
           const transactionsPromise = prisma.transaction.findMany({

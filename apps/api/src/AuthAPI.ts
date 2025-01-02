@@ -7,6 +7,7 @@ type AuthData = {
   userId: string;
   username: string;
   otpSecret: string;
+  otpActivated: boolean;
   devices: {
     credentialPublicKey: Uint8Array;
     credentialID: Uint8Array;
@@ -21,7 +22,13 @@ export default class AuthAPI {
   expectedOrigin = "";
   otpSecret = "";
   dataPath: string;
-  data: AuthData = { userId: "", username: "", otpSecret: "", devices: [] };
+  data: AuthData = {
+    userId: "",
+    username: "",
+    otpSecret: "",
+    devices: [],
+    otpActivated: false,
+  };
   currentChallenge?: string | null;
   origin = "";
 
@@ -32,21 +39,31 @@ export default class AuthAPI {
   LoadData() {
     if (!existsSync(this.dataPath)) {
       writeFileSync(this.dataPath, "{}");
-      this.data = { userId: "", username: "", otpSecret: "", devices: [] };
+      this.data = {
+        userId: "",
+        username: "",
+        otpSecret: "",
+        devices: [],
+        otpActivated: false,
+      };
     } else this.data = JSON.parse(readFileSync(this.dataPath).toString());
 
     if (!this.data.userId) this.data.userId = randomUUID();
     if (!this.data.username) this.data.username = "Fiance Tracker";
+    if (this.data.otpActivated == null) this.data.otpActivated = false;
     if (!this.data.otpSecret) {
       this.otpSecret = speakeasy.generateSecret().base32;
       this.data.otpSecret = this.otpSecret;
     } else {
       this.otpSecret = this.data.otpSecret;
     }
-    if (!this.data.devices) {
+    if (
+      (!this.data.devices || this.data.devices.length == 0) &&
+      !this.data.otpActivated
+    ) {
       console.error(
         "\x1b[33m%s\x1b[0m",
-        "No Passkeys found => Data not protected",
+        "No Passkeys or OTP code found => Data not protected",
       );
       this.data.devices = [];
     } else {
@@ -93,6 +110,11 @@ export default class AuthAPI {
       encoding: "base32",
       label: "Finance Tracker",
     });
+  }
+
+  ActivateOTP() {
+    this.data.otpActivated = true;
+    this.SaveData();
   }
 
   VerifyOTP(token: string) {

@@ -93,8 +93,6 @@ const Login = ({ refresh }: { refresh: () => void }) => {
       });
 
       if (isValid.ok) {
-        console.log("test");
-
         setAuthToken((await isValid.json()).token);
         resolve();
       } else {

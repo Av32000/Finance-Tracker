@@ -60,12 +60,13 @@ fastify.register(cors, {
 fastify.register(require("@fastify/static"), {
   root: path.join(__dirname, "../../", filesPath),
   prefix: "/api",
+  decorateReply: false,
 });
 
 if (process.env.NODE_ENV == "production") {
   fastify.register(require("@fastify/static"), {
     root: path.join(__dirname, "..", "front"),
-    decorateReply: false,
+    prefix: "/",
   });
 }
 
@@ -110,19 +111,20 @@ if (
 }
 
 const unauthenticatedRoutes = [
-  "/has-passkey",
-  "/generate-registration-options",
-  "/verify-registration",
-  "/generate-authentication-options",
-  "/verify-authentication",
-  "/verify-otp",
+  "/api/has-passkey",
+  "/api/generate-registration-options",
+  "/api/verify-registration",
+  "/api/generate-authentication-options",
+  "/api/verify-authentication",
+  "/api/verify-otp",
 ];
 fastify.addHook("onRequest", async (request, reply) => {
   try {
     if (
       !unauthenticatedRoutes.includes(request.raw.url as string) &&
       !insecure &&
-      authAPI.data.devices.length > 0
+      (request.raw.url as string).startsWith("/api") &&
+      (authAPI.data.devices.length > 0 || authAPI.data.otpActivated)
     ) {
       await request.jwtVerify();
     }
@@ -404,6 +406,11 @@ fastify.register(
         res.status(403).send("Invalid OTP");
         return;
       }
+    });
+
+    api.get("/activate-otp", (req, res) => {
+      authAPI.ActivateOTP();
+      res.status(200).send();
     });
 
     api.get("/get-otp", async (req, res) => {
@@ -720,6 +727,20 @@ fastify.register(
   },
   { prefix: "/api" },
 );
+
+const routes = ["/home", "/transactions", "/settings", "/stats"];
+
+routes.forEach((route) => {
+  fastify.route({
+    method: "GET",
+    url: route,
+    handler: (request, reply) => {
+      // @ts-ignore: Ignore TypeScript error on sendFile method
+      reply.sendFile("index.html");
+    },
+  });
+});
+
 const hostArg = process.argv.find((arg) => arg.startsWith("--host="));
 
 fastify.listen(

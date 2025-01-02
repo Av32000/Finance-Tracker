@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { useBearStore } from "../GlobalState";
 import FTPinInput from "./FTPinInput";
 import Loader from "./Loader";
+import { useModal } from "./ModalProvider";
 
 const FTOTPModal = ({ hideModal }: { hideModal: () => void }) => {
-  const { fetchServer } = useBearStore();
+  const { fetchServer, setAuthToken } = useBearStore();
+  const { showModal } = useModal();
   const [otpURL, setOtpURL] = useState("");
   const [otpError, setOtpError] = useState("");
 
@@ -28,6 +30,8 @@ const FTOTPModal = ({ hideModal }: { hideModal: () => void }) => {
       });
 
       if (isValid.ok) {
+        setAuthToken((await isValid.json()).token);
+        await fetchServer("/activate-otp");
         resolve();
       } else {
         const text = await isValid.text();
@@ -69,7 +73,10 @@ const FTOTPModal = ({ hideModal }: { hideModal: () => void }) => {
           </p>
           <FTPinInput
             callback={(token) => {
-              checkOTP(token, fetchServer).then(() => hideModal());
+              checkOTP(token, fetchServer).then(() => {
+                hideModal();
+                showModal({ type: "Info", title: "OTP successfully set up !" });
+              });
             }}
           />
           {otpError && <p className="text-red text-xs">{otpError}</p>}
