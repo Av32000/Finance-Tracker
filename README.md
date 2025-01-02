@@ -40,7 +40,7 @@ DATABASE_URL="<your_connection_string>" # Replace this with the connection strin
 echo "DATABASE_URL=$DATABASE_URL" >> .env
 pnpm prisma:push
 pnpm generate-keys
-NODE_ENV="production" pnpm start
+pnpm start:prod
 ```
 
 You're ready to open `http://localhost:3000` and start using Finance Tracker.

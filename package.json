@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "start": "node dist/api/index.js",
+    "start:prod":"NODE_ENV=\"production\" pnpm start",
     "dev": "concurrently \"pnpm start:react\" \"pnpm start:server\"",
     "start:react": "pnpm --filter @finance-tracker/front dev",
     "start:server": "pnpm --filter @finance-tracker/api start",
