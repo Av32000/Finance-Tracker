@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ChartAvailableFieldsEnum, ChartTypeEnum } from "./charts";
 
 const SettingSchema = z.object({
   name: z.string(),
@@ -27,6 +28,52 @@ const TransactionSchema = z.object({
     .or(z.null()),
 });
 
+// Charts
+const ChartDataBuilderConfigSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: z.enum(["bar", "pie", "radial", "line"]),
+  groupBy: ChartAvailableFieldsEnum,
+  filters: z.array(
+    z
+      .object({
+        type: z.literal("property"),
+        field: ChartAvailableFieldsEnum,
+        operator: z.enum([
+          "equals",
+          "greater_than",
+          "less_than",
+          "between",
+          "contains",
+        ]),
+        value: z.any(),
+      })
+      .or(
+        z.object({
+          type: z.literal("sort"),
+          field: ChartAvailableFieldsEnum,
+          order: z.enum(["asc", "desc"]),
+          limit: z.number().optional(),
+        })
+      )
+  ),
+  metrics: z.array(
+    z.object({
+      field: z.enum(["amount", "balance", "count"]),
+      function: z.enum(["sum", "average", "count", "void"]),
+      cumulative: z.boolean(),
+    })
+  ),
+});
+
+const ChartSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  type: ChartTypeEnum,
+  transactionsFilters: z.array(z.null()),
+  dataBuilderConfig: ChartDataBuilderConfigSchema,
+});
+
 const AccountSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -44,6 +91,8 @@ const AccountsSchema = z.array(AccountSchema);
 export {
   AccountSchema,
   AccountsSchema,
+  ChartDataBuilderConfigSchema,
+  ChartSchema,
   SettingSchema,
   TransactionSchema,
   TransactionTagSchema,
