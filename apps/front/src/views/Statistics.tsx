@@ -1,24 +1,16 @@
-import { FTChart } from "@finance-tracker/types";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useBearStore } from "../GlobalState";
 import AccountManagerCard from "../components/AccountManagerCard";
-import ChartSelector from "../components/ChartSelector";
 import FTButton from "../components/FTButton";
+import { useModal } from "../components/ModalProvider";
 import NavBar from "../components/NavBar";
-import ChartBuilder from "../components/charts/ChartBuilder";
 
 const Statistics = () => {
   const { account } = useBearStore();
-  const [currentChart, setCurrentChart] = useState<FTChart>();
+  const { showModal } = useModal();
   useEffect(() => {
     document.title = "Finance Tracker - Statistics";
   });
-
-  useEffect(() => {
-    if (account && account.charts.length > 0 && !currentChart) {
-      setCurrentChart(account.charts[0]);
-    }
-  }, [account]);
 
   return (
     <div className="overflow-hidden flex">
@@ -34,36 +26,25 @@ const Statistics = () => {
               <div className="flex flex-col">
                 <h1 className="text-active-text-color text-2xl">Statistics</h1>
                 <p className="text-text-color mobile:hidden">
-                  Creating chart to visualise data
+                  Create chart to visualise data
                 </p>
               </div>
             </div>
             <div className="flex flex-row items-center gap-3">
-              <FTButton className="h-10">Create new Chart</FTButton>
+              <FTButton
+                className="h-10"
+                onClick={() =>
+                  showModal({ title: "Not implemented yet", type: "Info" })
+                }
+              >
+                Create new Chart
+              </FTButton>
             </div>
           </div>
           <div className="flex-1 h-full max-w-full">
-            {account.charts.length > 0 ? (
-              <div className="flex flex-col h-full p-4">
-                <ChartSelector
-                  value={currentChart?.id}
-                  onChange={(e) => {
-                    setCurrentChart(
-                      account.charts.find((c) => c.id === e.target.value),
-                    );
-                  }}
-                />
-                {currentChart != undefined && (
-                  <ChartBuilder chart={currentChart} />
-                )}
-              </div>
-            ) : (
-              <div className="h-screen bg-bg flex items-center justify-center">
-                <p className="text-2xl text-text-color mobile:mb-52">
-                  No Charts
-                </p>
-              </div>
-            )}
+            <div className="h-screen bg-bg flex items-center justify-center">
+              <p className="text-2xl text-text-color mobile:mb-52">No Charts</p>
+            </div>
           </div>
         </div>
       ) : (

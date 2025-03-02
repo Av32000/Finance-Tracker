@@ -43,23 +43,13 @@ model File {
   Transaction Transaction[]
 }
 
-model Chart {
-  id      String  @unique
-  title   String
-  filter  Json[]
-  type    String
-  options Json[]
-  chartId String
-  Account Account @relation(fields: [chartId], references: [id], onDelete: Cascade)
-}
-
 model Account {
   id             String           @unique
   name           String
   balance        Float
   monthly        Float
   currentMonthly Float
-  Chart          Chart[]
+  Chart          String[]
   Setting        Setting[]
   Transaction    Transaction[]
   tags           TransactionTag[]
