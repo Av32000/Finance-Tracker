@@ -19,7 +19,6 @@ const UploadFile = async (file: File, fetchServer: FetchServerType) => {
     });
     const id = z.string().parse(await fetchedId.text());
     result.id = id;
-    console.log(result);
 
     return result;
   } catch {
@@ -39,18 +38,16 @@ const SaveTransaction = async (
     name: string;
   } | null,
   fetchServer: FetchServerType,
-  transactionId?: string,
+  transactionId?: string
 ) => {
   if (transactionId) {
-    console.log(date);
-
     await fetchServer(
       "/accounts/" + accountId + "/transactions/" + transactionId,
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, description, date, tag, amount }),
-      },
+      }
     );
   } else {
     await fetchServer("/accounts/" + accountId + "/transactions", {
@@ -88,17 +85,15 @@ const AddTransactionModal = ({
 
   useEffect(() => {
     if (transactionId && account) {
-      let transaction = account.transactions.find(
-        (t) => t.id === transactionId,
+      const transaction = account.transactions.find(
+        (t) => t.id === transactionId
       );
       if (transaction) {
-        console.log(transaction);
-
         setName(transaction.name);
         setDescription(transaction.description);
         setDate(adjustToLocalTime(transaction.date));
         setTag(
-          account.tags.find((t) => t.id === transaction?.tag)?.id || "no_tag",
+          account.tags.find((t) => t.id === transaction?.tag)?.id || "no_tag"
         );
         setAmount(transaction.amount);
       }
@@ -181,7 +176,7 @@ const AddTransactionModal = ({
             if (fileInput.current && fileInput.current.files) {
               fileObject = await UploadFile(
                 fileInput.current.files[0],
-                fetchServer,
+                fetchServer
               );
             }
             await SaveTransaction(
@@ -193,7 +188,7 @@ const AddTransactionModal = ({
               amount,
               fileObject,
               fetchServer,
-              transactionId,
+              transactionId
             );
             await refreshAccount(account!.id, setAccount);
             setIsOpen(false);

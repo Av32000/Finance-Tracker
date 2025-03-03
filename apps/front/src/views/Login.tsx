@@ -41,11 +41,10 @@ const Login = ({ refresh }: { refresh: () => void }) => {
 
   const login = async (
     fetchServer: FetchServerType,
-    setAuthToken: (token: string) => void,
+    setAuthToken: (token: string) => void
   ) => {
     return new Promise<void>(async (resolve, reject) => {
-      let hasPasskey = await (await fetchServer("/has-passkey")).text();
-      console.log(hasPasskey);
+      const hasPasskey = await (await fetchServer("/has-passkey")).text();
       if (hasPasskey == "false") {
         await register(fetchServer).catch(reject);
       }
@@ -71,8 +70,7 @@ const Login = ({ refresh }: { refresh: () => void }) => {
         verificationJSON.authenticationInfo &&
         verificationJSON.authenticationInfo.userVerified
       ) {
-        let token = verificationJSON.authenticationInfo.token;
-        console.log(token);
+        const token = verificationJSON.authenticationInfo.token;
         setAuthToken(token);
         refresh();
         resolve();
@@ -84,7 +82,7 @@ const Login = ({ refresh }: { refresh: () => void }) => {
 
   const checkOTP = async (token: number, fetchServer: FetchServerType) => {
     return new Promise<void>(async (resolve, reject) => {
-      let isValid = await fetchServer("/verify-otp", {
+      const isValid = await fetchServer("/verify-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -134,7 +132,7 @@ const Login = ({ refresh }: { refresh: () => void }) => {
               onClick={async () => {
                 setIsLoading(true);
                 await login(fetchServer, setAuthToken).catch(() =>
-                  setIsLoading(false),
+                  setIsLoading(false)
                 );
               }}
             >
@@ -148,7 +146,7 @@ const Login = ({ refresh }: { refresh: () => void }) => {
                 callback={async (code) => {
                   setIsLoading(true);
                   await checkOTP(code, fetchServer).catch(() =>
-                    setIsLoading(false),
+                    setIsLoading(false)
                   );
                 }}
               />
