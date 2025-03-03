@@ -1,6 +1,7 @@
 import { Account, FetchServerType } from "@finance-tracker/types";
 import { startRegistration } from "@simplewebauthn/browser";
 import { useEffect, useState } from "react";
+import { BuildData } from "../ChartDataBuilder";
 import AccountManagerCard from "../components/AccountManagerCard";
 import FTButton from "../components/FTButton";
 import FTInput from "../components/FTInput";
@@ -13,7 +14,7 @@ const importAccount = (
   successCallback: (response: Response) => void,
   fetchServer: FetchServerType,
   account: Account,
-  force: boolean = false,
+  force: boolean = false
 ) => {
   const input: HTMLInputElement = document.createElement("input");
   input.type = "file";
@@ -34,7 +35,7 @@ const importAccount = (
           {
             method: "POST",
             body: formData,
-          },
+          }
         );
 
         successCallback(response);
@@ -82,7 +83,7 @@ const Settings = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(attResp),
-        },
+        }
       );
 
       const verificationJSON = await verificationResp.json();
@@ -240,7 +241,7 @@ const Settings = () => {
                                 },
                                 fetchServer,
                                 account!,
-                                true,
+                                true
                               );
                             },
                           });
@@ -254,7 +255,7 @@ const Settings = () => {
                       }
                     },
                     fetchServer,
-                    account,
+                    account
                   );
                 }}
               >
@@ -295,6 +296,38 @@ const Settings = () => {
                 }}
               >
                 Delete Account
+              </FTButton>
+            </div>
+            <div className="flex gap-2">
+              <FTButton
+                onClick={() => {
+                  BuildData(
+                    {
+                      id: "",
+                      groupBy: "amount",
+                      metrics: [],
+                      name: "",
+                      type: "bar",
+                      filters: [
+                        {
+                          type: "property",
+                          field: "amount",
+                          operator: "greater_than",
+                          value: 0,
+                        },
+                        {
+                          type: "sort",
+                          field: "amount",
+                          order: "desc",
+                          limit: 2,
+                        },
+                      ],
+                    },
+                    account.transactions
+                  );
+                }}
+              >
+                Run Debug Test
               </FTButton>
             </div>
           </div>

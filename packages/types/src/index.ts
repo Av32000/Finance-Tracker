@@ -13,6 +13,8 @@ import {
   ChartType,
   ChartTypeEnum,
   FTChart,
+  TransactionsFilter,
+  TransactionsFilterSchema,
 } from "./charts";
 
 import {
@@ -42,6 +44,8 @@ export {
   SettingSchema,
   Transaction,
   TransactionSchema,
+  TransactionsFilter,
+  TransactionsFilterSchema,
   TransactionTag,
   TransactionTagSchema,
 };

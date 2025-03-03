@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { ChartAvailableFieldsEnum, ChartTypeEnum } from "./charts";
+import {
+  ChartAvailableFieldsEnum,
+  ChartTypeEnum,
+  TransactionsFilterSchema,
+} from "./charts";
 
 const SettingSchema = z.object({
   name: z.string(),
@@ -34,29 +38,7 @@ const ChartDataBuilderConfigSchema = z.object({
   name: z.string(),
   type: z.enum(["bar", "pie", "radial", "line"]),
   groupBy: ChartAvailableFieldsEnum,
-  filters: z.array(
-    z
-      .object({
-        type: z.literal("property"),
-        field: ChartAvailableFieldsEnum,
-        operator: z.enum([
-          "equals",
-          "greater_than",
-          "less_than",
-          "between",
-          "contains",
-        ]),
-        value: z.any(),
-      })
-      .or(
-        z.object({
-          type: z.literal("sort"),
-          field: ChartAvailableFieldsEnum,
-          order: z.enum(["asc", "desc"]),
-          limit: z.number().optional(),
-        })
-      )
-  ),
+  filters: z.array(TransactionsFilterSchema),
   metrics: z.array(
     z.object({
       field: z.enum(["amount", "balance", "count"]),
