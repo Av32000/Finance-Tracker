@@ -17,7 +17,6 @@ const RefreshAccounts = async (
   try {
     const fetchedAccouts = await fetchServer("/accounts");
     const accounts = AccountsSchema.parse(await fetchedAccouts.json());
-    console.log(accounts);
     setAccounts(accounts);
   } catch (e) {
     console.error(e);
