@@ -304,7 +304,7 @@ const Settings = () => {
                   BuildData(
                     {
                       id: "",
-                      groupBy: "hour",
+                      groupBy: "amount",
                       metrics: [],
                       name: "",
                       type: "bar",

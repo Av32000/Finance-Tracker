@@ -1,9 +1,12 @@
 import {
   ChartAvailableFields,
   ChartDataBuilderConfig,
+  ChartMetric,
   Transaction,
   TransactionsFilter,
 } from "@finance-tracker/types";
+
+type TransactionsGroup = { value: string; transactions: Transaction[] };
 
 function filterTransactions(
   transactions: Transaction[],
@@ -17,6 +20,9 @@ function filterTransactions(
       currentResult.forEach((transaction) => {
         let propsValue;
         switch (filter.field) {
+          case "id":
+            propsValue = transaction.id;
+            break;
           case "name":
             propsValue = transaction.name;
             break;
@@ -114,6 +120,7 @@ function filterTransactions(
                 new Date(b.date).getFullYear() - new Date(a.date).getFullYear()
               );
             }
+          case "id":
           case "tag":
             return 1; // Not applicable
         }
@@ -132,14 +139,22 @@ function groupTransactions(
   transactions: Transaction[],
   groupBy: ChartAvailableFields
 ) {
-  const groups: { value: string; transactions: Transaction[] }[] = [];
+  const groups: TransactionsGroup[] = [];
   transactions.forEach((transaction) => {
     switch (groupBy) {
+      case "id":
+        groups.push({ value: transaction.id, transactions: [transaction] });
+        break;
       case "name": {
-        if (groups.length == 0) {
-          groups.push({ value: "Transactions", transactions: [] });
+        const group = groups.find((g) => g.value == transaction.name);
+        if (group) {
+          group.transactions.push(transaction);
+        } else {
+          groups.push({
+            value: transaction.name,
+            transactions: [transaction],
+          });
         }
-        groups[0].transactions.push(transaction);
         break;
       }
       case "amount": {
@@ -156,45 +171,46 @@ function groupTransactions(
         }
         break;
       }
-      case "date": {
-        const group = groups.find(
-          (g) => g.value == transaction.date.toString()
-        );
-        if (group) {
-          group.transactions.push(transaction);
-        } else {
-          groups.push({
-            value: transaction.date.toString(),
-            transactions: [transaction],
-          });
-        }
-        break;
-      }
       case "hour": {
         const transactionDate = new Date(transaction.date);
-        const group = groups.find(
-          (g) => g.value == transactionDate.getHours().toString()
-        );
+        const startOfDay = new Date(
+          transactionDate.getFullYear(),
+          transactionDate.getMonth(),
+          transactionDate.getDate(),
+          0,
+          0,
+          0,
+          0
+        ).getTime();
+        const group = groups.find((g) => g.value == startOfDay.toString());
         if (group) {
           group.transactions.push(transaction);
         } else {
           groups.push({
-            value: transactionDate.getHours().toString(),
+            value: startOfDay.toString(),
             transactions: [transaction],
           });
         }
         break;
       }
+      case "date":
       case "day": {
         const transactionDate = new Date(transaction.date);
-        const group = groups.find(
-          (g) => g.value == transactionDate.getDate().toString()
-        );
+        const startOfDay = new Date(
+          transactionDate.getFullYear(),
+          transactionDate.getMonth(),
+          transactionDate.getDate(),
+          0,
+          0,
+          0,
+          0
+        ).getTime();
+        const group = groups.find((g) => g.value == startOfDay.toString());
         if (group) {
           group.transactions.push(transaction);
         } else {
           groups.push({
-            value: transactionDate.getDate().toString(),
+            value: startOfDay.toString(),
             transactions: [transaction],
           });
         }
@@ -202,14 +218,17 @@ function groupTransactions(
       }
       case "month": {
         const transactionDate = new Date(transaction.date);
-        const group = groups.find(
-          (g) => g.value == transactionDate.getMonth().toString()
-        );
+        const startOfMonth = new Date(
+          transactionDate.getFullYear(),
+          transactionDate.getMonth(),
+          1
+        ).getTime();
+        const group = groups.find((g) => g.value == startOfMonth.toString());
         if (group) {
           group.transactions.push(transaction);
         } else {
           groups.push({
-            value: transactionDate.getMonth().toString(),
+            value: startOfMonth.toString(),
             transactions: [transaction],
           });
         }
@@ -217,14 +236,21 @@ function groupTransactions(
       }
       case "year": {
         const transactionDate = new Date(transaction.date);
-        const group = groups.find(
-          (g) => g.value == transactionDate.getFullYear().toString()
-        );
+        const startOfYear = new Date(
+          transactionDate.getFullYear(),
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ).getTime();
+        const group = groups.find((g) => g.value == startOfYear.toString());
         if (group) {
           group.transactions.push(transaction);
         } else {
           groups.push({
-            value: transactionDate.getFullYear().toString(),
+            value: startOfYear.toString(),
             transactions: [transaction],
           });
         }
@@ -245,7 +271,80 @@ function groupTransactions(
     }
   });
 
+  // TODO : Sort Groups & Format Groups Name
+
   return groups;
+}
+
+function buildDatasets(
+  groups: TransactionsGroup[],
+  metrics: ChartMetric[],
+  accoutTransactions: Transaction[]
+) {
+  const datasets: { name: string; data: number[]; labels: string[] }[] = [];
+
+  for (const metric of metrics) {
+    let name = metric.field;
+    name = name.charAt(0).toUpperCase() + name.slice(1);
+
+    const labels: string[] = [];
+    const data: number[] = [];
+
+    for (const group of groups) {
+      let values;
+      switch (metric.field) {
+        case "amount": {
+          values = group.transactions.map((t) => t.amount);
+          break;
+        }
+        case "balance": {
+          values = group.transactions.map((t) =>
+            accoutTransactions
+              .filter((at) => at.date <= t.date)
+              .map((at) => at.amount)
+              .reduce((p, a) => p + a, 0)
+          );
+          break;
+        }
+        case "count":
+          values = [group.transactions.length];
+          break;
+      }
+
+      let finalValue;
+      switch (metric.function) {
+        case "void":
+          finalValue = values;
+          break;
+        case "count":
+          finalValue = [values.length];
+          if (metric.cumulative && data.length > 0) finalValue[0] += data[-1];
+          break;
+        case "sum":
+          finalValue = [values.reduce((p, a) => p + a, 0)];
+          if (metric.cumulative && data.length > 0) finalValue[0] += data[-1];
+          break;
+        case "average":
+          finalValue = [values.reduce((p, a) => p + a, 0) / values.length];
+          if (metric.cumulative && data.length > 0) {
+            const elems = [finalValue[0], ...data];
+            finalValue[0] = elems.reduce((p, a) => p + a, 0) / elems.length;
+          }
+          break;
+      }
+
+      labels.push(group.value);
+      data.push(...finalValue);
+    }
+
+    datasets.push({
+      name,
+      data,
+      labels,
+    });
+  }
+
+  return datasets;
 }
 
 export function BuildData(
@@ -253,10 +352,10 @@ export function BuildData(
   transactions: Transaction[]
 ) {
   const filteredTransactions = filterTransactions(transactions, config.filters);
-
-  // Extract and Parse Metrics
   const groups = groupTransactions(filteredTransactions, config.groupBy);
-  console.log(groups);
+
+  const datasets = buildDatasets(groups, config.metrics, transactions);
+  console.log(datasets);
 
   // Generate final data object
 }

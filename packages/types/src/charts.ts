@@ -5,6 +5,7 @@ export const ChartTypeEnum = z.enum(["Pie", "Line"]);
 export type ChartType = z.infer<typeof ChartTypeEnum>;
 
 export const ChartAvailableFieldsEnum = z.enum([
+  "id",
   "name",
   "amount",
   "date",
