@@ -39,6 +39,13 @@ export const TransactionsFilterSchema = z
   );
 export type TransactionsFilter = z.infer<typeof TransactionsFilterSchema>;
 
+export const ChartMetricSchema = z.object({
+  field: z.enum(["amount", "balance", "count"]),
+  function: z.enum(["sum", "average", "count", "void"]),
+  cumulative: z.boolean(),
+});
+export type ChartMetric = z.infer<typeof ChartMetricSchema>;
+
 export type FTChart = z.infer<typeof ChartSchema>;
 export type ChartDataBuilderConfig = z.infer<
   typeof ChartDataBuilderConfigSchema

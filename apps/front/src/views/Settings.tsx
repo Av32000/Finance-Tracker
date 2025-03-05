@@ -304,24 +304,11 @@ const Settings = () => {
                   BuildData(
                     {
                       id: "",
-                      groupBy: "amount",
+                      groupBy: "hour",
                       metrics: [],
                       name: "",
                       type: "bar",
-                      filters: [
-                        {
-                          type: "property",
-                          field: "amount",
-                          operator: "greater_than",
-                          value: 0,
-                        },
-                        {
-                          type: "sort",
-                          field: "amount",
-                          order: "desc",
-                          limit: 2,
-                        },
-                      ],
+                      filters: [],
                     },
                     account.transactions
                   );

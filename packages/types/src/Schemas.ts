@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   ChartAvailableFieldsEnum,
+  ChartMetricSchema,
   ChartTypeEnum,
   TransactionsFilterSchema,
 } from "./charts";
@@ -39,13 +40,7 @@ const ChartDataBuilderConfigSchema = z.object({
   type: z.enum(["bar", "pie", "radial", "line"]),
   groupBy: ChartAvailableFieldsEnum,
   filters: z.array(TransactionsFilterSchema),
-  metrics: z.array(
-    z.object({
-      field: z.enum(["amount", "balance", "count"]),
-      function: z.enum(["sum", "average", "count", "void"]),
-      cumulative: z.boolean(),
-    })
-  ),
+  metrics: z.array(ChartMetricSchema),
 });
 
 const ChartSchema = z.object({
