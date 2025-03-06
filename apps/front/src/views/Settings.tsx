@@ -304,8 +304,14 @@ const Settings = () => {
                   BuildData(
                     {
                       id: "",
-                      groupBy: "amount",
-                      metrics: [],
+                      groupBy: "tag",
+                      metrics: [
+                        {
+                          field: "count",
+                          function: "sum",
+                          cumulative: false,
+                        },
+                      ],
                       name: "",
                       type: "bar",
                       filters: [],

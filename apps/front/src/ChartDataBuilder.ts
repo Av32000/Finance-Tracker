@@ -314,27 +314,29 @@ function buildDatasets(
       let finalValue;
       switch (metric.function) {
         case "void":
-          finalValue = values;
+          finalValue = values[0];
           break;
         case "count":
-          finalValue = [values.length];
-          if (metric.cumulative && data.length > 0) finalValue[0] += data[-1];
+          finalValue = values.length;
+          if (metric.cumulative && data.length > 0)
+            finalValue += data.at(-1) as number;
           break;
         case "sum":
-          finalValue = [values.reduce((p, a) => p + a, 0)];
-          if (metric.cumulative && data.length > 0) finalValue[0] += data[-1];
+          finalValue = values.reduce((p, a) => p + a, 0);
+          if (metric.cumulative && data.length > 0)
+            finalValue += data.at(-1) as number;
           break;
         case "average":
-          finalValue = [values.reduce((p, a) => p + a, 0) / values.length];
+          finalValue = values.reduce((p, a) => p + a, 0) / values.length;
           if (metric.cumulative && data.length > 0) {
-            const elems = [finalValue[0], ...data];
-            finalValue[0] = elems.reduce((p, a) => p + a, 0) / elems.length;
+            const elems = [finalValue, ...data];
+            finalValue = elems.reduce((p, a) => p + a, 0) / elems.length;
           }
           break;
       }
 
       labels.push(group.value);
-      data.push(...finalValue);
+      data.push(finalValue);
     }
 
     datasets.push({
