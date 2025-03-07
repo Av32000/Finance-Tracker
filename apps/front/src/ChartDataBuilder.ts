@@ -1,12 +1,27 @@
 import {
+  Account,
   ChartAvailableFields,
   ChartDataBuilderConfig,
+  ChartDataset,
   ChartMetric,
   Transaction,
   TransactionsFilter,
 } from "@finance-tracker/types";
+import tailwindConfig from "../tailwind.config";
+import {
+  FormatDate,
+  FormatDateHour,
+  FormatDateMonth,
+  FormatDateWithoutHours,
+  FormatMoney,
+} from "./Utils";
 
-type TransactionsGroup = { value: string; transactions: Transaction[] };
+type TransactionsGroup = {
+  value: string;
+  transactions: Transaction[];
+  backgroundColor?: string;
+  borderColor?: string;
+};
 
 function filterTransactions(
   transactions: Transaction[],
@@ -137,7 +152,8 @@ function filterTransactions(
 
 function groupTransactions(
   transactions: Transaction[],
-  groupBy: ChartAvailableFields
+  groupBy: ChartAvailableFields,
+  account: Account
 ) {
   const groups: TransactionsGroup[] = [];
   transactions.forEach((transaction) => {
@@ -173,21 +189,21 @@ function groupTransactions(
       }
       case "hour": {
         const transactionDate = new Date(transaction.date);
-        const startOfDay = new Date(
+        const startOfHour = new Date(
           transactionDate.getFullYear(),
           transactionDate.getMonth(),
           transactionDate.getDate(),
-          0,
+          transactionDate.getHours(),
           0,
           0,
           0
         ).getTime();
-        const group = groups.find((g) => g.value == startOfDay.toString());
+        const group = groups.find((g) => g.value == startOfHour.toString());
         if (group) {
           group.transactions.push(transaction);
         } else {
           groups.push({
-            value: startOfDay.toString(),
+            value: startOfHour.toString(),
             transactions: [transaction],
           });
         }
@@ -272,6 +288,40 @@ function groupTransactions(
   });
 
   // TODO : Sort Groups & Format Groups Name
+  for (const group of groups) {
+    switch (groupBy) {
+      case "amount":
+        group.value = FormatMoney(parseInt(group.value)) + " €";
+        break;
+      case "date":
+        group.value = FormatDate(parseInt(group.value));
+        break;
+      case "hour":
+        group.value = FormatDateHour(parseInt(group.value));
+        break;
+      case "day":
+        group.value = FormatDateWithoutHours(parseInt(group.value));
+        break;
+      case "month":
+        group.value = FormatDateMonth(parseInt(group.value));
+        break;
+      case "year":
+        group.value = new Date(parseInt(group.value)).getFullYear().toString();
+        break;
+      case "tag": {
+        const tag = account.tags.find((tag) => tag.id === group.value);
+
+        group.value = tag?.name || "No Tag";
+        if (tag) {
+          group.backgroundColor = `${tag.color}${Math.round(0.8 * 255).toString(
+            16
+          )}`;
+          group.borderColor = tag.color;
+        }
+        break;
+      }
+    }
+  }
 
   return groups;
 }
@@ -281,8 +331,10 @@ function buildDatasets(
   metrics: ChartMetric[],
   accoutTransactions: Transaction[]
 ) {
-  const datasets: { label: string; data: number[] }[] = [];
+  const datasets: ChartDataset[] = [];
   let labels: string[] = [];
+  const backgroundColor: string[] = [];
+  const borderColor: string[] = [];
 
   for (const metric of metrics) {
     let name = metric.field;
@@ -338,23 +390,38 @@ function buildDatasets(
 
       labels.push(group.value);
       data.push(finalValue);
+      backgroundColor.push(
+        group.backgroundColor ||
+          `${tailwindConfig.theme.colors["cta-primarly"]}${Math.round(
+            0.8 * 255
+          ).toString(16)}`
+      );
+      borderColor.push(
+        group.borderColor || tailwindConfig.theme.colors["cta-primarly"]
+      );
     }
 
     datasets.push({
       label: name,
       data,
+      backgroundColor,
+      borderColor,
     });
   }
 
   return { labels, datasets };
 }
 
-export function BuildData(
-  config: ChartDataBuilderConfig,
-  transactions: Transaction[]
-) {
-  const filteredTransactions = filterTransactions(transactions, config.filters);
-  const groups = groupTransactions(filteredTransactions, config.groupBy);
+export function BuildData(config: ChartDataBuilderConfig, account: Account) {
+  const filteredTransactions = filterTransactions(
+    account.transactions,
+    config.filters
+  );
+  const groups = groupTransactions(
+    filteredTransactions,
+    config.groupBy,
+    account
+  );
 
-  return buildDatasets(groups, config.metrics, transactions);
+  return buildDatasets(groups, config.metrics, account.transactions);
 }

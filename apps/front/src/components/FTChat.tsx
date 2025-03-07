@@ -37,8 +37,9 @@ const FTChart = ({ chart }: { chart: FTChartType }) => {
   };
 
   useEffect(() => {
-    if (account)
-      setData(BuildData(chart.dataBuilderConfig, account.transactions));
+    if (account) {
+      setData(BuildData(chart.dataBuilderConfig, account));
+    }
   }, [chart, account]);
 
   return account != null ? (

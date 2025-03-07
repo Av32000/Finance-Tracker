@@ -301,19 +301,21 @@ const Settings = () => {
             <div className="flex gap-2">
               <FTButton
                 onClick={() => {
-                  BuildData(
-                    {
-                      groupBy: "tag",
-                      metrics: [
-                        {
-                          field: "count",
-                          function: "sum",
-                          cumulative: false,
-                        },
-                      ],
-                      filters: [],
-                    },
-                    account.transactions
+                  console.log(
+                    BuildData(
+                      {
+                        groupBy: "hour",
+                        metrics: [
+                          {
+                            field: "count",
+                            function: "sum",
+                            cumulative: false,
+                          },
+                        ],
+                        filters: [],
+                      },
+                      account
+                    )
                   );
                 }}
               >

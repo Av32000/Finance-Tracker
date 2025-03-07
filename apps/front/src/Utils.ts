@@ -16,8 +16,27 @@ const FormatDateWithoutHours = (date: number) => {
   });
 };
 
+const FormatDateHour = (date: number) => {
+  return new Date(date).toLocaleDateString(undefined, {
+    hour: "2-digit",
+  });
+};
+
+const FormatDateMonth = (date: number) => {
+  return new Date(date).toLocaleDateString(undefined, {
+    month: "long",
+    year: "numeric",
+  });
+};
+
 const FormatMoney = (value: number): string => {
   return value % 1 === 0 ? value.toFixed(0) : value.toFixed(2);
 };
 
-export { FormatDate, FormatDateWithoutHours, FormatMoney };
+export {
+  FormatDate,
+  FormatDateHour,
+  FormatDateMonth,
+  FormatDateWithoutHours,
+  FormatMoney,
+};

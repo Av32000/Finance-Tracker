@@ -43,6 +43,8 @@ const ChartDataBuilderConfigSchema = z.object({
 const ChartDatasetSchema = z.object({
   data: z.array(z.number()),
   label: z.string(),
+  backgroundColor: z.array(z.string()),
+  borderColor: z.array(z.string()),
 });
 
 const ChartSchema = z.object({
