@@ -3,6 +3,7 @@ import { useBearStore } from "../GlobalState";
 import { FormatDate, FormatMoney } from "../Utils";
 import AccountManagerCard from "../components/AccountManagerCard";
 import AmountTag from "../components/AmountTag";
+import FTChart from "../components/FTChat";
 import NavBar from "../components/NavBar";
 
 const Home = () => {
@@ -51,7 +52,39 @@ const Home = () => {
           </div>
           <div className="bg-bg-light col-start-5 col-end-10 row-start-1 row-end-4 rounded-2xl flex flex-col p-3 shadow-lg mobile:h-96">
             <p className="text-active-text-color">Expenses Sources</p>
-            <p>Not implemented yet</p>
+            <div className="w-full h-full p-2 mobile:pb-3">
+              <FTChart
+                chart={{
+                  id: "",
+                  name: "",
+                  type: "Pie",
+                  dataBuilderConfig: {
+                    filters: [
+                      {
+                        type: "property",
+                        field: "amount",
+                        operator: "less_than",
+                        value: "0",
+                      },
+                      {
+                        type: "property",
+                        field: "tag",
+                        operator: "not_equals",
+                        value: "no_tag",
+                      },
+                    ],
+                    groupBy: "tag",
+                    metrics: [
+                      {
+                        field: "amount",
+                        function: "sum",
+                        cumulative: false,
+                      },
+                    ],
+                  },
+                }}
+              />
+            </div>
           </div>
           <div className="bg-bg-light col-start-1 col-end-5 row-start-5 row-end-7 rounded-2xl flex flex-col p-3 shadow-lg">
             <p className="text-active-text-color text-lg">Monthly Budget</p>

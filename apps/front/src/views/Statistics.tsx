@@ -43,7 +43,7 @@ const Statistics = () => {
             </div>
           </div>
           <div className="flex-1 h-full max-w-full">
-            <div className="bg-bg h-full flex items-center justify-center">
+            <div className="bg-bg h-full mobile:pb-16 flex items-center justify-center">
               <FTChart
                 chart={{
                   id: "",
