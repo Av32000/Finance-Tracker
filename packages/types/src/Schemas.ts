@@ -35,19 +35,20 @@ const TransactionSchema = z.object({
 
 // Charts
 const ChartDataBuilderConfigSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  type: z.enum(["bar", "pie", "radial", "line"]),
   groupBy: ChartAvailableFieldsEnum,
   filters: z.array(TransactionsFilterSchema),
   metrics: z.array(ChartMetricSchema),
+});
+
+const ChartDatasetSchema = z.object({
+  data: z.array(z.number()),
+  label: z.string(),
 });
 
 const ChartSchema = z.object({
   id: z.string(),
   name: z.string(),
   type: ChartTypeEnum,
-  transactionsFilters: z.array(z.null()),
   dataBuilderConfig: ChartDataBuilderConfigSchema,
 });
 
@@ -69,6 +70,7 @@ export {
   AccountSchema,
   AccountsSchema,
   ChartDataBuilderConfigSchema,
+  ChartDatasetSchema,
   ChartSchema,
   SettingSchema,
   TransactionSchema,

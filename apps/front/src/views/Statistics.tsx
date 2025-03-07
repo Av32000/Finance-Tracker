@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useBearStore } from "../GlobalState";
 import AccountManagerCard from "../components/AccountManagerCard";
 import FTButton from "../components/FTButton";
+import FTChart from "../components/FTChat";
 import { useModal } from "../components/ModalProvider";
 import NavBar from "../components/NavBar";
 
@@ -42,8 +43,25 @@ const Statistics = () => {
             </div>
           </div>
           <div className="flex-1 h-full max-w-full">
-            <div className="h-screen bg-bg flex items-center justify-center">
-              <p className="text-2xl text-text-color mobile:mb-52">No Charts</p>
+            <div className="bg-bg h-full flex items-center justify-center">
+              <FTChart
+                chart={{
+                  id: "",
+                  name: "",
+                  type: "Pie",
+                  dataBuilderConfig: {
+                    filters: [],
+                    groupBy: "tag",
+                    metrics: [
+                      {
+                        field: "count",
+                        function: "sum",
+                        cumulative: false,
+                      },
+                    ],
+                  },
+                }}
+              />
             </div>
           </div>
         </div>

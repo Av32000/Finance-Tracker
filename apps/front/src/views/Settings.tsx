@@ -303,7 +303,6 @@ const Settings = () => {
                 onClick={() => {
                   BuildData(
                     {
-                      id: "",
                       groupBy: "tag",
                       metrics: [
                         {
@@ -312,8 +311,6 @@ const Settings = () => {
                           cumulative: false,
                         },
                       ],
-                      name: "",
-                      type: "bar",
                       filters: [],
                     },
                     account.transactions

@@ -281,13 +281,14 @@ function buildDatasets(
   metrics: ChartMetric[],
   accoutTransactions: Transaction[]
 ) {
-  const datasets: { name: string; data: number[]; labels: string[] }[] = [];
+  const datasets: { label: string; data: number[] }[] = [];
+  let labels: string[] = [];
 
   for (const metric of metrics) {
     let name = metric.field;
     name = name.charAt(0).toUpperCase() + name.slice(1);
 
-    const labels: string[] = [];
+    labels = [];
     const data: number[] = [];
 
     for (const group of groups) {
@@ -340,13 +341,12 @@ function buildDatasets(
     }
 
     datasets.push({
-      name,
+      label: name,
       data,
-      labels,
     });
   }
 
-  return datasets;
+  return { labels, datasets };
 }
 
 export function BuildData(
@@ -356,8 +356,5 @@ export function BuildData(
   const filteredTransactions = filterTransactions(transactions, config.filters);
   const groups = groupTransactions(filteredTransactions, config.groupBy);
 
-  const datasets = buildDatasets(groups, config.metrics, transactions);
-  console.log(datasets);
-
-  // Generate final data object
+  return buildDatasets(groups, config.metrics, transactions);
 }

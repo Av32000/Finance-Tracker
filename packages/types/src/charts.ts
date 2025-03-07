@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { ChartDataBuilderConfigSchema, ChartSchema } from "./Schemas";
+import {
+  ChartDataBuilderConfigSchema,
+  ChartDatasetSchema,
+  ChartSchema,
+} from "./Schemas";
 
 export const ChartTypeEnum = z.enum(["Pie", "Line"]);
 export type ChartType = z.infer<typeof ChartTypeEnum>;
@@ -47,6 +51,7 @@ export const ChartMetricSchema = z.object({
 });
 export type ChartMetric = z.infer<typeof ChartMetricSchema>;
 
+export type ChartDataset = z.infer<typeof ChartDatasetSchema>;
 export type FTChart = z.infer<typeof ChartSchema>;
 export type ChartDataBuilderConfig = z.infer<
   typeof ChartDataBuilderConfigSchema
