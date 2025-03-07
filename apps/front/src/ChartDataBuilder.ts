@@ -68,6 +68,9 @@ function filterTransactions(
           case "equals":
             if (propsValue === filter.value) newResult.push(transaction);
             break;
+          case "not_equals":
+            if (propsValue !== filter.value) newResult.push(transaction);
+            break;
           case "greater_than":
             if (propsValue > filter.value) newResult.push(transaction);
             break;

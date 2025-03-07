@@ -27,6 +27,7 @@ export const TransactionsFilterSchema = z
     field: ChartAvailableFieldsEnum,
     operator: z.enum([
       "equals",
+      "not_equals",
       "greater_than",
       "less_than",
       "between",
