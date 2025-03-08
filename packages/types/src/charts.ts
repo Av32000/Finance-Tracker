@@ -41,7 +41,7 @@ export const TransactionsFilterSchema = z
       field: ChartAvailableFieldsEnum,
       order: z.enum(["asc", "desc"]),
       limit: z.number().optional(),
-    })
+    }),
   );
 export type TransactionsFilter = z.infer<typeof TransactionsFilterSchema>;
 

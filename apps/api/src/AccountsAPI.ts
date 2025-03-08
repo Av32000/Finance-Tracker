@@ -78,7 +78,7 @@ export default class AccountsAPI {
     if (fixCount > 0) {
       this.SaveAccounts();
       console.log(
-        fixCount + " propert" + (fixCount > 1 ? "ies" : "y") + " fixed"
+        fixCount + " propert" + (fixCount > 1 ? "ies" : "y") + " fixed",
       );
     }
   }
@@ -109,8 +109,8 @@ export default class AccountsAPI {
           path.join(
             this.dataPath,
             "files",
-            t.file.id + "." + t.file.name.split(".").pop()
-          )
+            t.file.id + "." + t.file.name.split(".").pop(),
+          ),
         )
       ) {
         fileFolder.file(
@@ -119,9 +119,9 @@ export default class AccountsAPI {
             path.join(
               this.dataPath,
               "files",
-              t.file.id + "." + t.file.name.split(".").pop()
-            )
-          )
+              t.file.id + "." + t.file.name.split(".").pop(),
+            ),
+          ),
         );
       }
     });
@@ -139,7 +139,7 @@ export default class AccountsAPI {
       if (accountFile) {
         try {
           const content: Account = JSON.parse(
-            await accountFile.async("string")
+            await accountFile.async("string"),
           );
           if (
             content.id == null ||
@@ -150,7 +150,7 @@ export default class AccountsAPI {
           if (this.accounts.find((a) => a.id === content.id)) {
             if (force) {
               const account = this.accounts.find(
-                (a) => a.id === content.id
+                (a) => a.id === content.id,
               ) as Account;
               Object.keys(account).forEach((k) => {
                 if ((content as any)[k] != null)
@@ -167,7 +167,7 @@ export default class AccountsAPI {
             if (t.file) {
               if (
                 zip.file(
-                  "files/" + t.file.id + "." + t.file.name.split(".").pop()
+                  "files/" + t.file.id + "." + t.file.name.split(".").pop(),
                 ) == null
               )
                 return 3;
@@ -182,7 +182,7 @@ export default class AccountsAPI {
           zip.folder("files")!.forEach(async (_, file) => {
             writeFileSync(
               path.join(this.dataPath, file.name),
-              await file.async("nodebuffer")
+              await file.async("nodebuffer"),
             );
           });
 
@@ -235,7 +235,7 @@ export default class AccountsAPI {
     file: {
       id: string;
       name: string;
-    } | null
+    } | null,
   ) {
     const id = randomUUID();
     const transaction = {
@@ -263,7 +263,7 @@ export default class AccountsAPI {
   PatchTransaction(
     accountId: string,
     transactionId: string,
-    data: Transaction
+    data: Transaction,
   ) {
     const account = this.accounts.find((a) => a.id === accountId);
     if (!account) return;
@@ -282,7 +282,7 @@ export default class AccountsAPI {
     if (!account) return;
 
     account.transactions = account.transactions.filter(
-      (t) => t.id !== transactionId
+      (t) => t.id !== transactionId,
     );
     this.UpdateBalance(accountId);
   }
@@ -352,7 +352,7 @@ export default class AccountsAPI {
       .filter(
         (t) =>
           new Date(t.date).getMonth() === new Date(Date.now()).getMonth() &&
-          new Date(t.date).getFullYear() === new Date(Date.now()).getFullYear()
+          new Date(t.date).getFullYear() === new Date(Date.now()).getFullYear(),
       )
       .forEach((t) => {
         if (t.amount < 0) result += t.amount;
@@ -380,7 +380,7 @@ export default class AccountsAPI {
     accountId: string,
     tagId: string,
     tagName: string,
-    tagColor: string
+    tagColor: string,
   ) {
     const account = this.accounts.find((a) => a.id === accountId);
     if (account) {
@@ -504,7 +504,7 @@ export default class AccountsAPI {
           where: {
             id: {
               notIn: this.accounts.flatMap((a) =>
-                a.transactions.map((t) => t.id)
+                a.transactions.map((t) => t.id),
               ),
             },
           },
@@ -516,7 +516,7 @@ export default class AccountsAPI {
               notIn: this.accounts.flatMap((a) =>
                 a.transactions
                   .map((t) => t.file?.id)
-                  .filter((e) => e != undefined)
+                  .filter((e) => e != undefined),
               ),
             },
           },
@@ -552,7 +552,7 @@ export default class AccountsAPI {
 
       (await prisma.account.findMany()).forEach(async (a) => {
         const localAccount = this.accounts.find(
-          (account) => account.id === a.id
+          (account) => account.id === a.id,
         );
         if (!localAccount) {
           // Delete File
@@ -639,7 +639,7 @@ export default class AccountsAPI {
               delete (t as any)["transactionId"];
               delete (t as any)["fileId"];
               return t;
-            })
+            }),
           );
 
           const formattedTags = tags.map((t) => {
@@ -654,7 +654,7 @@ export default class AccountsAPI {
             transactions: formattedTransactions || [],
             tags: formattedTags || [],
           };
-        }
+        },
       );
 
       this.accounts = await Promise.all(accountsPromises);

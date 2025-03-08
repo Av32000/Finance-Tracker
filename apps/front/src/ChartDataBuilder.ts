@@ -25,7 +25,7 @@ type TransactionsGroup = {
 
 function filterTransactions(
   transactions: Transaction[],
-  filters: TransactionsFilter[]
+  filters: TransactionsFilter[],
 ) {
   let currentResult = transactions;
 
@@ -156,7 +156,7 @@ function filterTransactions(
 function groupTransactions(
   transactions: Transaction[],
   groupBy: ChartAvailableFields,
-  account: Account
+  account: Account,
 ) {
   const groups: TransactionsGroup[] = [];
   transactions.forEach((transaction) => {
@@ -178,7 +178,7 @@ function groupTransactions(
       }
       case "amount": {
         const group = groups.find(
-          (g) => g.value == transaction.amount.toString()
+          (g) => g.value == transaction.amount.toString(),
         );
         if (group) {
           group.transactions.push(transaction);
@@ -199,7 +199,7 @@ function groupTransactions(
           transactionDate.getHours(),
           0,
           0,
-          0
+          0,
         ).getTime();
         const group = groups.find((g) => g.value == startOfHour.toString());
         if (group) {
@@ -222,7 +222,7 @@ function groupTransactions(
           0,
           0,
           0,
-          0
+          0,
         ).getTime();
         const group = groups.find((g) => g.value == startOfDay.toString());
         if (group) {
@@ -240,7 +240,7 @@ function groupTransactions(
         const startOfMonth = new Date(
           transactionDate.getFullYear(),
           transactionDate.getMonth(),
-          1
+          1,
         ).getTime();
         const group = groups.find((g) => g.value == startOfMonth.toString());
         if (group) {
@@ -262,7 +262,7 @@ function groupTransactions(
           0,
           0,
           0,
-          0
+          0,
         ).getTime();
         const group = groups.find((g) => g.value == startOfYear.toString());
         if (group) {
@@ -317,7 +317,7 @@ function groupTransactions(
         group.value = tag?.name || "No Tag";
         if (tag) {
           group.backgroundColor = `${tag.color}${Math.round(0.8 * 255).toString(
-            16
+            16,
           )}`;
           group.borderColor = tag.color;
         }
@@ -332,7 +332,7 @@ function groupTransactions(
 function buildDatasets(
   groups: TransactionsGroup[],
   metrics: ChartMetric[],
-  accoutTransactions: Transaction[]
+  accoutTransactions: Transaction[],
 ) {
   const datasets: ChartDataset[] = [];
   let labels: string[] = [];
@@ -358,7 +358,7 @@ function buildDatasets(
             accoutTransactions
               .filter((at) => at.date <= t.date)
               .map((at) => at.amount)
-              .reduce((p, a) => p + a, 0)
+              .reduce((p, a) => p + a, 0),
           );
           break;
         }
@@ -396,11 +396,11 @@ function buildDatasets(
       backgroundColor.push(
         group.backgroundColor ||
           `${tailwindConfig.theme.colors["cta-primarly"]}${Math.round(
-            0.8 * 255
-          ).toString(16)}`
+            0.8 * 255,
+          ).toString(16)}`,
       );
       borderColor.push(
-        group.borderColor || tailwindConfig.theme.colors["cta-primarly"]
+        group.borderColor || tailwindConfig.theme.colors["cta-primarly"],
       );
     }
 
@@ -418,12 +418,12 @@ function buildDatasets(
 export function BuildData(config: ChartDataBuilderConfig, account: Account) {
   const filteredTransactions = filterTransactions(
     account.transactions,
-    config.filters
+    config.filters,
   );
   const groups = groupTransactions(
     filteredTransactions,
     config.groupBy,
-    account
+    account,
   );
 
   return buildDatasets(groups, config.metrics, account.transactions);

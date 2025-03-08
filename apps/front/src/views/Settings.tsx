@@ -14,7 +14,7 @@ const importAccount = (
   successCallback: (response: Response) => void,
   fetchServer: FetchServerType,
   account: Account,
-  force: boolean = false
+  force: boolean = false,
 ) => {
   const input: HTMLInputElement = document.createElement("input");
   input.type = "file";
@@ -35,7 +35,7 @@ const importAccount = (
           {
             method: "POST",
             body: formData,
-          }
+          },
         );
 
         successCallback(response);
@@ -83,7 +83,7 @@ const Settings = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(attResp),
-        }
+        },
       );
 
       const verificationJSON = await verificationResp.json();
@@ -241,7 +241,7 @@ const Settings = () => {
                                 },
                                 fetchServer,
                                 account!,
-                                true
+                                true,
                               );
                             },
                           });
@@ -255,7 +255,7 @@ const Settings = () => {
                       }
                     },
                     fetchServer,
-                    account
+                    account,
                   );
                 }}
               >
@@ -314,8 +314,8 @@ const Settings = () => {
                         ],
                         filters: [],
                       },
-                      account
-                    )
+                      account,
+                    ),
                   );
                 }}
               >

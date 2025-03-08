@@ -43,7 +43,7 @@ const offline = process.argv.includes("--offline");
 if (offline) {
   console.warn(
     "\x1b[33m%s\x1b[0m",
-    "--offline flag used => Unsynchronised data"
+    "--offline flag used => Unsynchronised data",
   );
 }
 
@@ -81,11 +81,11 @@ if (
 ) {
   const privateKey = readFileSync(
     path.join(__dirname, "keys/privateKey.pem"),
-    "utf-8"
+    "utf-8",
   );
   const publicKey = readFileSync(
     path.join(__dirname, "keys/publicKey.pem"),
-    "utf-8"
+    "utf-8",
   );
 
   fastify.register(require("@fastify/jwt"), {
@@ -141,7 +141,7 @@ const authAPI = new AuthAPI(accountsPath);
 accountsAPI.FixAccounts();
 
 const port = parseInt(
-  process.argv.find((s) => s.startsWith("--port"))?.split("=")[1] || "3000"
+  process.argv.find((s) => s.startsWith("--port"))?.split("=")[1] || "3000",
 );
 
 fastify.register(
@@ -209,7 +209,7 @@ fastify.register(
         const { credentialPublicKey, credentialID, counter } = registrationInfo;
 
         const existingDevice = user.devices.find((device) =>
-          isoUint8Array.areEqual(device.credentialID, credentialID)
+          isoUint8Array.areEqual(device.credentialID, credentialID),
         );
 
         if (!existingDevice) {
@@ -289,7 +289,7 @@ fastify.register(
             registrationInfo;
 
           const existingDevice = user.devices.find((device) =>
-            isoUint8Array.areEqual(device.credentialID, credentialID)
+            isoUint8Array.areEqual(device.credentialID, credentialID),
           );
 
           if (!existingDevice) {
@@ -428,14 +428,14 @@ fastify.register(
 
     api.get("/accounts/:id/export", async (request, reply) => {
       const buffer = await accountsAPI.ExportAccount(
-        (request.params as any).id
+        (request.params as any).id,
       );
       if (buffer != null) {
         reply.header(
           "Content-Disposition",
           `attachment; filename=${accountsAPI
             .GetAccount((request.params as any).id)
-            ?.name.replace(/[^a-zA-Z0-9-_.]/g, "")}.zip`
+            ?.name.replace(/[^a-zA-Z0-9-_.]/g, "")}.zip`,
         );
         reply.type("application/zip").send(buffer);
       } else {
@@ -511,7 +511,7 @@ fastify.register(
         const accountId = (request.params as any).accountId;
         const transactionId = (request.params as any).transactionId;
         return accountsAPI.GetTransaction(accountId, transactionId);
-      }
+      },
     );
 
     api.post("/accounts/:accountId/transactions", async (request, reply) => {
@@ -533,7 +533,7 @@ fastify.register(
         amount,
         date,
         tag,
-        file
+        file,
       );
     });
 
@@ -545,10 +545,10 @@ fastify.register(
         accountsAPI.PatchTransaction(
           accountId,
           transactionId,
-          request.body as any
+          request.body as any,
         );
         reply.status(200);
-      }
+      },
     );
 
     api.delete(
@@ -558,7 +558,7 @@ fastify.register(
         const transactionId = (request.params as any).transactionId;
         accountsAPI.DeleteTransaction(accountId, transactionId);
         reply.status(200);
-      }
+      },
     );
 
     // Files
@@ -624,7 +624,7 @@ fastify.register(
         accountId,
         tagId,
         tagName,
-        tagColor
+        tagColor,
       );
       if (isValid) reply.status(200);
       else reply.status(400);
@@ -658,7 +658,7 @@ fastify.register(
         const setting = account.settings.find((s) => s.name === settingName);
         if (!setting) return reply.status(400);
         return setting;
-      }
+      },
     );
 
     api.post("/accounts/:accountId/settings", async (request, reply) => {
@@ -677,13 +677,13 @@ fastify.register(
       await pump(
         data.file,
         createWriteStream(
-          path.join(filesPath, newName + "." + data.filename.split(".").pop())
-        )
+          path.join(filesPath, newName + "." + data.filename.split(".").pop()),
+        ),
       );
       return newName;
     });
   },
-  { prefix: "/api" }
+  { prefix: "/api" },
 );
 
 const routes = ["/home", "/transactions", "/settings", "/stats"];
@@ -710,5 +710,5 @@ fastify.listen(
     }
     console.log(`Finance Tracker listening on ${address}`);
     new Cmd(accountsAPI);
-  }
+  },
 );

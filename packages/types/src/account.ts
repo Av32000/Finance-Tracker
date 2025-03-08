@@ -13,7 +13,7 @@ type TransactionTag = z.infer<typeof TransactionTagSchema>;
 
 type FetchServerType = (
   endpoint: string,
-  options?: RequestInit
+  options?: RequestInit,
 ) => Promise<Response>;
 
 export { Account, FetchServerType, Setting, Transaction, TransactionTag };
