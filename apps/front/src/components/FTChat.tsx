@@ -1,20 +1,20 @@
 import { ChartDataset, FTChart as FTChartType } from "@finance-tracker/types";
-import {
-  ArcElement,
-  Chart as ChartJS,
-  ChartOptions,
-  Legend,
-  Tooltip,
-} from "chart.js";
+import { Chart as ChartJS, ChartOptions, registerables } from "chart.js";
 import { useEffect, useState } from "react";
-import { Pie } from "react-chartjs-2";
+import { Line, Pie } from "react-chartjs-2";
 import tailwindConfig from "../../tailwind.config";
 import { BuildData } from "../ChartDataBuilder";
 import { useBearStore } from "../GlobalState";
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(...registerables);
 
-const FTChart = ({ chart }: { chart: FTChartType }) => {
+const FTChart = ({
+  chart,
+  customOptions,
+}: {
+  chart: FTChartType;
+  customOptions?: ChartOptions;
+}) => {
   const { account } = useBearStore();
   const [data, setData] = useState<{
     labels: string[];
@@ -34,6 +34,7 @@ const FTChart = ({ chart }: { chart: FTChartType }) => {
         displayColors: false,
       },
     },
+    ...customOptions,
   };
 
   useEffect(() => {
@@ -42,20 +43,48 @@ const FTChart = ({ chart }: { chart: FTChartType }) => {
     }
   }, [chart, account]);
 
-  return account != null ? (
-    chart.type === "Pie" && (
-      <Pie
-        // @ts-expect-error Current options object is valid
-        options={options}
-        data={data}
-        className="w-full max-h-full"
-      ></Pie>
-    )
-  ) : (
-    <div>
-      <p>No Account</p>
-    </div>
-  );
+  if (account != null) {
+    switch (chart.type) {
+      case "Pie":
+        return (
+          <Pie
+            // @ts-expect-error Current options object is valid
+            options={options}
+            data={data}
+            className="w-full max-h-full"
+          ></Pie>
+        );
+      case "Line":
+        return (
+          <Line
+            options={{
+              ...options,
+              scales: {
+                x: {
+                  ticks: {
+                    color: tailwindConfig.theme.colors["text-color"],
+                  },
+                },
+                y: {
+                  type: "linear",
+                  ticks: {
+                    color: tailwindConfig.theme.colors["text-color"],
+                  },
+                },
+              },
+            }}
+            data={data}
+            className="w-full max-h-full"
+          ></Line>
+        );
+    }
+  } else {
+    return (
+      <div>
+        <p>No Account</p>
+      </div>
+    );
+  }
 };
 
 export default FTChart;

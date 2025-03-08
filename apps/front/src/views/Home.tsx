@@ -155,7 +155,38 @@ const Home = () => {
           </div>
           <div className="bg-bg-light col-start-5 col-end-10 row-start-4 row-end-7 rounded-2xl flex flex-col py-3 shadow-lg mobile:h-80 px-0">
             <p className="text-active-text-color px-3">Balance Evolution</p>
-            <p>Not implemented yet</p>
+            <div className="p-2">
+              <FTChart
+                customOptions={{
+                  plugins: {
+                    legend: { display: false },
+                    tooltip: { displayColors: false },
+                  },
+                }}
+                chart={{
+                  id: "",
+                  name: "",
+                  type: "Line",
+                  dataBuilderConfig: {
+                    filters: [
+                      {
+                        type: "sort",
+                        field: "date",
+                        order: "asc",
+                      },
+                    ],
+                    groupBy: "day",
+                    metrics: [
+                      {
+                        field: "balance",
+                        function: "void",
+                        cumulative: false,
+                      },
+                    ],
+                  },
+                }}
+              />
+            </div>
           </div>
         </div>
       ) : (
