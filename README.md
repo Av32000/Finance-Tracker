@@ -51,5 +51,5 @@ All contributions are greatly appreciated. Feel free to fork this repository and
 
 ## Disclaimer
 
-> [!CAUTION] 
+> [!CAUTION]
 > Finance Tracker is a side project and is not intended for use in production or with important or sensitive data. The authors of this software decline all responsibility for the data stored, managed, or processed by the software. Use it at your own risk.

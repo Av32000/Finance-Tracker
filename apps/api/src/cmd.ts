@@ -72,7 +72,7 @@ export default class Cmd {
               );
               console.log(
                 "Account exported in " +
-                join(__dirname, accountData.name + ".zip"),
+                  join(__dirname, accountData.name + ".zip"),
               );
             }
           } else {

@@ -2,26 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
-input[type=file]::-webkit-file-upload-button,
-input[type=file]::file-selector-button {
+input[type="file"]::-webkit-file-upload-button,
+input[type="file"]::file-selector-button {
   @apply text-active-text-color bg-bg font-medium text-sm cursor-pointer border-0 py-2.5 pl-8 pr-4;
   margin-inline-start: -1rem;
   margin-inline-end: 1rem;
 }
 
-input[type=color] {
+input[type="color"] {
   appearance: none;
   background-color: transparent;
   border: none;
   cursor: pointer;
 }
 
-input[type=color]::-webkit-color-swatch {
+input[type="color"]::-webkit-color-swatch {
   border-radius: 10px;
   border: none;
 }
 
-input[type=color]::-moz-color-swatch {
+input[type="color"]::-moz-color-swatch {
   border-radius: 10px;
   border: none;
 }

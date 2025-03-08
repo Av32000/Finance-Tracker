@@ -41,7 +41,7 @@ const Login = ({ refresh }: { refresh: () => void }) => {
 
   const login = async (
     fetchServer: FetchServerType,
-    setAuthToken: (token: string) => void
+    setAuthToken: (token: string) => void,
   ) => {
     return new Promise<void>(async (resolve, reject) => {
       const hasPasskey = await (await fetchServer("/has-passkey")).text();
@@ -132,7 +132,7 @@ const Login = ({ refresh }: { refresh: () => void }) => {
               onClick={async () => {
                 setIsLoading(true);
                 await login(fetchServer, setAuthToken).catch(() =>
-                  setIsLoading(false)
+                  setIsLoading(false),
                 );
               }}
             >
@@ -146,7 +146,7 @@ const Login = ({ refresh }: { refresh: () => void }) => {
                 callback={async (code) => {
                   setIsLoading(true);
                   await checkOTP(code, fetchServer).catch(() =>
-                    setIsLoading(false)
+                    setIsLoading(false),
                   );
                 }}
               />
