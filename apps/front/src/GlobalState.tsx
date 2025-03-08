@@ -10,7 +10,7 @@ type AppState = {
   setAccount: (account: Account) => void;
   refreshAccount: (
     id: string,
-    setAccount: (account: Account) => void
+    setAccount: (account: Account) => void,
   ) => Promise<void>;
   fetchServer: FetchServerType;
   setAuthToken: (token: string) => void;
@@ -40,7 +40,7 @@ const fetchServer: FetchServerType = async (endpoint, options) => {
   }
   return await fetch(
     apiURL + (endpoint.startsWith("/") ? endpoint : "/" + endpoint),
-    fetchOptions
+    fetchOptions,
   );
 };
 

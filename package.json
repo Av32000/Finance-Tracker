@@ -21,11 +21,15 @@
     "preview": "pnpm --filter @finance-tracker/front preview",
     "typecheck": "pnpm -r exec tsc --noEmit",
     "typecheck:front": "pnpm --filter @finance-tracker/front typecheck",
-    "typecheck:server": "pnpm --filter @finance-tracker/api typecheck"
+    "typecheck:server": "pnpm --filter @finance-tracker/api typecheck",
+    "prettier": "prettier --write ."
   },
   "dependencies": {
     "@prisma/client": "5.13.0",
     "concurrently": "^9.1.2",
     "prisma": "5.13.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.5.3"
   }
 }

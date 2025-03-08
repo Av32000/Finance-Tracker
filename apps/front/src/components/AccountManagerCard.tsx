@@ -12,7 +12,7 @@ type State = "Closed" | "Switch" | "Create";
 
 const RefreshAccounts = async (
   setAccounts: (accounts: Account[]) => void,
-  fetchServer: FetchServerType
+  fetchServer: FetchServerType,
 ) => {
   try {
     const fetchedAccouts = await fetchServer("/accounts");
@@ -25,7 +25,7 @@ const RefreshAccounts = async (
 
 const createAccount = async (
   newAccount: string,
-  fetchServer: FetchServerType
+  fetchServer: FetchServerType,
 ) => {
   try {
     const newAccountFetched = await fetchServer("/accounts", {
@@ -123,7 +123,7 @@ const AccountManagerCard = () => {
                     }`}
                     onClick={() => {
                       refreshAccount(a.id, setAccount).then(() =>
-                        setStatus("Closed")
+                        setStatus("Closed"),
                       );
                     }}
                   >
