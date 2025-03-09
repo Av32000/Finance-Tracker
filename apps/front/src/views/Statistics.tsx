@@ -45,19 +45,20 @@ const Statistics = () => {
           <div className="flex-1 h-full max-w-full">
             <div className="bg-bg h-full mobile:pb-16 flex items-center justify-center">
               <FTChart
-                customOptions={{ plugins: { legend: { display: true } } }}
+                customOptions={{ legend: false }}
                 chart={{
                   id: "",
                   name: "",
-                  type: "Line",
+                  type: "Pie",
                   dataBuilderConfig: {
                     filters: [],
-                    groupBy: "day",
+                    groupBy: "tag",
                     metrics: [
                       {
+                        filters: [],
                         field: "count",
-                        function: "sum",
-                        cumulative: true,
+                        function: "void",
+                        cumulative: false,
                       },
                     ],
                   },

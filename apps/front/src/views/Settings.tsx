@@ -310,6 +310,7 @@ const Settings = () => {
                             field: "count",
                             function: "sum",
                             cumulative: false,
+                            filters: [],
                           },
                         ],
                         filters: [],

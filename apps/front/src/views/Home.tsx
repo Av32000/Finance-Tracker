@@ -76,6 +76,7 @@ const Home = () => {
                     groupBy: "tag",
                     metrics: [
                       {
+                        filters: [],
                         field: "amount",
                         function: "sum",
                         cumulative: false,
@@ -158,10 +159,7 @@ const Home = () => {
             <div className="p-2">
               <FTChart
                 customOptions={{
-                  plugins: {
-                    legend: { display: false },
-                    tooltip: { displayColors: false },
-                  },
+                  legend: false,
                 }}
                 chart={{
                   id: "",
@@ -181,6 +179,7 @@ const Home = () => {
                         field: "balance",
                         function: "void",
                         cumulative: false,
+                        filters: [],
                       },
                     ],
                   },

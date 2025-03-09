@@ -290,7 +290,17 @@ function groupTransactions(
     }
   });
 
-  // TODO : Sort Groups & Format Groups Name
+  switch (groupBy) {
+    case "amount":
+    case "date":
+    case "hour":
+    case "day":
+    case "month":
+    case "year":
+      groups.sort((a, b) => parseInt(a.value) - parseInt(b.value));
+      break;
+  }
+
   for (const group of groups) {
     switch (groupBy) {
       case "amount":
@@ -336,10 +346,11 @@ function buildDatasets(
 ) {
   const datasets: ChartDataset[] = [];
   let labels: string[] = [];
-  const backgroundColor: string[] = [];
-  const borderColor: string[] = [];
 
   for (const metric of metrics) {
+    const backgroundColor: string[] = [];
+    const borderColor: string[] = [];
+
     let name = metric.field;
     name = name.charAt(0).toUpperCase() + name.slice(1);
 
@@ -347,14 +358,18 @@ function buildDatasets(
     const data: number[] = [];
 
     for (const group of groups) {
+      const transactions = filterTransactions(
+        group.transactions,
+        metric.filters,
+      );
       let values;
       switch (metric.field) {
         case "amount": {
-          values = group.transactions.map((t) => t.amount);
+          values = transactions.map((t) => t.amount);
           break;
         }
         case "balance": {
-          values = group.transactions.map((t) =>
+          values = transactions.map((t) =>
             accoutTransactions
               .filter((at) => at.date <= t.date)
               .map((at) => at.amount)
@@ -363,7 +378,7 @@ function buildDatasets(
           break;
         }
         case "count":
-          values = [group.transactions.length];
+          values = [transactions.length];
           break;
       }
 
@@ -395,17 +410,19 @@ function buildDatasets(
       data.push(finalValue);
       backgroundColor.push(
         group.backgroundColor ||
-          `${tailwindConfig.theme.colors["cta-primarly"]}${Math.round(
+          `${metric.color || tailwindConfig.theme.colors["cta-primarly"]}${Math.round(
             0.8 * 255,
           ).toString(16)}`,
       );
       borderColor.push(
-        group.borderColor || tailwindConfig.theme.colors["cta-primarly"],
+        group.borderColor ||
+          metric.color ||
+          tailwindConfig.theme.colors["cta-primarly"],
       );
     }
 
     datasets.push({
-      label: name,
+      label: metric.name || name,
       data,
       backgroundColor,
       borderColor,

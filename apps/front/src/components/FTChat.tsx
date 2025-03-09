@@ -13,7 +13,7 @@ const FTChart = ({
   customOptions,
 }: {
   chart: FTChartType;
-  customOptions?: ChartOptions;
+  customOptions?: { legend?: boolean };
 }) => {
   const { account } = useBearStore();
   const [data, setData] = useState<{
@@ -34,8 +34,11 @@ const FTChart = ({
         displayColors: false,
       },
     },
-    ...customOptions,
   };
+
+  if (customOptions && customOptions.legend != null) {
+    options.plugins!.legend!.display = customOptions.legend;
+  }
 
   useEffect(() => {
     if (account) {
