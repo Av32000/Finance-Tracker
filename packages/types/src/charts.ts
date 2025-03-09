@@ -5,7 +5,7 @@ import {
   ChartSchema,
 } from "./Schemas";
 
-export const ChartTypeEnum = z.enum(["Pie", "Line"]);
+export const ChartTypeEnum = z.enum(["Pie", "Line", "Doughnut", "Bar"]);
 export type ChartType = z.infer<typeof ChartTypeEnum>;
 
 export const ChartAvailableFieldsEnum = z.enum([
