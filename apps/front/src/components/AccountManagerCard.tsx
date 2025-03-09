@@ -86,7 +86,7 @@ const AccountManagerCard = () => {
       setAccount(accounts[0]);
       setLoading(false);
     }
-  }, [accounts, account, fetchServer, setAccount]);
+  }, [accounts, account, fetchServer, setAccount, refreshAccountsCallback]);
 
   return (
     <div

@@ -15,5 +15,6 @@ module.exports = {
       { allowConstantExport: true },
     ],
     "no-async-promise-executor": 0,
+    "react-refresh/only-export-components": 0,
   },
 };

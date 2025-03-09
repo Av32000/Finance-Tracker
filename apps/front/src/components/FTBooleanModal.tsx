@@ -9,7 +9,6 @@ const FTBooleanModal = ({
   cancelText,
 }: {
   hideModal: () => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   callback?: () => void;
   cancelCallback?: () => void;
   title: string;
