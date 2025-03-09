@@ -21,7 +21,7 @@ const FTOTPModal = ({ hideModal }: { hideModal: () => void }) => {
 
   const checkOTP = async (token: number, fetchServer: FetchServerType) => {
     return new Promise<void>(async (resolve, reject) => {
-      let isValid = await fetchServer("/verify-otp", {
+      const isValid = await fetchServer("/verify-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -51,7 +51,7 @@ const FTOTPModal = ({ hideModal }: { hideModal: () => void }) => {
 
   useEffect(() => {
     retriveOTPURL();
-  }, [otpURL]);
+  });
 
   return (
     <div
