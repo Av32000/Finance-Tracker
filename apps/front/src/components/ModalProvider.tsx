@@ -1,5 +1,6 @@
 import { ReactNode, createContext, useContext, useState } from "react";
 import FTBooleanModal from "./FTBooleanModal";
+import FTCreateChartModal from "./FTCreateChartModal";
 import FTInfoModal from "./FTInfoModal";
 import FTOTPModal from "./FTOTPModal";
 
@@ -20,6 +21,9 @@ type ShowModalProps =
     }
   | {
       type: "OTP";
+    }
+  | {
+      type: "Chart";
     };
 
 interface ModalContextType {
@@ -66,6 +70,9 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
           )}
 
           {modalData.type === "OTP" && <FTOTPModal hideModal={hideModal} />}
+          {modalData.type === "Chart" && (
+            <FTCreateChartModal hideModal={hideModal} />
+          )}
         </div>
       )}
     </ModalContext.Provider>

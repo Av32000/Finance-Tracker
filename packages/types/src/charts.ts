@@ -21,18 +21,19 @@ export const ChartAvailableFieldsEnum = z.enum([
 ]);
 export type ChartAvailableFields = z.infer<typeof ChartAvailableFieldsEnum>;
 
+export const ChartFilterOperatorsEnum = z.enum([
+  "equals",
+  "not_equals",
+  "greater_than",
+  "less_than",
+  "between",
+  "contains",
+]);
 export const TransactionsFilterSchema = z
   .object({
     type: z.literal("property"),
     field: ChartAvailableFieldsEnum,
-    operator: z.enum([
-      "equals",
-      "not_equals",
-      "greater_than",
-      "less_than",
-      "between",
-      "contains",
-    ]),
+    operator: ChartFilterOperatorsEnum,
     value: z.any(),
   })
   .or(

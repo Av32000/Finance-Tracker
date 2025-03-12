@@ -3,7 +3,7 @@ import { useBearStore } from "../GlobalState";
 import { FormatDate, FormatMoney } from "../Utils";
 import AccountManagerCard from "../components/AccountManagerCard";
 import AmountTag from "../components/AmountTag";
-import FTChart from "../components/FTChat";
+import FTChart from "../components/FTChart";
 import NavBar from "../components/NavBar";
 
 const Home = () => {

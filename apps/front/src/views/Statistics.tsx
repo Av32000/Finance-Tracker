@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useBearStore } from "../GlobalState";
 import AccountManagerCard from "../components/AccountManagerCard";
 import FTButton from "../components/FTButton";
-import FTChart from "../components/FTChat";
+import FTChart from "../components/FTChart";
 import { useModal } from "../components/ModalProvider";
 import NavBar from "../components/NavBar";
 
@@ -34,9 +34,7 @@ const Statistics = () => {
             <div className="flex flex-row items-center gap-3">
               <FTButton
                 className="h-10"
-                onClick={() =>
-                  showModal({ title: "Not implemented yet", type: "Info" })
-                }
+                onClick={() => showModal({ type: "Chart" })}
               >
                 Create new Chart
               </FTButton>
