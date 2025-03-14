@@ -86,7 +86,7 @@ const MetricItem: React.FC<{
 }> = ({ id, metric, updateMetric, deleteMetric }) => {
   const [filters, setFilters] = useState<
     { id: number; filter: TransactionsFilter }[]
-  >([]);
+  >(metric.filters.map((filter, id) => ({ id, filter })));
 
   const availableFields = Object.values(ChartMetricsFieldsEnum.enum);
   const availableFunctions = Object.values(ChartMetricsFunctionsEnum.enum);

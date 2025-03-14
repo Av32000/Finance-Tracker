@@ -86,23 +86,21 @@ const TransactionsFiltersManager = ({
       )}
 
       <div className="flex flex-row gap-4 items-center mb-4">
-        <p>
-          Filter Type :
-          <FTSelect
-            value={newFilterType}
-            onChange={(e) =>
-              setNewFilterType(e.target.value as "property" | "sort")
-            }
-            className="ml-2 p-1 border rounded"
-          >
-            <option value="property" className="text-text-color bg-transparent">
-              Property
-            </option>
-            <option value="sort" className="text-text-color bg-transparent">
-              Sort
-            </option>
-          </FTSelect>
-        </p>
+        <p>Filter Type :</p>
+        <FTSelect
+          value={newFilterType}
+          onChange={(e) =>
+            setNewFilterType(e.target.value as "property" | "sort")
+          }
+          className="ml-2 p-1 border rounded"
+        >
+          <option value="property" className="text-text-color bg-transparent">
+            Property
+          </option>
+          <option value="sort" className="text-text-color bg-transparent">
+            Sort
+          </option>
+        </FTSelect>
         <FTButton onClick={addFilter}>Add Filter</FTButton>
       </div>
     </div>
