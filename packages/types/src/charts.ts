@@ -46,12 +46,20 @@ export const TransactionsFilterSchema = z
   );
 export type TransactionsFilter = z.infer<typeof TransactionsFilterSchema>;
 
+export const ChartMetricsFieldsEnum = z.enum(["amount", "balance", "count"]);
+export const ChartMetricsFunctionsEnum = z.enum([
+  "sum",
+  "average",
+  "count",
+  "void",
+]);
+
 export const ChartMetricSchema = z.object({
   name: z.string().optional(),
   color: z.string().optional(),
   filters: z.array(TransactionsFilterSchema),
-  field: z.enum(["amount", "balance", "count"]),
-  function: z.enum(["sum", "average", "count", "void"]),
+  field: ChartMetricsFieldsEnum,
+  function: ChartMetricsFunctionsEnum,
   cumulative: z.boolean(),
 });
 export type ChartMetric = z.infer<typeof ChartMetricSchema>;

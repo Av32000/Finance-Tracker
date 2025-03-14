@@ -87,7 +87,7 @@ const TransactionsFiltersManager = ({
 
       <div className="flex flex-row gap-4 items-center mb-4">
         <p>
-          Filter Type:
+          Filter Type :
           <FTSelect
             value={newFilterType}
             onChange={(e) =>
@@ -128,98 +128,47 @@ const FilterItem: React.FC<{
           </FTButton>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div className="flex flex-row gap-4 items-center">
-            <p className="text-active-text-color">Field :</p>
-            <FTSelect
-              value={filter.field}
-              onChange={(e) =>
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                updateFilter({ ...filter, field: e.target.value as any })
-              }
-              className="text-start"
-            >
-              {availableFields.map((field) => (
-                <option
-                  key={field}
-                  value={field}
-                  className="text-text-color bg-transparent"
-                >
-                  {field.charAt(0).toUpperCase() + field.slice(1)}
-                </option>
-              ))}
-            </FTSelect>
-          </div>
+        <div className="flex flex-row gap-4 items-center">
+          <FTSelect
+            value={filter.field}
+            onChange={(e) =>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              updateFilter({ ...filter, field: e.target.value as any })
+            }
+            className="text-start"
+          >
+            {availableFields.map((field) => (
+              <option
+                key={field}
+                value={field}
+                className="text-text-color bg-transparent"
+              >
+                {field.charAt(0).toUpperCase() + field.slice(1)}
+              </option>
+            ))}
+          </FTSelect>
+          <FTSelect
+            value={filter.operator}
+            onChange={(e) =>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              updateFilter({ ...filter, operator: e.target.value as any })
+            }
+            className="text-start"
+          >
+            {availableOperators.map((operator) => (
+              <option
+                key={operator}
+                value={operator}
+                className="text-text-color bg-transparent"
+              >
+                {operator.charAt(0).toUpperCase() +
+                  operator.replace(/_/g, " ").slice(1)}
+              </option>
+            ))}
+          </FTSelect>
 
-          <div className="flex flex-row gap-4 items-center">
-            <p className="text-active-text-color">Operator :</p>
-            <FTSelect
-              value={filter.operator}
-              onChange={(e) =>
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                updateFilter({ ...filter, operator: e.target.value as any })
-              }
-              className="text-start"
-            >
-              {availableOperators.map((operator) => (
-                <option
-                  key={operator}
-                  value={operator}
-                  className="text-text-color bg-transparent"
-                >
-                  {operator.charAt(0).toUpperCase() +
-                    operator.replace(/_/g, " ").slice(1)}
-                </option>
-              ))}
-            </FTSelect>
-          </div>
-
-          <div className="flex flex-row gap-4 items-center">
-            <p className="text-active-text-color">Value : </p>
-            {filter.operator === "between" ? (
-              <div className="flex space-x-2">
-                <FTInput
-                  type={
-                    ["amount", "year", "month", "day", "hour"].includes(
-                      filter.field,
-                    )
-                      ? "number"
-                      : "text"
-                  }
-                  value={Array.isArray(filter.value) ? filter.value[0] : ""}
-                  onChange={(e) =>
-                    updateFilter({
-                      ...filter,
-                      value: [
-                        e.target.value,
-                        Array.isArray(filter.value) ? filter.value[1] : "",
-                      ],
-                    })
-                  }
-                  placeholder="Min"
-                />
-                <FTInput
-                  type={
-                    ["amount", "year", "month", "day", "hour"].includes(
-                      filter.field,
-                    )
-                      ? "number"
-                      : "text"
-                  }
-                  value={Array.isArray(filter.value) ? filter.value[1] : ""}
-                  onChange={(e) =>
-                    updateFilter({
-                      ...filter,
-                      value: [
-                        Array.isArray(filter.value) ? filter.value[0] : "",
-                        e.target.value,
-                      ],
-                    })
-                  }
-                  placeholder="Max"
-                />
-              </div>
-            ) : (
+          {filter.operator === "between" ? (
+            <div className="flex gap-4">
               <FTInput
                 type={
                   ["amount", "year", "month", "day", "hour"].includes(
@@ -228,13 +177,54 @@ const FilterItem: React.FC<{
                     ? "number"
                     : "text"
                 }
-                value={filter.value}
+                value={Array.isArray(filter.value) ? filter.value[0] : ""}
                 onChange={(e) =>
-                  updateFilter({ ...filter, value: e.target.value })
+                  updateFilter({
+                    ...filter,
+                    value: [
+                      e.target.value,
+                      Array.isArray(filter.value) ? filter.value[1] : "",
+                    ],
+                  })
                 }
+                placeholder="Min"
               />
-            )}
-          </div>
+              <FTInput
+                type={
+                  ["amount", "year", "month", "day", "hour"].includes(
+                    filter.field,
+                  )
+                    ? "number"
+                    : "text"
+                }
+                value={Array.isArray(filter.value) ? filter.value[1] : ""}
+                onChange={(e) =>
+                  updateFilter({
+                    ...filter,
+                    value: [
+                      Array.isArray(filter.value) ? filter.value[0] : "",
+                      e.target.value,
+                    ],
+                  })
+                }
+                placeholder="Max"
+              />
+            </div>
+          ) : (
+            <FTInput
+              type={
+                ["amount", "year", "month", "day", "hour"].includes(
+                  filter.field,
+                )
+                  ? "number"
+                  : "text"
+              }
+              value={filter.value}
+              onChange={(e) =>
+                updateFilter({ ...filter, value: e.target.value })
+              }
+            />
+          )}
         </div>
       </div>
     );
@@ -248,64 +238,58 @@ const FilterItem: React.FC<{
           </FTButton>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <div className="flex flex-row gap-4 items-center">
-            <p className="text-active-text-color">Field :</p>
-            <FTSelect
-              value={filter.field}
-              onChange={(e) =>
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                updateFilter({ ...filter, field: e.target.value as any })
-              }
-              className="text-start"
-            >
-              {availableFields.map((field) => (
-                <option
-                  key={field}
-                  value={field}
-                  className="text-text-color bg-transparent"
-                >
-                  {field.charAt(0).toUpperCase() + field.slice(1)}
-                </option>
-              ))}
-            </FTSelect>
-          </div>
-
-          <div className="flex flex-row gap-4 items-center">
-            <p className="text-active-text-color">Order</p>
-            <FTSelect
-              value={filter.order}
-              onChange={(e) =>
-                updateFilter({
-                  ...filter,
-                  order: e.target.value as "asc" | "desc",
-                })
-              }
-              className="text-start"
-            >
-              <option value="asc" className="text-text-color bg-transparent">
-                Ascending
+        <div className="flex flex-row gap-4 mb-4">
+          <FTSelect
+            value={filter.field}
+            onChange={(e) =>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              updateFilter({ ...filter, field: e.target.value as any })
+            }
+            className="text-start"
+          >
+            {availableFields.map((field) => (
+              <option
+                key={field}
+                value={field}
+                className="text-text-color bg-transparent"
+              >
+                {field.charAt(0).toUpperCase() + field.slice(1)}
               </option>
-              <option value="desc" className="text-text-color bg-transparent">
-                Descending
-              </option>
-            </FTSelect>
-          </div>
+            ))}
+          </FTSelect>
 
-          <div className="flex flex-row gap-4 items-center">
-            <p className="text-active-text-color">Limit (Optional)</p>
-            <FTInput
-              type="number"
-              value={filter.limit || ""}
-              onChange={(e) => {
-                const value = e.target.value
-                  ? parseInt(e.target.value)
-                  : undefined;
-                updateFilter({ ...filter, limit: value });
-              }}
-              placeholder="Optional"
-            />
-          </div>
+          <FTSelect
+            value={filter.order}
+            onChange={(e) =>
+              updateFilter({
+                ...filter,
+                order: e.target.value as "asc" | "desc",
+              })
+            }
+            className="text-start"
+          >
+            <option value="asc" className="text-text-color bg-transparent">
+              Ascending
+            </option>
+            <option value="desc" className="text-text-color bg-transparent">
+              Descending
+            </option>
+          </FTSelect>
+        </div>
+
+        <div className="flex flex-row gap-4 items-center">
+          <p className="text-active-text-color">Limit (Optional) :</p>
+          <FTInput
+            type="number"
+            value={filter.limit || ""}
+            onChange={(e) => {
+              const value = e.target.value
+                ? parseInt(e.target.value)
+                : undefined;
+              updateFilter({ ...filter, limit: value });
+            }}
+            placeholder="Optional"
+          />
         </div>
       </div>
     );
