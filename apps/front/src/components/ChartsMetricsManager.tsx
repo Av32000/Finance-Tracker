@@ -54,7 +54,7 @@ const ChartsMetricsManager = ({
   };
 
   return (
-    <div className="max-h-[66%] overflow-y-scroll">
+    <div className="max-h-[500px] overflow-y-scroll">
       {metrics.length === 0 ? (
         <p className="text-active-text-color italic mb-4">
           No metrics added yet

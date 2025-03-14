@@ -21,7 +21,7 @@ const FTCreateChartModal = ({ hideModal }: { hideModal: () => void }) => {
   const [step, setStep] = useState(1);
 
   const [chartName, setChartName] = useState("");
-  const [chartType, setChartType] = useState<ChartType>("Line");
+  const [chartType, setChartType] = useState<ChartType>("Pie");
   const [groupBy, setGroupBy] = useState<ChartAvailableFields>("amount");
   const [filters, setFilters] = useState<
     { id: number; filter: TransactionsFilter }[]
@@ -61,7 +61,7 @@ const FTCreateChartModal = ({ hideModal }: { hideModal: () => void }) => {
         {step == 1 && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4 mt-4">
             <div className="flex flex-row gap-4 items-center">
-              <p className="text-active-text-color">Chart Name : </p>
+              <p className="text-active-text-color min-w-fit">Chart Name : </p>
               <FTInput
                 placeholder="Chart Name"
                 className="w-2/3"

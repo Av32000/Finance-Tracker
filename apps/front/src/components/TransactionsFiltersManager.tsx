@@ -66,7 +66,7 @@ const TransactionsFiltersManager = ({
   };
 
   return (
-    <div>
+    <div className="max-h-[500px] overflow-y-scroll">
       {filters.length === 0 ? (
         <p className="text-active-text-color italic mb-4">
           No filters added yet
