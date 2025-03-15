@@ -1,17 +1,27 @@
-import { useEffect } from "react";
+import { FTChart as FTChartType } from "@finance-tracker/types";
+import { useEffect, useState } from "react";
 import { useBearStore } from "../GlobalState";
 import AccountManagerCard from "../components/AccountManagerCard";
 import FTButton from "../components/FTButton";
 import FTChart from "../components/FTChart";
+import FTSelect from "../components/FTSelect";
 import { useModal } from "../components/ModalProvider";
 import NavBar from "../components/NavBar";
 
 const Statistics = () => {
   const { account } = useBearStore();
   const { showModal } = useModal();
+
+  const [currentChartId, setCurrentChartId] = useState("");
+
   useEffect(() => {
     document.title = "Finance Tracker - Statistics";
   });
+
+  useEffect(() => {
+    if (account && account.charts.length > 0 && currentChartId == "")
+      setCurrentChartId(account.charts[0].id);
+  }, [account, currentChartId]);
 
   return (
     <div className="overflow-hidden flex">
@@ -40,29 +50,38 @@ const Statistics = () => {
               </FTButton>
             </div>
           </div>
-          <div className="flex-1 h-full max-w-full">
-            <div className="bg-bg h-full mobile:pb-16 flex items-center justify-center">
-              <FTChart
-                customOptions={{ legend: false }}
-                chart={{
-                  id: "",
-                  name: "",
-                  type: "Pie",
-                  dataBuilderConfig: {
-                    filters: [],
-                    groupBy: "tag",
-                    metrics: [
-                      {
-                        filters: [],
-                        field: "count",
-                        function: "void",
-                        cumulative: false,
-                      },
-                    ],
-                  },
-                }}
-              />
-            </div>
+          <div className="flex-1 max-w-full">
+            {account.charts.length > 0 ? (
+              <div className="p-2 h-full flex flex-col gap-4">
+                <FTSelect
+                  value={currentChartId}
+                  onChange={(e) => setCurrentChartId(e.target.value)}
+                  className="w-full text-start"
+                >
+                  {account.charts.map((chart) => (
+                    <option value={chart.id} key={chart.id}>
+                      {chart.name}
+                    </option>
+                  ))}
+                </FTSelect>
+
+                {currentChartId && (
+                  <div className="flex-1 w-full h-full">
+                    <FTChart
+                      chart={
+                        account.charts.find(
+                          (c) => c.id === currentChartId,
+                        ) as FTChartType
+                      }
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="bg-bg h-full mobile:pb-16 flex items-center justify-center">
+                <p className="text-2xl text-text-color">No Charts</p>
+              </div>
+            )}
           </div>
         </div>
       ) : (
