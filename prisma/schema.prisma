@@ -49,7 +49,7 @@ model Account {
   balance        Float
   monthly        Float
   currentMonthly Float
-  Chart          String[]
+  charts         Json[]
   Setting        Setting[]
   Transaction    Transaction[]
   tags           TransactionTag[]

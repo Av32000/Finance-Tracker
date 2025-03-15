@@ -12,7 +12,7 @@
     "outDir": "../../dist/api",
     "rootDir": "src",
     "baseUrl": "./",
-    "types": ["node", "speakeasy", "mime-types"],
+    "types": ["node", "speakeasy", "mime-types", "@finance-tracker/types"],
     "paths": {
       "*": ["node_modules/*"]
     }

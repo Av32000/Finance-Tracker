@@ -66,13 +66,13 @@ importers:
       speakeasy:
         specifier: ^2.0.0
         version: 2.0.0
-      types:
-        specifier: link:packages/types
-        version: link:packages/types
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
     devDependencies:
+      '@types/@finance-tracker/types':
+        specifier: link:../../packages/types
+        version: link:../../packages/types
       '@types/mime-types':
         specifier: ^2.1.4
         version: 2.1.4

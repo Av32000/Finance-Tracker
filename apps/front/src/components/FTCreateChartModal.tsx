@@ -7,6 +7,7 @@ import {
   TransactionsFilter,
 } from "@finance-tracker/types";
 import { useState } from "react";
+import { useBearStore } from "../GlobalState";
 import ChartsMetricsManager from "./ChartsMetricsManager";
 import FTButton from "./FTButton";
 import FTChart from "./FTChart";
@@ -15,6 +16,8 @@ import FTSelect from "./FTSelect";
 import TransactionsFiltersManager from "./TransactionsFiltersManager";
 
 const FTCreateChartModal = ({ hideModal }: { hideModal: () => void }) => {
+  const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
+
   const chartTypes = Object.values(ChartTypeEnum.enum);
   const chartFields = Object.values(ChartAvailableFieldsEnum.enum);
 
@@ -31,7 +34,7 @@ const FTCreateChartModal = ({ hideModal }: { hideModal: () => void }) => {
   );
   const stepCount = 4;
 
-  const next = () => {
+  const next = async () => {
     switch (step) {
       case 1:
         if (chartName) setStep(step + 1);
@@ -42,6 +45,23 @@ const FTCreateChartModal = ({ hideModal }: { hideModal: () => void }) => {
       case 3:
         if (metrics.length > 0) setStep(step + 1);
         break;
+      case 4:
+        await fetchServer("/accounts/" + account!.id + "/charts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: "",
+            name: chartName,
+            type: chartType,
+            dataBuilderConfig: {
+              filters: filters.map((f) => f.filter),
+              metrics: metrics.map((m) => m.metric),
+              groupBy,
+            },
+          }),
+        });
+        await refreshAccount(account!.id, setAccount);
+        hideModal();
     }
   };
 

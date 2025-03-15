@@ -60,10 +60,10 @@ const AccountSchema = z.object({
   balance: z.number(),
   transactions: z.array(TransactionSchema),
   monthly: z.number(),
+  charts: z.array(ChartSchema),
   currentMonthly: z.number(),
   settings: z.array(SettingSchema),
   tags: z.array(TransactionTagSchema),
-  charts: z.array(z.null()),
 });
 
 const AccountsSchema = z.array(AccountSchema);

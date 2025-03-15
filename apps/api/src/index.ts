@@ -1,6 +1,7 @@
 import cors from "@fastify/cors";
 import { FastifyJwtNamespace } from "@fastify/jwt";
 import multipart from "@fastify/multipart";
+import { ChartSchema } from "@finance-tracker/types";
 import {
   generateAuthenticationOptions,
   GenerateAuthenticationOptionsOpts,
@@ -639,6 +640,53 @@ fastify.register(
       accountsAPI.DeleteTag(accountId, tagId);
       reply.status(200);
     });
+
+    // Charts
+    api.get("/accounts/:accountId/charts", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      if (!accountId) throw new Error("Invalid Account ID");
+      const account = accountsAPI.GetAccount(accountId);
+      if (!account) return reply.status(400);
+      return account.charts;
+    });
+
+    api.post("/accounts/:accountId/charts", async (request, reply) => {
+      const accountId = (request.params as any).accountId;
+      const chart = ChartSchema.parse(request.body);
+      if (!accountId) throw new Error("Invalid Account ID");
+      const account = accountsAPI.GetAccount(accountId);
+      if (!account) return reply.status(400);
+      return accountsAPI.CreateChart(accountId, chart);
+    });
+
+    api.patch(
+      "/accounts/:accountId/charts/:chartId",
+      async (request, reply) => {
+        const accountId = (request.params as any).accountId;
+        const chartId = (request.params as any).chartId;
+        const chart = ChartSchema.parse(request.body);
+        chart.id = chartId;
+        if (!accountId || !chartId) throw new Error("Invalid Props");
+        const account = accountsAPI.GetAccount(accountId);
+        if (!account) return reply.status(400);
+        const isValid = accountsAPI.UpdateChart(accountId, chart);
+        if (isValid) reply.status(200);
+        else reply.status(400);
+      },
+    );
+
+    api.delete(
+      "/accounts/:accountId/charts/:chartId",
+      async (request, reply) => {
+        const accountId = (request.params as any).accountId;
+        const chartId = (request.params as any).chartId;
+        if (!accountId || !chartId) throw new Error("Invalid Props");
+        const account = accountsAPI.GetAccount(accountId);
+        if (!account) return reply.status(400);
+        accountsAPI.DeleteChart(accountId, chartId);
+        reply.status(200);
+      },
+    );
 
     // Settigns
     api.get("/accounts/:accountId/settings", async (request, reply) => {

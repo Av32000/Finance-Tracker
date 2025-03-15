@@ -1,4 +1,4 @@
-import { Account, Setting, Transaction } from "@finance-tracker/types";
+import { Account, FTChart, Setting, Transaction } from "@finance-tracker/types";
 import { Prisma, PrismaClient } from "@prisma/client";
 import { randomUUID } from "crypto";
 import {
@@ -405,6 +405,35 @@ export default class AccountsAPI {
     this.SaveAccounts();
   }
 
+  // Charts
+  CreateChart(accountId: string, chart: FTChart) {
+    const id = randomUUID();
+    const account = this.accounts.find((a) => a.id === accountId);
+    if (!account) return;
+    chart.id = id;
+    account.charts.push(chart);
+    this.SaveAccounts();
+    return id;
+  }
+
+  UpdateChart(accountId: string, chart: FTChart) {
+    const account = this.accounts.find((a) => a.id === accountId);
+    if (!account) return;
+    account.charts = [
+      ...account.charts.filter((c) => c.id !== chart.id),
+      chart,
+    ];
+    this.SaveAccounts();
+    return chart;
+  }
+
+  DeleteChart(accountId: string, chartId: string) {
+    const account = this.accounts.find((a) => a.id === accountId);
+    if (!account) return;
+    account.charts = account.charts.filter((c) => c.id !== chartId);
+    this.SaveAccounts();
+  }
+
   // Settings
   SetSetting(accountId: string, newSetting: Setting) {
     const account = this.accounts.find((a) => a.id === accountId);
@@ -452,6 +481,7 @@ export default class AccountsAPI {
           monthly: account.monthly,
           currentMonthly: account.currentMonthly,
           name: account.name,
+          charts: account.charts,
         };
         await prisma.account.upsert({
           where: { id: account.id },
@@ -649,7 +679,7 @@ export default class AccountsAPI {
 
           return {
             ...account,
-            charts: [],
+            charts: account.charts as FTChart[],
             settings: [],
             transactions: formattedTransactions || [],
             tags: formattedTags || [],

@@ -2,9 +2,19 @@
   "name": "@finance-tracker/types",
   "version": "1.0.0",
   "types": "./dist/types/index.d.ts",
-  "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
   "scripts": {
-    "build": "tsc"
+    "build": "pnpm --filter @finance-tracker/types build:cjs && pnpm --filter @finance-tracker/types build:esm",
+    "build:cjs": "tsc -p config/tsconfig.cjs.json",
+    "build:esm": "tsc -p config/tsconfig.esm.json",
+    "postbuild:cjs": "echo '{\"type\":\"commonjs\"}' > dist/cjs/package.json",
+    "postbuild:esm": "echo '{\"type\":\"module\"}' > dist/esm/package.json && config/fix-esm-ext.sh"
   },
   "dependencies": {
     "@types/node": "^22.9.1",
