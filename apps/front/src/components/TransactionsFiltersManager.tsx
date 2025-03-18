@@ -66,7 +66,7 @@ const TransactionsFiltersManager = ({
   };
 
   return (
-    <div className="max-h-[500px] overflow-y-scroll">
+    <div className="max-h-[500px] mobile:max-h-[300px] overflow-y-scroll">
       {filters.length === 0 ? (
         <p className="text-active-text-color italic mb-4">
           No filters added yet
@@ -85,14 +85,16 @@ const TransactionsFiltersManager = ({
         </div>
       )}
 
-      <div className="flex flex-row gap-4 items-center mb-4">
-        <p>Filter Type :</p>
+      <div className="flex flex-row gap-4 items-center mb-4 mobile:flex-col mobile:items-start mobile:gap-2">
+        <p>
+          Filter Type<span className="mobile:hidden"> :</span>
+        </p>
         <FTSelect
           value={newFilterType}
           onChange={(e) =>
             setNewFilterType(e.target.value as "property" | "sort")
           }
-          className="ml-2 p-1 border rounded"
+          className="ml-2 p-1 border rounded mobile:p-0 mobile:w-full mobile:ml-0"
         >
           <option value="property" className="text-text-color bg-transparent">
             Property
@@ -101,7 +103,9 @@ const TransactionsFiltersManager = ({
             Sort
           </option>
         </FTSelect>
-        <FTButton onClick={addFilter}>Add Filter</FTButton>
+        <FTButton onClick={addFilter} className="mobile:w-full">
+          Add Filter
+        </FTButton>
       </div>
     </div>
   );
@@ -126,14 +130,14 @@ const FilterItem: React.FC<{
           </FTButton>
         </div>
 
-        <div className="flex flex-row gap-4 items-center">
+        <div className="flex flex-row gap-4 items-center mobile:flex-col mobile:items-start mobile:gap-2">
           <FTSelect
             value={filter.field}
             onChange={(e) =>
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               updateFilter({ ...filter, field: e.target.value as any })
             }
-            className="text-start"
+            className="text-start mobile:w-full"
           >
             {availableFields.map((field) => (
               <option
@@ -151,7 +155,7 @@ const FilterItem: React.FC<{
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               updateFilter({ ...filter, operator: e.target.value as any })
             }
-            className="text-start"
+            className="text-start mobile:w-full"
           >
             {availableOperators.map((operator) => (
               <option
@@ -166,8 +170,9 @@ const FilterItem: React.FC<{
           </FTSelect>
 
           {filter.operator === "between" ? (
-            <div className="flex gap-4">
+            <div className="flex gap-4 mobile:flex-col mobile:gap-2">
               <FTInput
+                className="mobile:w-full"
                 type={
                   ["amount", "year", "month", "day", "hour"].includes(
                     filter.field,
@@ -188,6 +193,7 @@ const FilterItem: React.FC<{
                 placeholder="Min"
               />
               <FTInput
+                className="mobile:w-full"
                 type={
                   ["amount", "year", "month", "day", "hour"].includes(
                     filter.field,
@@ -210,6 +216,7 @@ const FilterItem: React.FC<{
             </div>
           ) : (
             <FTInput
+              className="mobile:w-full"
               type={
                 ["amount", "year", "month", "day", "hour"].includes(
                   filter.field,
@@ -236,14 +243,14 @@ const FilterItem: React.FC<{
           </FTButton>
         </div>
 
-        <div className="flex flex-row gap-4 mb-4">
+        <div className="flex flex-row gap-4 mb-4 mobile:flex-col mobile:items-start mobile:gap-2">
           <FTSelect
             value={filter.field}
             onChange={(e) =>
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               updateFilter({ ...filter, field: e.target.value as any })
             }
-            className="text-start"
+            className="text-start mobile:w-full"
           >
             {availableFields.map((field) => (
               <option
@@ -264,7 +271,7 @@ const FilterItem: React.FC<{
                 order: e.target.value as "asc" | "desc",
               })
             }
-            className="text-start"
+            className="text-start mobile:w-full"
           >
             <option value="asc" className="text-text-color bg-transparent">
               Ascending
@@ -275,7 +282,7 @@ const FilterItem: React.FC<{
           </FTSelect>
         </div>
 
-        <div className="flex flex-row gap-4 items-center">
+        <div className="flex flex-row gap-4 items-center mobile:flex-col mobile:items-start mobile:gap-2">
           <p className="text-active-text-color">Limit (Optional) :</p>
           <FTInput
             type="number"

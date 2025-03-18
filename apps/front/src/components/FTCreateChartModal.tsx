@@ -104,22 +104,27 @@ const FTCreateChartModal = ({
           Creating a new chart ({step}/{stepCount})
         </p>
         {step == 1 && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4 mt-4">
-            <div className="flex flex-row gap-4 items-center">
-              <p className="text-active-text-color min-w-fit">Chart Name : </p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4 mt-4 mobile:gap-2">
+            <div className="flex flex-row gap-4 items-center mobile:flex-col mobile:items-start mobile:gap-2">
+              <p className="text-active-text-color min-w-fit">
+                Chart Name<span className="mobile:hidden"> :</span>
+              </p>
               <FTInput
                 placeholder="Chart Name"
-                className="w-2/3"
+                className="w-2/3 mobile:w-full"
                 value={chartName}
                 onChange={(e) => setChartName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key == "Enter") next();
                 }}
               />
+              <p className="text-active-text-color min-w-fit desktop:hidden">
+                Chart Type
+              </p>
               <FTSelect
                 value={chartType}
                 onChange={(e) => setChartType(e.target.value as ChartType)}
-                className="text-start"
+                className="text-start mobile:w-full"
               >
                 {chartTypes.map((type) => (
                   <option
@@ -132,14 +137,16 @@ const FTCreateChartModal = ({
                 ))}
               </FTSelect>
             </div>
-            <div className="flex flex-row gap-4 items-center">
-              <p className="text-active-text-color">Group Transactions By :</p>
+            <div className="flex flex-row gap-4 items-center mobile:flex-col mobile:items-start mobile:gap-2">
+              <p className="text-active-text-color">
+                Group Transactions By<span className="mobile:hidden"> :</span>
+              </p>
               <FTSelect
                 value={groupBy}
                 onChange={(e) =>
                   setGroupBy(e.target.value as ChartAvailableFields)
                 }
-                className="text-start"
+                className="text-start mobile:w-full"
               >
                 {chartFields.map((field) => (
                   <option
@@ -176,7 +183,7 @@ const FTCreateChartModal = ({
         {step == 4 && (
           <div className="flex flex-col gap-3 justify-center-center my-2">
             <p className="text-active-text-color">Preview your chart :</p>
-            <div className="max-h-full">
+            <div className="max-h-full mobile:h-60">
               <FTChart
                 chart={{
                   id: "",
@@ -192,7 +199,7 @@ const FTCreateChartModal = ({
             </div>
           </div>
         )}
-        <div className="flex flex-row w-full gap-4">
+        <div className="flex flex-row w-full gap-4 mobile:gap-2">
           {step > 1 && (
             <FTButton className="w-full" onClick={() => setStep(step - 1)}>
               Previous

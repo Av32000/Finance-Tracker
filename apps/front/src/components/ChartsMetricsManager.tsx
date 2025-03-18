@@ -54,7 +54,7 @@ const ChartsMetricsManager = ({
   };
 
   return (
-    <div className="max-h-[500px] overflow-y-scroll">
+    <div className="max-h-[500px] mobile:max-h-[300px] overflow-y-scroll">
       {metrics.length === 0 ? (
         <p className="text-active-text-color italic mb-4">
           No metrics added yet
@@ -73,7 +73,9 @@ const ChartsMetricsManager = ({
         </div>
       )}
 
-      <FTButton onClick={addMetric}>Add Metric</FTButton>
+      <FTButton onClick={addMetric} className="mobile:w-full">
+        Add Metric
+      </FTButton>
     </div>
   );
 };
@@ -100,8 +102,10 @@ const MetricItem: React.FC<{
         </FTButton>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div className="flex flex-row gap-4 items-center">
-          <p className="text-active-text-color">Display :</p>
+        <div className="flex flex-row gap-4 items-center mobile:flex-col mobile:items-start mobile:gap-2">
+          <p className="text-active-text-color">
+            Display<span className="mobile:hidden"> :</span>
+          </p>
           <FTInput
             type="text"
             value={metric.name}
@@ -116,6 +120,7 @@ const MetricItem: React.FC<{
           <FTInput
             type="color"
             value={metric.color}
+            className="mobile:w-full"
             onChange={(e) =>
               updateMetric({
                 ...metric,
@@ -124,15 +129,17 @@ const MetricItem: React.FC<{
             }
           />
         </div>
-        <div className="flex flex-row gap-4 items-center">
-          <p className="text-active-text-color">Field :</p>
+        <div className="flex flex-row gap-4 items-center mobile:flex-col mobile:items-start mobile:gap-2">
+          <p className="text-active-text-color">
+            Field<span className="mobile:hidden"> :</span>
+          </p>
           <FTSelect
             value={metric.field}
             onChange={(e) =>
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               updateMetric({ ...metric, field: e.target.value as any })
             }
-            className="text-start"
+            className="text-start mobile:w-full"
           >
             {availableFields.map((field) => (
               <option
@@ -145,15 +152,17 @@ const MetricItem: React.FC<{
             ))}
           </FTSelect>
         </div>
-        <div className="flex flex-row gap-4 items-center">
-          <p className="text-active-text-color">Function :</p>
+        <div className="flex flex-row gap-4 items-center mobile:flex-col mobile:items-start mobile:gap-2">
+          <p className="text-active-text-color">
+            Function<span className="mobile:hidden"> :</span>
+          </p>
           <FTSelect
             value={metric.function}
             onChange={(e) =>
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               updateMetric({ ...metric, function: e.target.value as any })
             }
-            className="text-start"
+            className="text-start mobile:w-full"
           >
             {availableFunctions.map((f) => (
               <option
@@ -167,14 +176,16 @@ const MetricItem: React.FC<{
               </option>
             ))}
           </FTSelect>
-          <p className="text-active-text-color">Cumulative :</p>
-          <FTCheckbox
-            checked={metric.cumulative}
-            onChange={(e) =>
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              updateMetric({ ...metric, cumulative: e.target.checked })
-            }
-          />
+          <div className="flex flex-row gap-4 mobile:gap-2">
+            <p className="text-active-text-color">Cumulative :</p>
+            <FTCheckbox
+              checked={metric.cumulative}
+              onChange={(e) =>
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                updateMetric({ ...metric, cumulative: e.target.checked })
+              }
+            />
+          </div>
         </div>
         <div className="border rounded-md bg-white shadow-sm p-4">
           <p>Specific Transactions Filters : </p>

@@ -56,7 +56,7 @@ const Statistics = () => {
           </div>
           <div className="flex-1 max-w-full">
             {account.charts.length > 0 ? (
-              <div className="p-2 h-full flex flex-col gap-4">
+              <div className="p-2 h-full mobile:h-[calc(100%-64px)] flex flex-col gap-4">
                 <div className="flex flex-row gap-4 px-2">
                   <FTSelect
                     value={currentChartId}

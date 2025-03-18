@@ -47,57 +47,65 @@ const FTChart = ({
   }, [chart, account]);
 
   if (account != null) {
-    switch (chart.type) {
-      case "Doughnut":
-        return (
-          <Doughnut
-            // @ts-expect-error Current options object is valid
-            options={options}
-            data={data}
-            className="w-full max-h-full"
-          ></Doughnut>
-        );
-      case "Bar":
-        return (
-          <Bar
-            // @ts-expect-error Current options object is valid
-            options={options}
-            data={data}
-            className="w-full max-h-full"
-          ></Bar>
-        );
-      case "Pie":
-        return (
-          <Pie
-            // @ts-expect-error Current options object is valid
-            options={options}
-            data={data}
-            className="w-full max-h-full"
-          ></Pie>
-        );
-      case "Line":
-        return (
-          <Line
-            options={{
-              ...options,
-              scales: {
-                x: {
-                  ticks: {
-                    color: tailwindConfig.theme.colors["text-color"],
+    if (data.datasets.every((d) => d.data.length == 0)) {
+      return (
+        <div className="w-full h-full flex items-center justify-center">
+          <p className="text-text-color">No Data collected</p>
+        </div>
+      );
+    } else {
+      switch (chart.type) {
+        case "Doughnut":
+          return (
+            <Doughnut
+              // @ts-expect-error Current options object is valid
+              options={options}
+              data={data}
+              className="w-full max-h-full"
+            ></Doughnut>
+          );
+        case "Bar":
+          return (
+            <Bar
+              // @ts-expect-error Current options object is valid
+              options={options}
+              data={data}
+              className="w-full max-h-full"
+            ></Bar>
+          );
+        case "Pie":
+          return (
+            <Pie
+              // @ts-expect-error Current options object is valid
+              options={options}
+              data={data}
+              className="w-full max-h-full"
+            ></Pie>
+          );
+        case "Line":
+          return (
+            <Line
+              options={{
+                ...options,
+                scales: {
+                  x: {
+                    ticks: {
+                      color: tailwindConfig.theme.colors["text-color"],
+                    },
+                  },
+                  y: {
+                    type: "linear",
+                    ticks: {
+                      color: tailwindConfig.theme.colors["text-color"],
+                    },
                   },
                 },
-                y: {
-                  type: "linear",
-                  ticks: {
-                    color: tailwindConfig.theme.colors["text-color"],
-                  },
-                },
-              },
-            }}
-            data={data}
-            className="w-full max-h-full"
-          ></Line>
-        );
+              }}
+              data={data}
+              className="w-full max-h-full"
+            ></Line>
+          );
+      }
     }
   } else {
     return (
