@@ -4,9 +4,10 @@ import {
   ChartMetric,
   ChartType,
   ChartTypeEnum,
+  FTChart as FTChartType,
   TransactionsFilter,
 } from "@finance-tracker/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBearStore } from "../GlobalState";
 import ChartsMetricsManager from "./ChartsMetricsManager";
 import FTButton from "./FTButton";
@@ -15,7 +16,13 @@ import FTInput from "./FTInput";
 import FTSelect from "./FTSelect";
 import TransactionsFiltersManager from "./TransactionsFiltersManager";
 
-const FTCreateChartModal = ({ hideModal }: { hideModal: () => void }) => {
+const FTCreateChartModal = ({
+  hideModal,
+  chartId,
+}: {
+  hideModal: () => void;
+  chartId?: string;
+}) => {
   const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
 
   const chartTypes = Object.values(ChartTypeEnum.enum);
@@ -34,6 +41,21 @@ const FTCreateChartModal = ({ hideModal }: { hideModal: () => void }) => {
   );
   const stepCount = 4;
 
+  useEffect(() => {
+    if (account && account.charts.find((c) => c.id === chartId)) {
+      const chart = account.charts.find((c) => c.id === chartId) as FTChartType;
+      setChartName(chart.name);
+      setChartType(chart.type);
+      setGroupBy(chart.dataBuilderConfig.groupBy);
+      setFilters(
+        chart.dataBuilderConfig.filters.map((filter, id) => ({ id, filter })),
+      );
+      setMetrics(
+        chart.dataBuilderConfig.metrics.map((metric, id) => ({ id, metric })),
+      );
+    }
+  }, [account, chartId]);
+
   const next = async () => {
     switch (step) {
       case 1:
@@ -46,20 +68,23 @@ const FTCreateChartModal = ({ hideModal }: { hideModal: () => void }) => {
         if (metrics.length > 0) setStep(step + 1);
         break;
       case 4:
-        await fetchServer("/accounts/" + account!.id + "/charts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: "",
-            name: chartName,
-            type: chartType,
-            dataBuilderConfig: {
-              filters: filters.map((f) => f.filter),
-              metrics: metrics.map((m) => m.metric),
-              groupBy,
-            },
-          }),
-        });
+        await fetchServer(
+          `/accounts/${account?.id}/charts${chartId && `/${chartId}`}`,
+          {
+            method: chartId ? "PATCH" : "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: "",
+              name: chartName,
+              type: chartType,
+              dataBuilderConfig: {
+                filters: filters.map((f) => f.filter),
+                metrics: metrics.map((m) => m.metric),
+                groupBy,
+              },
+            }),
+          },
+        );
         await refreshAccount(account!.id, setAccount);
         hideModal();
     }

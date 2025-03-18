@@ -9,7 +9,7 @@ import { useModal } from "../components/ModalProvider";
 import NavBar from "../components/NavBar";
 
 const Statistics = () => {
-  const { account } = useBearStore();
+  const { account, fetchServer, refreshAccount, setAccount } = useBearStore();
   const { showModal } = useModal();
 
   const [currentChartId, setCurrentChartId] = useState("");
@@ -19,7 +19,11 @@ const Statistics = () => {
   });
 
   useEffect(() => {
-    if (account && account.charts.length > 0 && currentChartId == "")
+    if (
+      account &&
+      account.charts.length > 0 &&
+      account.charts.find((c) => c.id === currentChartId) == null
+    )
       setCurrentChartId(account.charts[0].id);
   }, [account, currentChartId]);
 
@@ -53,19 +57,50 @@ const Statistics = () => {
           <div className="flex-1 max-w-full">
             {account.charts.length > 0 ? (
               <div className="p-2 h-full flex flex-col gap-4">
-                <FTSelect
-                  value={currentChartId}
-                  onChange={(e) => setCurrentChartId(e.target.value)}
-                  className="w-full text-start"
-                >
-                  {account.charts.map((chart) => (
-                    <option value={chart.id} key={chart.id}>
-                      {chart.name}
-                    </option>
-                  ))}
-                </FTSelect>
-
-                {currentChartId && (
+                <div className="flex flex-row gap-4 px-2">
+                  <FTSelect
+                    value={currentChartId}
+                    onChange={(e) => setCurrentChartId(e.target.value)}
+                    className="w-full text-start"
+                  >
+                    {account.charts.map((chart) => (
+                      <option value={chart.id} key={chart.id}>
+                        {chart.name}
+                      </option>
+                    ))}
+                  </FTSelect>
+                  <img
+                    src="/components/edit.svg"
+                    className="w-6 cursor-pointer"
+                    onClick={() =>
+                      showModal({ type: "Chart", chartId: currentChartId })
+                    }
+                  />
+                  <img
+                    src="/components/trash.svg"
+                    className="w-6 cursor-pointer"
+                    onClick={() => {
+                      showModal({
+                        type: "Boolean",
+                        title: `Are you sure you want to delete ${account.charts.find((c) => c.id === currentChartId)?.name} ?`,
+                        cancelText: "Cancel",
+                        confirmText: "Delete Chart",
+                        callback: () => {
+                          fetchServer(
+                            `/accounts/${account.id}/charts/${currentChartId}`,
+                            {
+                              method: "DELETE",
+                            },
+                          ).then((res) => {
+                            if (res.ok) refreshAccount(account.id, setAccount);
+                            else console.error("Unable to delete chart");
+                          });
+                        },
+                      });
+                    }}
+                  />
+                </div>
+                {account.charts.find((c) => c.id === currentChartId) && (
                   <div className="flex-1 w-full h-full">
                     <FTChart
                       chart={

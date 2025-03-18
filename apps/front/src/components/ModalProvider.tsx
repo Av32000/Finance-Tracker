@@ -24,6 +24,7 @@ type ShowModalProps =
     }
   | {
       type: "Chart";
+      chartId?: string;
     };
 
 interface ModalContextType {
@@ -71,7 +72,10 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
 
           {modalData.type === "OTP" && <FTOTPModal hideModal={hideModal} />}
           {modalData.type === "Chart" && (
-            <FTCreateChartModal hideModal={hideModal} />
+            <FTCreateChartModal
+              hideModal={hideModal}
+              chartId={modalData.chartId}
+            />
           )}
         </div>
       )}
