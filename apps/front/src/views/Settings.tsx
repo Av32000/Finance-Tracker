@@ -1,7 +1,6 @@
 import { Account, FetchServerType } from "@finance-tracker/types";
 import { startRegistration } from "@simplewebauthn/browser";
 import { useEffect, useState } from "react";
-import { BuildData } from "../ChartDataBuilder";
 import AccountManagerCard from "../components/AccountManagerCard";
 import FTButton from "../components/FTButton";
 import FTInput from "../components/FTInput";
@@ -296,31 +295,6 @@ const Settings = () => {
                 }}
               >
                 Delete Account
-              </FTButton>
-            </div>
-            <div className="flex gap-2">
-              <FTButton
-                onClick={() => {
-                  console.log(
-                    BuildData(
-                      {
-                        groupBy: "hour",
-                        metrics: [
-                          {
-                            field: "count",
-                            function: "sum",
-                            cumulative: false,
-                            filters: [],
-                          },
-                        ],
-                        filters: [],
-                      },
-                      account,
-                    ),
-                  );
-                }}
-              >
-                Run Debug Test
               </FTButton>
             </div>
           </div>
