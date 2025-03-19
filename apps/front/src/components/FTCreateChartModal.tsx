@@ -69,7 +69,7 @@ const FTCreateChartModal = ({
         break;
       case 4:
         await fetchServer(
-          `/accounts/${account?.id}/charts${chartId && `/${chartId}`}`,
+          `/accounts/${account?.id}/charts${chartId ? `/${chartId}` : ""}`,
           {
             method: chartId ? "PATCH" : "POST",
             headers: { "Content-Type": "application/json" },

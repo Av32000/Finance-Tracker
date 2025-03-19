@@ -3,7 +3,8 @@ import {
   ChartFilterOperatorsEnum,
   TransactionsFilter,
 } from "@finance-tracker/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useBearStore } from "../GlobalState";
 import FTButton from "./FTButton";
 import FTInput from "./FTInput";
 import FTSelect from "./FTSelect";
@@ -117,8 +118,30 @@ const FilterItem: React.FC<{
   updateFilter: (filter: TransactionsFilter) => void;
   deleteFilter: () => void;
 }> = ({ id, filter, updateFilter, deleteFilter }) => {
-  const availableFields = Object.values(ChartAvailableFieldsEnum.enum);
+  const { account } = useBearStore();
+
+  let availableFields = Object.values(ChartAvailableFieldsEnum.enum);
   const availableOperators = Object.values(ChartFilterOperatorsEnum.enum);
+
+  if (account && account.tags.length == 0) {
+    availableFields = availableFields.filter((op) => op !== "tag");
+  }
+
+  useEffect(() => {
+    if (filter.type == "property" && filter.field == "tag") {
+      if (!["equals", "not_equals"].includes(filter.operator)) {
+        updateFilter({ ...filter, operator: "equals" });
+      }
+
+      if (
+        account &&
+        account.tags.length > 0 &&
+        !account.tags.map((t) => t.id).includes(filter.value)
+      ) {
+        updateFilter({ ...filter, value: account.tags[0].id });
+      }
+    }
+  }, [account, updateFilter, filter, filter.field]);
 
   if (filter.type === "property") {
     return (
@@ -157,78 +180,106 @@ const FilterItem: React.FC<{
             }
             className="text-start mobile:w-full"
           >
-            {availableOperators.map((operator) => (
-              <option
-                key={operator}
-                value={operator}
-                className="text-text-color bg-transparent"
-              >
-                {operator.charAt(0).toUpperCase() +
-                  operator.replace(/_/g, " ").slice(1)}
-              </option>
-            ))}
+            {availableOperators
+              .filter((op) =>
+                filter.field == "tag"
+                  ? ["equals", "not_equals"].includes(op)
+                  : true,
+              )
+              .map((operator) => (
+                <option
+                  key={operator}
+                  value={operator}
+                  className="text-text-color bg-transparent"
+                >
+                  {operator.charAt(0).toUpperCase() +
+                    operator.replace(/_/g, " ").slice(1)}
+                </option>
+              ))}
           </FTSelect>
 
-          {filter.operator === "between" ? (
-            <div className="flex gap-4 mobile:flex-col mobile:gap-2">
-              <FTInput
-                className="mobile:w-full"
-                type={
-                  ["amount", "year", "month", "day", "hour"].includes(
-                    filter.field,
-                  )
-                    ? "number"
-                    : "text"
-                }
-                value={Array.isArray(filter.value) ? filter.value[0] : ""}
-                onChange={(e) =>
-                  updateFilter({
-                    ...filter,
-                    value: [
-                      e.target.value,
-                      Array.isArray(filter.value) ? filter.value[1] : "",
-                    ],
-                  })
-                }
-                placeholder="Min"
-              />
-              <FTInput
-                className="mobile:w-full"
-                type={
-                  ["amount", "year", "month", "day", "hour"].includes(
-                    filter.field,
-                  )
-                    ? "number"
-                    : "text"
-                }
-                value={Array.isArray(filter.value) ? filter.value[1] : ""}
-                onChange={(e) =>
-                  updateFilter({
-                    ...filter,
-                    value: [
-                      Array.isArray(filter.value) ? filter.value[0] : "",
-                      e.target.value,
-                    ],
-                  })
-                }
-                placeholder="Max"
-              />
-            </div>
-          ) : (
-            <FTInput
-              className="mobile:w-full"
-              type={
-                ["amount", "year", "month", "day", "hour"].includes(
-                  filter.field,
-                )
-                  ? "number"
-                  : "text"
-              }
+          {filter.field == "tag" ? (
+            <FTSelect
+              className="text-start mobile:w-full"
               value={filter.value}
               onChange={(e) =>
                 updateFilter({ ...filter, value: e.target.value })
               }
-            />
+            >
+              {account?.tags.map((tag) => (
+                <option
+                  key={tag.id}
+                  value={tag.id}
+                  className="text-text-color bg-transparent"
+                >
+                  {tag.name}
+                </option>
+              ))}
+            </FTSelect>
+          ) : (
+            <>
+              {filter.operator === "between" ? (
+                <div className="flex gap-4 mobile:flex-col mobile:gap-2">
+                  <FTInput
+                    className="mobile:w-full"
+                    type={
+                      ["amount", "year", "month", "day", "hour"].includes(
+                        filter.field,
+                      )
+                        ? "number"
+                        : "text"
+                    }
+                    value={Array.isArray(filter.value) ? filter.value[0] : ""}
+                    onChange={(e) =>
+                      updateFilter({
+                        ...filter,
+                        value: [
+                          e.target.value,
+                          Array.isArray(filter.value) ? filter.value[1] : "",
+                        ],
+                      })
+                    }
+                    placeholder="Min"
+                  />
+                  <FTInput
+                    className="mobile:w-full"
+                    type={
+                      ["amount", "year", "month", "day", "hour"].includes(
+                        filter.field,
+                      )
+                        ? "number"
+                        : "text"
+                    }
+                    value={Array.isArray(filter.value) ? filter.value[1] : ""}
+                    onChange={(e) =>
+                      updateFilter({
+                        ...filter,
+                        value: [
+                          Array.isArray(filter.value) ? filter.value[0] : "",
+                          e.target.value,
+                        ],
+                      })
+                    }
+                    placeholder="Max"
+                  />
+                </div>
+              ) : (
+                <FTInput
+                  className="mobile:w-full"
+                  type={
+                    ["amount", "year", "month", "day", "hour"].includes(
+                      filter.field,
+                    )
+                      ? "number"
+                      : "text"
+                  }
+                  value={filter.value}
+                  onChange={(e) =>
+                    updateFilter({ ...filter, value: e.target.value })
+                  }
+                />
+              )}
+            </>
           )}
         </div>
       </div>
