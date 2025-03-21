@@ -156,7 +156,7 @@ const Settings = () => {
               ) : null}
             </div>
           </div>
-          <div className="p-4 flex flex-col gap-5">
+          <div className="p-4 flex flex-col gap-4 overflow-y-scroll">
             <div className="flex flex-row items-center gap-3">
               <p className="text-active-text-color">Account Name : </p>
               <FTInput

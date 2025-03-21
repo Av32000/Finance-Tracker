@@ -52,7 +52,7 @@ const Home = () => {
           </div>
           <div className="bg-bg-light col-start-5 col-end-10 row-start-1 row-end-4 rounded-2xl flex flex-col p-3 shadow-lg mobile:h-96">
             <p className="text-active-text-color">Expenses Sources</p>
-            <div className="w-full h-full p-2 mobile:pb-3">
+            <div className="w-full h-full p-3 mobile:pb-3">
               <FTChart
                 chart={{
                   id: "",
@@ -90,18 +90,19 @@ const Home = () => {
           <div className="bg-bg-light col-start-1 col-end-5 row-start-5 row-end-7 rounded-2xl flex flex-col p-3 shadow-lg">
             <p className="text-active-text-color text-lg">Monthly Budget</p>
             {account.monthly > 0 ? (
-              <div className="flex flex-col p-2 gap-3 ">
-                <div className="flex flex-row w-full justify-between p-4 mobile:flex-col mobile:py-0 mobile:gap-3 mobile:items-center">
-                  <div className="flex items-center w-1/2 mobile:w-52">
-                    <div className="p-4 rounded-full bg-bg-dark bg-opacity-80 h-16 w-16">
+              <div className="flex-1 flex items-center justify-center">
+                <div className="grid grid-cols-2 gap-3 w-full desktop:h-full desktop:justify-between mobile:grid-cols-1 mobile:w-auto mobile:mx-auto sm:gap-2">
+                  <div className="flex items-center p-1">
+                    <div className="rounded-full bg-bg-dark bg-opacity-80 h-12 w-12 sm:h-10 sm:w-10 flex items-center justify-center shrink-0">
                       <img
                         src="/components/statistics.svg"
-                        className="h-full"
+                        className="h-1/2"
+                        alt="Statistics"
                       />
                     </div>
-                    <div className="flex flex-col p-2">
+                    <div className="flex flex-col pl-2">
                       <p className="text-text-color text-xs">Percentage Used</p>
-                      <p className="text-active-text-color text-2xl">
+                      <p className="text-active-text-color text-xl sm:text-lg">
                         {(
                           (account.currentMonthly * 100) /
                           account.monthly
@@ -110,37 +111,50 @@ const Home = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center w-1/2 mobile:w-52">
-                    <div className="p-4 rounded-full bg-bg-dark bg-opacity-80 h-16 w-16">
-                      <img src="/components/used.svg" className="h-full" />
+
+                  <div className="flex items-center p-1">
+                    <div className="rounded-full bg-bg-dark bg-opacity-80 h-12 w-12 sm:h-10 sm:w-10 flex items-center justify-center shrink-0">
+                      <img
+                        src="/components/used.svg"
+                        className="h-1/2"
+                        alt="Used"
+                      />
                     </div>
-                    <div className="flex flex-col p-2">
+                    <div className="flex flex-col pl-2">
                       <p className="text-text-color text-xs">Used</p>
-                      <p className="text-active-text-color text-2xl">
+                      <p className="text-active-text-color text-xl sm:text-lg">
                         {FormatMoney(account.currentMonthly)} €
                       </p>
                     </div>
                   </div>
-                </div>
-                <div className="flex flex-row w-full justify-between p-4 mobile:flex-col mobile:py-0 mobile:gap-3 mobile:items-center">
-                  <div className="flex items-center w-1/2 mobile:w-52">
-                    <div className="p-4 rounded-full bg-bg-dark bg-opacity-80 h-16 w-16">
-                      <img src="/components/monthly.svg" className="h-full" />
+
+                  <div className="flex items-center p-1">
+                    <div className="rounded-full bg-bg-dark bg-opacity-80 h-12 w-12 sm:h-10 sm:w-10 flex items-center justify-center shrink-0">
+                      <img
+                        src="/components/monthly.svg"
+                        className="h-1/2"
+                        alt="Monthly"
+                      />
                     </div>
-                    <div className="flex flex-col p-2">
+                    <div className="flex flex-col pl-2">
                       <p className="text-text-color text-xs">Monthly Budget</p>
-                      <p className="text-active-text-color text-2xl">
+                      <p className="text-active-text-color text-xl sm:text-lg">
                         {FormatMoney(account.monthly)} €
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center w-1/2 mobile:w-52">
-                    <div className="p-4 rounded-full bg-bg-dark bg-opacity-80 h-16 w-16">
-                      <img src="/components/coin.svg" className="h-full" />
+
+                  <div className="flex items-center p-1">
+                    <div className="rounded-full bg-bg-dark bg-opacity-80 h-12 w-12 sm:h-10 sm:w-10 flex items-center justify-center shrink-0">
+                      <img
+                        src="/components/coin.svg"
+                        className="h-1/2"
+                        alt="Coin"
+                      />
                     </div>
-                    <div className="flex flex-col p-2">
+                    <div className="flex flex-col pl-2">
                       <p className="text-text-color text-xs">Remaining</p>
-                      <p className="text-active-text-color text-2xl">
+                      <p className="text-active-text-color text-xl sm:text-lg">
                         {FormatMoney(account.monthly - account.currentMonthly)}{" "}
                         €
                       </p>
@@ -150,13 +164,13 @@ const Home = () => {
               </div>
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <p className="text-text-color">Monhly Budget not set</p>
+                <p className="text-text-color">Monthly Budget not set</p>
               </div>
             )}
           </div>
           <div className="bg-bg-light col-start-5 col-end-10 row-start-4 row-end-7 rounded-2xl flex flex-col py-3 shadow-lg mobile:h-80 px-0">
             <p className="text-active-text-color px-3">Balance Evolution</p>
-            <div className="p-2 mobile:h-full">
+            <div className="p-2 h-full">
               <FTChart
                 customOptions={{
                   legend: false,
