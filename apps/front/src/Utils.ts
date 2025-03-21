@@ -1,8 +1,8 @@
 const FormatDate = (date: number) => {
   return new Date(date).toLocaleDateString(undefined, {
     year: "numeric",
-    month: "numeric",
-    day: "numeric",
+    month: "2-digit",
+    day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
   });
@@ -11,8 +11,8 @@ const FormatDate = (date: number) => {
 const FormatDateWithoutHours = (date: number) => {
   return new Date(date).toLocaleDateString(undefined, {
     year: "numeric",
-    month: "numeric",
-    day: "numeric",
+    month: "2-digit",
+    day: "2-digit",
   });
 };
 
