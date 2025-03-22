@@ -7,7 +7,9 @@ RUN --mount=type=cache,target=/root/.npm \
 
 WORKDIR /usr/src/app
 
-COPY dist dist
+COPY dist/front dist/front
+COPY dist/api/portable.js dist/api/portable.js
+COPY dist/api/KeysGenerator.cjs dist/api/KeysGenerator.cjs
 COPY prisma prisma
 
 COPY package.json package.json
@@ -34,4 +36,4 @@ EXPOSE 3000
 
 CMD pnpm prisma:push &&\
     node dist/api/KeysGenerator.cjs && \
-    node dist/api/index.js --host=0.0.0.0
+    node dist/api/portable.js --host=0.0.0.0
