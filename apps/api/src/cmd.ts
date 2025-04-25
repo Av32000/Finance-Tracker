@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import { count } from "console";
-import { randomBytes, randomInt, randomUUID } from "crypto";
-import { stat, writeFileSync } from "fs";
+import { randomUUID } from "crypto";
+import { writeFileSync } from "fs";
 import { join } from "path";
 import AccountsAPI from "./AccountsAPI";
 const prisma = new PrismaClient();
@@ -115,6 +114,7 @@ export default class Cmd {
 
           case "toggle":
             this.debugMode = !this.debugMode;
+            break;
 
           default:
             console.log("Invalid State");
@@ -208,7 +208,8 @@ export default class Cmd {
                     2,
                     2 + (Math.floor(Math.random() * (20 - 3 + 1)) + 3),
                   );
-                const amount = Math.random() * 2000 - 1000;
+                const amount =
+                  Math.round((Math.random() * 2000 - 1000) * 100) / 100;
                 const description =
                   Math.random() < 0.5
                     ? Math.random()
