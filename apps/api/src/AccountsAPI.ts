@@ -325,7 +325,8 @@ export default class AccountsAPI {
 
     existingFiles.forEach((f) => {
       if (validFiles.indexOf(f) == -1) {
-        rmSync(path.join(__dirname, "../", this.filesPath + f));
+        const p = path.join(__dirname, "../", this.filesPath + f);
+        if (existsSync(p)) rmSync(p);
         count++;
       }
     });
@@ -473,8 +474,23 @@ export default class AccountsAPI {
     try {
       const prisma = await this.checkPrismaClient();
       if (!prisma) return;
-      this.accounts.forEach(async (account) => {
-        // Account
+
+      // Collect all IDs for later use
+      const accountIds = this.accounts.map((account) => account.id);
+      const transactionIds = this.accounts.flatMap((account) =>
+        account.transactions.map((t) => t.id),
+      );
+      const fileIds = this.accounts.flatMap((account) =>
+        account.transactions
+          .filter((t) => t.file != null)
+          .map((t) => t.file!.id),
+      );
+      const tagIds = this.accounts.flatMap((account) =>
+        account.tags.map((t) => t.id),
+      );
+
+      // Process accounts
+      const accountUpserts = this.accounts.map((account) => {
         const prismaAccount = {
           id: account.id,
           balance: account.balance,
@@ -483,14 +499,19 @@ export default class AccountsAPI {
           name: account.name,
           charts: account.charts,
         };
-        await prisma.account.upsert({
+
+        return prisma.account.upsert({
           where: { id: account.id },
           create: prismaAccount,
           update: prismaAccount,
         });
+      });
 
-        // Transaction
-        account.transactions.forEach(async (t) => {
+      await Promise.all(accountUpserts);
+
+      // Process transactions
+      const transactionUpserts = this.accounts.flatMap((account) =>
+        account.transactions.map((t) => {
           const prismaTransaction = {
             id: t.id,
             amount: t.amount,
@@ -500,122 +521,148 @@ export default class AccountsAPI {
             name: t.name,
             tag: t.tag,
             Account: {
-              connect: {
-                id: account.id,
-              },
+              connect: { id: account.id },
             },
           };
-          await prisma.transaction.upsert({
+
+          return prisma.transaction.upsert({
             where: { id: t.id },
             create: prismaTransaction,
             update: prismaTransaction,
           });
+        }),
+      );
 
-          if (t.file) {
+      await Promise.all(transactionUpserts);
+
+      // Process files - only for transactions that have files
+      const fileUpserts = this.accounts.flatMap((account) =>
+        account.transactions
+          .filter((t) => t.file != null)
+          .map((t) => {
             const prismaFile = {
-              id: t.file.id,
-              name: t.file.name,
+              id: t.file!.id,
+              name: t.file!.name,
               Transaction: {
-                connect: {
-                  id: t.id,
-                },
+                connect: { id: t.id },
               },
             };
 
-            await prisma.file.upsert({
-              where: { id: t.file.id },
+            return prisma.file.upsert({
+              where: { id: t.file!.id },
               create: prismaFile,
               update: prismaFile,
             });
-          }
-        });
+          }),
+      );
 
-        await prisma.transaction.deleteMany({
-          where: {
-            id: {
-              notIn: this.accounts.flatMap((a) =>
-                a.transactions.map((t) => t.id),
-              ),
-            },
-          },
-        });
+      await Promise.all(fileUpserts);
 
-        await prisma.file.deleteMany({
-          where: {
-            id: {
-              notIn: this.accounts.flatMap((a) =>
-                a.transactions
-                  .map((t) => t.file?.id)
-                  .filter((e) => e != undefined),
-              ),
-            },
-          },
-        });
-
-        // Tags
-        account.tags.forEach(async (t) => {
+      // Process tags
+      const tagUpserts = this.accounts.flatMap((account) =>
+        account.tags.map((t) => {
           const prismaTag = {
             id: t.id,
             color: t.color,
             name: t.name,
             Account: {
-              connect: {
-                id: account.id,
-              },
+              connect: { id: account.id },
             },
           };
-          await prisma.transactionTag.upsert({
+
+          return prisma.transactionTag.upsert({
             where: { id: t.id },
             create: prismaTag,
             update: prismaTag,
           });
-        });
+        }),
+      );
 
-        await prisma.transactionTag.deleteMany({
+      await Promise.all(tagUpserts);
+
+      // Clean up deleted data
+      const cleanupOperations = [
+        // Delete transactions that no longer exist in memory
+        prisma.transaction.deleteMany({
           where: {
-            id: {
-              notIn: this.accounts.flatMap((a) => a.tags.map((t) => t.id)),
-            },
+            id: { notIn: transactionIds },
           },
-        });
+        }),
+
+        // Delete files that no longer exist in memory
+        prisma.file.deleteMany({
+          where: {
+            id: { notIn: fileIds },
+          },
+        }),
+
+        // Delete tags that no longer exist in memory
+        prisma.transactionTag.deleteMany({
+          where: {
+            id: { notIn: tagIds },
+          },
+        }),
+      ];
+
+      await Promise.all(cleanupOperations);
+
+      // Find accounts in the database that don't exist in memory and delete them
+      const dbAccounts = await prisma.account.findMany({
+        select: { id: true },
       });
 
-      (await prisma.account.findMany()).forEach(async (a) => {
-        const localAccount = this.accounts.find(
-          (account) => account.id === a.id,
-        );
-        if (!localAccount) {
-          // Delete File
-          (
-            await prisma.transaction.findMany({
-              where: { Account: { id: a.id } },
-            })
-          ).forEach((t) => {
-            if (t.fileId) {
-              prisma.file.delete({
-                where: { id: t.fileId, Transaction: { every: { id: t.id } } },
+      const accountsToDelete = dbAccounts
+        .filter((a) => !accountIds.includes(a.id))
+        .map((a) => a.id);
+
+      if (accountsToDelete.length > 0) {
+        // For each account to delete, clean up related records
+        await Promise.all(
+          accountsToDelete.map(async (accountId) => {
+            // Find transactions with files
+            const transactions = await prisma.transaction.findMany({
+              where: {
+                Account: { id: accountId },
+              },
+              select: {
+                id: true,
+                fileId: true,
+              },
+            });
+
+            // Delete files first (if any)
+            const fileIds = transactions
+              .filter((t) => t.fileId != null)
+              .map((t) => t.fileId!);
+
+            if (fileIds.length > 0) {
+              await prisma.file.deleteMany({
+                where: { id: { in: fileIds } },
               });
             }
-          });
 
-          // Delete Transactions
-          await prisma.transaction.deleteMany({
-            where: {
-              Account: {
-                id: a.id,
-              },
-            },
-          });
+            // Delete transaction tags
+            await prisma.transactionTag.deleteMany({
+              where: { Account: { id: accountId } },
+            });
 
-          await prisma.account.delete({
-            where: {
-              id: a.id,
-            },
-          });
-        }
-      });
-    } catch (e) {
-      console.error(e);
+            // Delete transactions
+            await prisma.transaction.deleteMany({
+              where: { Account: { id: accountId } },
+            });
+
+            // Finally delete the account
+            await prisma.account.delete({
+              where: { id: accountId },
+            });
+          }),
+        );
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Database update failed:", error);
+      return false;
     }
   }
 
