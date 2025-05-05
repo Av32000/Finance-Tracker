@@ -29,6 +29,8 @@ export const ChartFilterOperatorsEnum = z.enum([
   "between",
   "contains",
 ]);
+export type ChartFilterOperators = z.infer<typeof ChartFilterOperatorsEnum>;
+
 export const TransactionsFilterSchema = z
   .object({
     type: z.literal("property"),

@@ -1,33 +1,12 @@
-import { Account, Transaction } from "@finance-tracker/types";
 import { useState } from "react";
 import { useBearStore } from "../GlobalState";
+import { FilterItem } from "../TransactionFilter";
 import { FormatDate } from "../Utils";
 import AmountTag from "./AmountTag";
 import FTCheckbox from "./FTCheckbox";
 import FileTag from "./FileTag";
 import TransactionModal from "./TransactionModal";
 import TransactionTagElement from "./TransactionTagElement";
-
-const FilterItem = (
-  filter: string,
-  transaction: Transaction,
-  account: Account,
-) => {
-  if (filter == "") return true;
-  let isValid = false;
-  filter.split(" ").forEach((m) => {
-    const tag = account.tags.find((t) => t.id === transaction.tag);
-    if (!isValid && transaction.id == m) isValid = true;
-    if (!isValid && transaction.name.includes(m)) isValid = true;
-    if (!isValid && transaction.file && transaction.file.name.includes(m))
-      isValid = true;
-    if (!isValid && FormatDate(transaction.date).includes(m)) isValid = true;
-    if (!isValid && tag && tag.name.includes(m)) isValid = true;
-    if (!isValid && transaction.amount.toString().includes(m)) isValid = true;
-  });
-
-  return isValid;
-};
 
 const TransactionsTable = ({
   filter,
