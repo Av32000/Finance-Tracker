@@ -26,7 +26,7 @@ const NavBar = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="w-[280px] h-screen bg-bg-dark mobile:fixed mobile:bottom-0 mobile:h-16 mobile:w-full mobile:flex mobile:flex-row">
+    <div className="w-[280px] h-screen bg-bg-dark z-30 mobile:fixed mobile:bottom-0 mobile:h-16 mobile:w-full mobile:flex mobile:flex-row">
       <img
         src="logo.svg"
         width={50}

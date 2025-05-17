@@ -119,7 +119,7 @@ const TransactionsTable = ({
                           />
                         </td>
                         <td
-                          className="text-center text-active-text-color p-2 cursor-pointer"
+                          className="text-start text-active-text-color p-2 cursor-pointer truncate"
                           onClick={() => {
                             setCurrentTransaction(t.id);
                             setTransactionModalIsOpen(true);
