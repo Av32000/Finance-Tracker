@@ -136,7 +136,7 @@ importers:
         version: 6.21.0(eslint@8.57.1)(typescript@5.6.3)
       '@vitejs/plugin-react':
         specifier: ^4.3.3
-        version: 4.3.3(vite@4.5.6(@types/node@22.9.1))
+        version: 4.3.3(vite@4.5.14(@types/node@22.9.1))
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.49)
@@ -159,8 +159,8 @@ importers:
         specifier: ^5.6.3
         version: 5.6.3
       vite:
-        specifier: ^4.5.6
-        version: 4.5.6(@types/node@22.9.1)
+        specifier: ^4.5.14
+        version: 4.5.14(@types/node@22.9.1)
 
   packages/types:
     dependencies:
@@ -2089,8 +2089,8 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
-  vite@4.5.6:
-    resolution: {integrity: sha512-ElBNuVvJKslxcfY2gMmae5IjaKGqCYGicCNZ+8R56sAznobeE3pI9ctzI17cBS/6OJh5YuQNMSN4BP4dRjugBg==}
+  vite@4.5.14:
+    resolution: {integrity: sha512-+v57oAaoYNnO3hIu5Z/tJRZjq5aHM2zDve9YZ8HngVHbhk66RStobhb1sqPMIPEleV6cNKYK4eGrAbE9Ulbl2g==}
     engines: {node: ^14.18.0 || >=16.0.0}
     hasBin: true
     peerDependencies:
@@ -2852,14 +2852,14 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@vitejs/plugin-react@4.3.3(vite@4.5.6(@types/node@22.9.1))':
+  '@vitejs/plugin-react@4.3.3(vite@4.5.14(@types/node@22.9.1))':
     dependencies:
       '@babel/core': 7.26.0
       '@babel/plugin-transform-react-jsx-self': 7.25.9(@babel/core@7.26.0)
       '@babel/plugin-transform-react-jsx-source': 7.25.9(@babel/core@7.26.0)
       '@types/babel__core': 7.20.5
       react-refresh: 0.14.2
-      vite: 4.5.6(@types/node@22.9.1)
+      vite: 4.5.14(@types/node@22.9.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -4103,7 +4103,7 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  vite@4.5.6(@types/node@22.9.1):
+  vite@4.5.14(@types/node@22.9.1):
     dependencies:
       esbuild: 0.18.20
       postcss: 8.4.49
