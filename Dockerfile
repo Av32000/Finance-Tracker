@@ -36,4 +36,4 @@ EXPOSE 3000
 
 CMD pnpm prisma:push &&\
     node dist/api/KeysGenerator.cjs && \
-    node dist/api/portable.js --host=0.0.0.0
+    node dist/api/portable.js --host=0.0.0.0 --data-dir=/usr/src/app/datas

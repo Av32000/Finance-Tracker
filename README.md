@@ -51,6 +51,30 @@ pnpm start:prod
 
 You're ready to open `http://localhost:3000` and start using Finance Tracker.
 
+### Standalone Binary
+
+Finance Tracker can be built as a standalone binary distribution that includes everything needed to run the application:
+
+```sh
+# Build the standalone binary
+pnpm build:binary
+
+# Run the binary (from the bin/ directory)
+cd bin
+./finance-tracker
+
+# Run with custom options
+./finance-tracker --port=8080 --host=0.0.0.0
+./finance-tracker --data-dir="/path/to/custom/directory"
+```
+
+The standalone binary:
+- Includes the Node.js runtime for complete portability
+- Automatically runs in standalone mode (offline + user config directory)  
+- Stores data in your user configuration directory (`~/.config/finance-tracker` on Linux, `~/Library/Application Support/finance-tracker` on macOS, `%APPDATA%/finance-tracker` on Windows)
+- Can be distributed as a single directory containing all necessary files
+- Supports all command line options: `--port`, `--host`, `--data-dir`, `--insecure`
+
 ## Contributing
 
 All contributions are greatly appreciated. Feel free to fork this repository and open pull requests to enhance the project.

@@ -5,11 +5,15 @@
   "scripts": {
     "start": "node dist/api/index.js",
     "start:prod": "NODE_ENV=\"production\" pnpm start",
+    "start:standalone": "NODE_ENV=\"production\" node dist/api/portable.js --standalone",
     "dev": "concurrently \"pnpm start:react\" \"pnpm start:server\"",
     "start:react": "pnpm --filter @finance-tracker/front dev",
     "start:server": "pnpm --filter @finance-tracker/api start",
     "generate-keys": "pnpm --filter @finance-tracker/api generate-keys",
     "build": "pnpm --filter @finance-tracker/types build && pnpm -r build",
+    "build:standalone": "pnpm build && pnpm generate-keys",
+    "build:binary": "pnpm build:standalone && node scripts/build-standalone-dist.js",
+    "package:binary": "pnpm build:binary && tar -czf finance-tracker-binary.tar.gz bin/ README.md",
     "build:react": "pnpm --filter @finance-tracker/front build",
     "build:server": "pnpm --filter @finance-tracker/api build",
     "build:types": "pnpm --filter @finance-tracker/types build",
@@ -32,6 +36,9 @@
     "prisma": "5.13.0"
   },
   "devDependencies": {
+    "nexe": "5.0.0-beta.4",
+    "pkg": "^5.8.1",
+    "postject": "1.0.0-alpha.6",
     "prettier": "^3.5.3"
   }
 }

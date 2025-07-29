@@ -17,6 +17,7 @@ import { randomUUID } from "crypto";
 import Fastify from "fastify";
 import { createWriteStream, existsSync, mkdirSync, readFileSync } from "fs";
 import mimeTypes from "mime-types";
+import os from "os";
 import path from "path";
 import { pipeline } from "stream";
 import util from "util";
@@ -29,28 +30,88 @@ declare module "fastify" {
     extends FastifyJwtNamespace<{ namespace: "security" }> {}
 }
 
+// Helper function to get user config directory
+function getUserConfigDir(): string {
+  const platform = os.platform();
+  const homeDir = os.homedir();
+
+  switch (platform) {
+    case "win32":
+      return process.env.APPDATA || path.join(homeDir, "AppData", "Roaming");
+    case "darwin":
+      return path.join(homeDir, "Library", "Application Support");
+    default: // linux and others
+      return process.env.XDG_CONFIG_HOME || path.join(homeDir, ".config");
+  }
+}
+
+// Helper function to parse command line arguments
+function parseArgs() {
+  const args = process.argv.slice(2);
+  const parsedArgs: Record<string, string | boolean> = {};
+
+  for (const arg of args) {
+    if (arg.startsWith("--")) {
+      if (arg.includes("=")) {
+        const [key, value] = arg.split("=", 2);
+        parsedArgs[key.substring(2)] = value;
+      } else {
+        parsedArgs[arg.substring(2)] = true;
+      }
+    }
+  }
+
+  return parsedArgs;
+}
+
 const fastify = Fastify({
   logger: {
     level: "error",
   },
 });
 
-const insecure = process.argv.includes("--insecure");
+// Parse command line arguments
+const args = parseArgs();
+
+const insecure = (args.insecure as boolean) || false;
 if (insecure) {
   console.warn("\x1b[33m%s\x1b[0m", "--insecure flag used => Insecure server");
 }
 
-const offline = process.argv.includes("--offline");
+const standalone = (args.standalone as boolean) || false;
+const offline = (args.offline as boolean) || standalone; // standalone mode forces offline
 if (offline) {
   console.warn(
     "\x1b[33m%s\x1b[0m",
-    "--offline flag used => Unsynchronised data",
+    standalone
+      ? "--standalone flag used => Standalone mode (offline + user config directory)"
+      : "--offline flag used => Unsynchronised data",
   );
 }
 
-const filesPath = "datas/files/";
-if (!existsSync("datas")) mkdirSync("datas");
-if (!existsSync(filesPath)) mkdirSync(filesPath);
+// Configure data directory
+let dataDir: string;
+if (args["data-dir"]) {
+  dataDir = args["data-dir"] as string;
+  console.log(`Using custom data directory: ${dataDir}`);
+} else if (standalone) {
+  dataDir = path.join(getUserConfigDir(), "finance-tracker");
+  console.log(`Using user config directory: ${dataDir}`);
+} else {
+  // Default behavior - relative to the application directory
+  dataDir = path.join(__dirname, "../../", "datas");
+}
+
+// Ensure data directory exists
+if (!existsSync(dataDir)) {
+  mkdirSync(dataDir, { recursive: true });
+  console.log(`Created data directory: ${dataDir}`);
+}
+
+const filesPath = path.join(dataDir, "files");
+if (!existsSync(filesPath)) {
+  mkdirSync(filesPath, { recursive: true });
+}
 
 fastify.register(cors, {
   origin: "*",
@@ -59,7 +120,7 @@ fastify.register(cors, {
 });
 
 fastify.register(require("@fastify/static"), {
-  root: path.join(__dirname, "../../", filesPath),
+  root: filesPath,
   prefix: "/api",
   decorateReply: false,
 });
@@ -136,14 +197,11 @@ fastify.addHook("onRequest", async (request, reply) => {
 
 const pump = util.promisify(pipeline);
 
-const accountsPath = path.join(__dirname, "../../", "datas");
-const accountsAPI = new AccountsAPI(accountsPath, filesPath, offline);
-const authAPI = new AuthAPI(accountsPath);
+const accountsAPI = new AccountsAPI(dataDir, filesPath, offline);
+const authAPI = new AuthAPI(dataDir);
 accountsAPI.FixAccounts();
 
-const port = parseInt(
-  process.argv.find((s) => s.startsWith("--port"))?.split("=")[1] || "3000",
-);
+const port = parseInt((args.port as string) || "3000");
 
 fastify.register(
   async (api) => {
@@ -747,16 +805,16 @@ routes.forEach((route) => {
   });
 });
 
-const hostArg = process.argv.find((arg) => arg.startsWith("--host="));
+const host = (args.host as string) || "localhost";
 
-fastify.listen(
-  { port, host: hostArg != null ? hostArg.split("=")[1] : "localhost" },
-  function (err, address) {
-    if (err) {
-      fastify.log.error(err);
-      process.exit(1);
-    }
-    console.log(`Finance Tracker listening on ${address}`);
-    new Cmd(accountsAPI);
-  },
-);
+fastify.listen({ port, host }, function (err, address) {
+  if (err) {
+    fastify.log.error(err);
+    process.exit(1);
+  }
+  console.log(`Finance Tracker listening on ${address}`);
+  if (standalone) {
+    console.log(`Running in standalone mode with data stored in: ${dataDir}`);
+  }
+  new Cmd(accountsAPI);
+});

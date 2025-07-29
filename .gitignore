@@ -26,3 +26,9 @@ dist-ssr
 datas/
 keys/
 .env
+
+# Binary build outputs
+bin/
+*.blob
+sea-config.json
+finance-tracker-binary.tar.gz
