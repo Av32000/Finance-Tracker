@@ -3,7 +3,7 @@ ARG NODE_VERSION=21.4.0
 FROM node:${NODE_VERSION}-alpine
 
 RUN --mount=type=cache,target=/root/.npm \
-    npm install -g pnpm@${PNPM_VERSION}
+    npm install -g pnpm
 
 WORKDIR /usr/src/app
 
