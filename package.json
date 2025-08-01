@@ -2,6 +2,7 @@
   "name": "finance-tracker",
   "private": true,
   "version": "1.0.0",
+  "bin": "dist/api/portable.js",
   "scripts": {
     "start": "node dist/api/index.js",
     "start:prod": "NODE_ENV=\"production\" pnpm start",
@@ -12,8 +13,7 @@
     "generate-keys": "pnpm --filter @finance-tracker/api generate-keys",
     "build": "pnpm --filter @finance-tracker/types build && pnpm -r build",
     "build:standalone": "pnpm build && pnpm generate-keys",
-    "build:binary": "pnpm build:standalone && node scripts/build-standalone-dist.js",
-    "package:binary": "pnpm build:binary && tar -czf finance-tracker-binary.tar.gz bin/ README.md",
+    "build:binary": "pnpm prisma:generate && pnpm build:standalone && cp node_modules/prisma/*.node dist/ && pkg . --out-path bin/",
     "build:react": "pnpm --filter @finance-tracker/front build",
     "build:server": "pnpm --filter @finance-tracker/api build",
     "build:types": "pnpm --filter @finance-tracker/types build",
@@ -36,9 +36,22 @@
     "prisma": "5.13.0"
   },
   "devDependencies": {
-    "nexe": "5.0.0-beta.4",
     "pkg": "^5.8.1",
-    "postject": "1.0.0-alpha.6",
     "prettier": "^3.5.3"
+  },
+  "pkg": {
+    "assets": [
+      "node_modules/@prisma/**/*",
+      "node_modules/prisma/*.node",
+      "node_modules/prisma/*.bak",
+      "prisma/schema.prisma",
+      "prisma/migrations/**/*",
+      "dist/api/**/*",
+      "dist/front/**/*",
+      "dist/*.node"
+    ],
+    "targets": [
+      "node18-win-x64"
+    ]
   }
 }

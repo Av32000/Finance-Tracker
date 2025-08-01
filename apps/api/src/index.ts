@@ -125,12 +125,10 @@ fastify.register(require("@fastify/static"), {
   decorateReply: false,
 });
 
-if (process.env.NODE_ENV == "production") {
-  fastify.register(require("@fastify/static"), {
-    root: path.join(__dirname, "..", "front"),
-    prefix: "/",
-  });
-}
+fastify.register(require("@fastify/static"), {
+  root: path.join(__dirname, "..", "front"),
+  prefix: "/",
+});
 
 fastify.register(multipart, {
   limits: {

@@ -29,6 +29,3 @@ keys/
 
 # Binary build outputs
 bin/
-*.blob
-sea-config.json
-finance-tracker-binary.tar.gz
