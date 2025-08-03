@@ -13,6 +13,10 @@
     "build:react": "pnpm --filter @finance-tracker/front build",
     "build:server": "pnpm --filter @finance-tracker/api build",
     "build:types": "pnpm --filter @finance-tracker/types build",
+    "build:binary": "pnpm build:server && node scripts/build-binary.js",
+    "build:binary:win": "pnpm build:binary -- --platform=win",
+    "build:binary:mac": "pnpm build:binary -- --platform=mac", 
+    "build:binary:linux": "pnpm build:binary -- --platform=linux",
     "prisma:generate": "prisma generate",
     "prisma:pull": "prisma db pull && prisma generate",
     "prisma:push": "prisma migrate dev && prisma generate",
@@ -32,6 +36,7 @@
     "prisma": "5.13.0"
   },
   "devDependencies": {
+    "pkg": "^5.8.1",
     "prettier": "^3.6.2"
   }
 }
