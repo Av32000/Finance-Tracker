@@ -16,8 +16,21 @@ const targets = {
   win: ['node18-win-x64'],
   mac: ['node18-macos-x64', 'node18-macos-arm64'],
   linux: ['node18-linux-x64'],
-  current: ['host'] // Use current platform
+  current: getCurrentPlatformTarget() // Use current platform
 };
+
+function getCurrentPlatformTarget() {
+  const platform = process.platform;
+  const arch = process.arch;
+  
+  if (platform === 'win32') {
+    return ['node18-win-x64'];
+  } else if (platform === 'darwin') {
+    return arch === 'arm64' ? ['node18-macos-arm64'] : ['node18-macos-x64'];
+  } else {
+    return ['node18-linux-x64'];
+  }
+}
 
 const selectedTargets = targets[platform] || targets.current;
 
@@ -123,8 +136,13 @@ console.log(`📁 Binaries created in: ${binariesDir}`);
 function getOutputName(target, platform) {
   const baseName = 'finance-tracker';
   
-  if (target === 'host') {
-    return process.platform === 'win32' ? `${baseName}.exe` : baseName;
+  if (platform === 'current') {
+    const currentPlatform = process.platform;
+    if (currentPlatform === 'win32') {
+      return `${baseName}.exe`;
+    } else {
+      return baseName;
+    }
   }
   
   if (target.includes('win')) {
@@ -140,6 +158,7 @@ function getOutputName(target, platform) {
 }
 
 function createWindowsInstaller(binaryPath) {
+  const binaryName = path.basename(binaryPath);
   const installerScript = `
 @echo off
 echo Installing Finance Tracker...
@@ -149,7 +168,7 @@ set "BINARY_NAME=finance-tracker.exe"
 
 if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
 
-copy "${binaryPath}" "%INSTALL_DIR%\\%BINARY_NAME%"
+copy "${binaryName}" "%INSTALL_DIR%\\%BINARY_NAME%"
 
 echo Creating desktop shortcut...
 set "SHORTCUT_PATH=%USERPROFILE%\\Desktop\\Finance Tracker.lnk"

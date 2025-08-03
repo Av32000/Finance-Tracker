@@ -16,13 +16,20 @@ export function getDataPath(standalone: boolean): string {
     return financeTrackerDir;
   } else {
     // Use current working directory (existing behavior)
-    return "datas";
+    return path.resolve("datas");
   }
 }
 
 export function getFilesPath(standalone: boolean): string {
   const dataPath = getDataPath(standalone);
-  return path.join(dataPath, "files");
+  const filesPath = path.join(dataPath, "files");
+  
+  // Ensure the files directory exists
+  if (!existsSync(filesPath)) {
+    mkdirSync(filesPath, { recursive: true });
+  }
+  
+  return filesPath;
 }
 
 function getConfigDirectory(): string {
