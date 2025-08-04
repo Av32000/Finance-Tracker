@@ -30,6 +30,17 @@ const Transactions = () => {
   const { showModal } = useModal();
 
   useEffect(() => {
+    const url = new URL(window.location.href);
+    const urlParams = new URLSearchParams(window.location.search);
+    const filterParam = urlParams.get("q");
+    if (filterParam) {
+      url.searchParams.delete("q");
+      window.history.replaceState({}, "", url.toString());
+      setFilter(filterParam);
+    }
+  }, []);
+
+  useEffect(() => {
     document.title = "Finance Tracker - Transactions";
   });
   return (
