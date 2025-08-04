@@ -46,10 +46,15 @@ if (!fs.existsSync(binariesDir)) {
   fs.mkdirSync(binariesDir, { recursive: true });
 }
 
-// Check if build exists
+// Build frontend and API if not exists
 if (!fs.existsSync(mainScript)) {
-  console.error('❌ API build not found. Please run "pnpm build:server" first.');
-  process.exit(1);
+  console.log('🔧 Building API...');
+  execSync('pnpm build:server', { stdio: 'inherit' });
+}
+
+if (!fs.existsSync(frontDistDir)) {
+  console.log('🎨 Building frontend...');
+  execSync('pnpm build:react', { stdio: 'inherit' });
 }
 
 // Create a standalone entry point that forces --standalone mode
@@ -75,31 +80,6 @@ require('./portable.js');
 
 fs.writeFileSync(standaloneEntryPoint, standaloneCode);
 
-// Create pkg configuration
-const pkgConfig = {
-  scripts: [standaloneEntryPoint],
-  assets: [],
-  outputPath: binariesDir
-};
-
-// Add front-end assets if they exist
-if (fs.existsSync(frontDistDir)) {
-  console.log('📦 Including front-end assets...');
-  pkgConfig.assets.push(`${frontDistDir}/**/*`);
-}
-
-// Add any other necessary assets
-const assetsToInclude = [
-  path.join(apiDistDir, 'KeysGenerator.cjs'),
-  path.join(apiDistDir, 'keys/**/*')
-];
-
-assetsToInclude.forEach(asset => {
-  if (fs.existsSync(asset.replace('/**/*', ''))) {
-    pkgConfig.assets.push(asset);
-  }
-});
-
 console.log('🎯 Building binaries for targets:', selectedTargets);
 
 // Build for each target
@@ -110,11 +90,8 @@ selectedTargets.forEach(target => {
   console.log(`🚀 Building for ${target}...`);
   
   try {
-    // Use pkg to create the binary
-    const pkgCommand = `npx pkg ${standaloneEntryPoint} --target ${target} --output ${outputPath}`;
-    if (pkgConfig.assets.length > 0) {
-      // Note: pkg doesn't support --assets flag directly, we'll handle assets separately
-    }
+    // Use pkg with configuration file for better asset handling
+    const pkgCommand = `npx pkg --config pkg.json --target ${target} --output ${outputPath} ${standaloneEntryPoint}`;
     
     execSync(pkgCommand, { stdio: 'inherit' });
     console.log(`✅ Successfully built: ${outputPath}`);

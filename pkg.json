@@ -4,6 +4,7 @@
   "pkg": {
     "scripts": ["dist/api/**/*.js"],
     "assets": [
+      "dist/front/**/*",
       "dist/api/KeysGenerator.cjs",
       "dist/api/keys/**/*"
     ],
