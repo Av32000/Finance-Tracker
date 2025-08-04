@@ -20,6 +20,7 @@ import mimeTypes from "mime-types";
 import path from "path";
 import { pipeline } from "stream";
 import util from "util";
+import { exec } from "child_process";
 import AccountsAPI from "./AccountsAPI";
 import AuthAPI from "./AuthAPI";
 import Cmd from "./cmd";
@@ -148,6 +149,30 @@ fastify.addHook("onRequest", async (request, reply) => {
 });
 
 const pump = util.promisify(pipeline);
+
+// Function to open URL in default browser
+function openBrowser(url: string) {
+  const platform = process.platform;
+  let command: string;
+  
+  switch (platform) {
+    case 'darwin': // macOS
+      command = `open "${url}"`;
+      break;
+    case 'win32': // Windows
+      command = `start "" "${url}"`;
+      break;
+    default: // Linux and others
+      command = `xdg-open "${url}"`;
+      break;
+  }
+  
+  exec(command, (error) => {
+    if (error) {
+      console.log(`Could not open browser automatically: ${error.message}`);
+    }
+  });
+}
 
 // In standalone mode, force offline behavior (no database connection)
 const isOffline = offline || standalone;
@@ -772,6 +797,15 @@ fastify.listen(
       process.exit(1);
     }
     console.log(`Finance Tracker listening on ${address}`);
+    
+    // Auto-open browser when in standalone mode
+    if (standalone) {
+      console.log("🌐 Opening Finance Tracker in your default browser...");
+      setTimeout(() => {
+        openBrowser(address);
+      }, 1000); // Wait 1 second for server to fully start
+    }
+    
     new Cmd(accountsAPI);
   },
 );

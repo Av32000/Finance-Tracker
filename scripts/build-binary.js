@@ -36,7 +36,7 @@ const selectedTargets = targets[platform] || targets.current;
 
 // Paths
 const distDir = path.join(__dirname, '..', 'dist');
-const binariesDir = path.join(__dirname, '..', 'binaries');
+const binariesDir = path.join(__dirname, '..', 'bin');
 const apiDistDir = path.join(distDir, 'api');
 const frontDistDir = path.join(distDir, 'front');
 const mainScript = path.join(apiDistDir, 'index.js');
@@ -49,12 +49,12 @@ if (!fs.existsSync(binariesDir)) {
 // Build frontend and API if not exists
 if (!fs.existsSync(mainScript)) {
   console.log('🔧 Building API...');
-  execSync('pnpm build:server', { stdio: 'inherit' });
+  execSync('npm run build:server', { stdio: 'inherit' });
 }
 
 if (!fs.existsSync(frontDistDir)) {
   console.log('🎨 Building frontend...');
-  execSync('pnpm build:react', { stdio: 'inherit' });
+  execSync('npm run build:react', { stdio: 'inherit' });
 }
 
 // Create a standalone entry point that forces --standalone mode
@@ -139,34 +139,124 @@ function getOutputName(target, platform) {
 
 function createWindowsInstaller(binaryPath) {
   const binaryName = path.basename(binaryPath);
-  const installerScript = `
-@echo off
-echo Installing Finance Tracker...
+  const binariesDir = path.dirname(binaryPath);
+  
+  // Create NSIS installer script
+  const nsisScript = `
+; Finance Tracker NSIS Installer Script
+!define APP_NAME "Finance Tracker"
+!define APP_VERSION "1.0.1"
+!define APP_PUBLISHER "Finance Tracker"
+!define APP_EXE "finance-tracker.exe"
+!define APP_ICON ""
 
-set "INSTALL_DIR=%LOCALAPPDATA%\\Finance Tracker"
-set "BINARY_NAME=finance-tracker.exe"
+; Include required libraries
+!include "MUI2.nsh"
+!include "FileFunc.nsh"
 
-if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
+; General Settings
+Name "\${APP_NAME}"
+OutFile "\${APP_NAME}-Setup.exe"
+InstallDir "$LOCALAPPDATA\\\${APP_NAME}"
+InstallDirRegKey HKCU "Software\\\${APP_NAME}" ""
+RequestExecutionLevel user
 
-copy "${binaryName}" "%INSTALL_DIR%\\%BINARY_NAME%"
+; Interface Settings
+!define MUI_ABORTWARNING
+!define MUI_ICON "\${NSISDIR}\\Contrib\\Graphics\\Icons\\modern-install.ico"
+!define MUI_UNICON "\${NSISDIR}\\Contrib\\Graphics\\Icons\\modern-uninstall.ico"
 
-echo Creating desktop shortcut...
-set "SHORTCUT_PATH=%USERPROFILE%\\Desktop\\Finance Tracker.lnk"
-powershell "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%SHORTCUT_PATH%'); $Shortcut.TargetPath = '%INSTALL_DIR%\\%BINARY_NAME%'; $Shortcut.Save()"
+; Pages
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "LICENSE.txt"
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
 
-echo Creating start menu entry...
-set "START_MENU_DIR=%APPDATA%\\Microsoft\\Windows\\Start Menu\\Programs\\Finance Tracker"
-if not exist "%START_MENU_DIR%" mkdir "%START_MENU_DIR%"
-set "START_MENU_SHORTCUT=%START_MENU_DIR%\\Finance Tracker.lnk"
-powershell "$WshShell = New-Object -comObject WScript.Shell; $Shortcut = $WshShell.CreateShortcut('%START_MENU_SHORTCUT%'); $Shortcut.TargetPath = '%INSTALL_DIR%\\%BINARY_NAME%'; $Shortcut.Save()"
+!insertmacro MUI_UNPAGE_WELCOME
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
 
-echo Installation completed!
-echo Finance Tracker has been installed to: %INSTALL_DIR%
-echo Desktop and Start Menu shortcuts have been created.
-pause
+; Languages
+!insertmacro MUI_LANGUAGE "English"
+
+; License
+LicenseData "LICENSE.txt"
+
+; Installer Section
+Section "Install"
+  SetOutPath "$INSTDIR"
+  
+  ; Copy binary
+  File "${binaryName}"
+  
+  ; Create uninstaller
+  WriteUninstaller "$INSTDIR\\Uninstall.exe"
+  
+  ; Registry entries
+  WriteRegStr HKCU "Software\\\${APP_NAME}" "" $INSTDIR
+  WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\\${APP_NAME}" "DisplayName" "\${APP_NAME}"
+  WriteRegStr HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\\${APP_NAME}" "UninstallString" "$INSTDIR\\Uninstall.exe"
+  
+  ; Create Desktop Shortcut
+  CreateShortCut "$DESKTOP\\\${APP_NAME}.lnk" "$INSTDIR\\\${APP_EXE}"
+  
+  ; Create Start Menu Shortcuts
+  CreateDirectory "$SMPROGRAMS\\\${APP_NAME}"
+  CreateShortCut "$SMPROGRAMS\\\${APP_NAME}\\\${APP_NAME}.lnk" "$INSTDIR\\\${APP_EXE}"
+  CreateShortCut "$SMPROGRAMS\\\${APP_NAME}\\Uninstall.lnk" "$INSTDIR\\Uninstall.exe"
+SectionEnd
+
+; Uninstaller Section
+Section "Uninstall"
+  ; Remove files
+  Delete "$INSTDIR\\\${APP_EXE}"
+  Delete "$INSTDIR\\Uninstall.exe"
+  RMDir "$INSTDIR"
+  
+  ; Remove shortcuts
+  Delete "$DESKTOP\\\${APP_NAME}.lnk"
+  Delete "$SMPROGRAMS\\\${APP_NAME}\\\${APP_NAME}.lnk"
+  Delete "$SMPROGRAMS\\\${APP_NAME}\\Uninstall.lnk"
+  RMDir "$SMPROGRAMS\\\${APP_NAME}"
+  
+  ; Remove registry entries
+  DeleteRegKey HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\\${APP_NAME}"
+  DeleteRegKey HKCU "Software\\\${APP_NAME}"
+SectionEnd
 `;
 
-  const installerPath = binaryPath.replace('.exe', '-installer.bat');
-  fs.writeFileSync(installerPath, installerScript);
-  console.log(`📦 Windows installer created: ${installerPath}`);
+  const nsisScriptPath = path.join(binariesDir, 'installer.nsi');
+  fs.writeFileSync(nsisScriptPath, nsisScript);
+  
+  // Create a simple LICENSE.txt file if it doesn't exist
+  const licensePath = path.join(binariesDir, 'LICENSE.txt');
+  if (!fs.existsSync(licensePath)) {
+    fs.writeFileSync(licensePath, `Finance Tracker
+
+MIT License
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.`);
+  }
+  
+  console.log(`📦 NSIS installer script created: ${nsisScriptPath}`);
+  console.log('ℹ️  To build the installer, run: makensis installer.nsi');
+  console.log('   (Requires NSIS to be installed: https://nsis.sourceforge.io/)');
 }

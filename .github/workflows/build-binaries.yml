@@ -1,0 +1,128 @@
+name: Build Binaries
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            platform: linux
+            artifact-name: finance-tracker-linux
+          - os: windows-latest
+            platform: win
+            artifact-name: finance-tracker-windows
+          - os: macos-latest
+            platform: mac
+            artifact-name: finance-tracker-macos
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build types
+      run: npm run build:types
+
+    - name: Build frontend
+      run: npm run build:react
+
+    - name: Build API
+      run: npm run build:server
+
+    - name: Build binary for ${{ matrix.platform }}
+      run: npm run build:binary:${{ matrix.platform }}
+
+    - name: Prepare artifacts (Linux/macOS)
+      if: matrix.platform != 'win'
+      run: |
+        mkdir -p artifacts
+        cp bin/* artifacts/ 2>/dev/null || true
+        ls -la bin/
+        ls -la artifacts/
+
+    - name: Prepare artifacts (Windows)
+      if: matrix.platform == 'win'
+      run: |
+        mkdir artifacts
+        copy bin\* artifacts\ 2>NUL || echo "No files to copy"
+        dir bin\
+        dir artifacts\
+
+    - name: Upload binary artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.artifact-name }}
+        path: artifacts/*
+        retention-days: 30
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ./artifacts
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          ./artifacts/**/*
+        draft: false
+        prerelease: false
+        tag_name: ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
+        body: |
+          ## Finance Tracker ${{ github.ref_name }}
+          
+          ### Downloads
+          
+          - **Windows**: `finance-tracker-windows.exe` + NSIS installer script
+          - **macOS**: `finance-tracker-macos-x64` (Intel) and `finance-tracker-macos-arm64` (Apple Silicon)
+          - **Linux**: `finance-tracker-linux`
+          
+          ### Usage
+          
+          All binaries run in standalone mode automatically - no database setup required!
+          
+          Simply run the binary and Finance Tracker will:
+          - Start the server on http://localhost:3000
+          - Automatically open your default browser
+          - Store data in your user configuration directory
+          
+          ### Installation
+          
+          #### Windows
+          1. Download the `.exe` file
+          2. Use the included NSIS installer script for a proper installation with shortcuts
+          
+          #### macOS
+          1. Download the appropriate binary for your Mac (Intel or Apple Silicon)
+          2. Make it executable: `chmod +x finance-tracker-macos-*`
+          3. Run: `./finance-tracker-macos-*`
+          
+          #### Linux
+          1. Download `finance-tracker-linux`
+          2. Make it executable: `chmod +x finance-tracker-linux`
+          3. Run: `./finance-tracker-linux`
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
