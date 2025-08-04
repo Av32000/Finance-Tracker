@@ -13,7 +13,7 @@ dist-ssr
 *.local
 
 # Binaries
-binaries/
+bin/
 
 # Editor directories and files
 .vscode/*
