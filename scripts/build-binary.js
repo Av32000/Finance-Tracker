@@ -66,6 +66,9 @@ if (!process.argv.includes('--standalone')) {
 // Set NODE_ENV to production for binary
 process.env.NODE_ENV = 'production';
 
+// Prevent Prisma from loading
+process.env.SKIP_PRISMA = 'true';
+
 // Load the main application
 require('./portable.js');
 `;

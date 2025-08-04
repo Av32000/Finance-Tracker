@@ -72,6 +72,18 @@ After building, you'll find the following in the `binaries/` directory:
 - **Automatic Standalone Mode**: Binaries automatically run in standalone mode
 - **Self-Contained**: Everything needed is bundled into the executable
 - **Cross-Platform**: Build binaries for Windows, macOS, and Linux from any platform
+- **Prisma-Free**: Built without Prisma dependencies to avoid native library conflicts
+
+## Technical Implementation
+
+### Prisma Exclusion for Binaries
+
+To ensure binaries work correctly across different systems, the build process:
+
+1. **Excludes Prisma**: Uses esbuild with `--external:@prisma/client` to exclude Prisma from the bundle
+2. **Conditional Loading**: Uses environment variable `SKIP_PRISMA=true` to prevent Prisma loading
+3. **Graceful Fallback**: Automatically falls back to file-based storage when Prisma is unavailable
+4. **Standalone Mode**: Binaries automatically enable `--standalone` mode for proper data directory management
 
 ### Installation
 

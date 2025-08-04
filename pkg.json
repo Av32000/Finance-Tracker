@@ -5,8 +5,7 @@
     "scripts": ["dist/api/**/*.js"],
     "assets": [
       "dist/api/KeysGenerator.cjs",
-      "dist/api/keys/**/*",
-      "dist/api/node_modules/**/*"
+      "dist/api/keys/**/*"
     ],
     "targets": [
       "node18-linux-x64",
@@ -14,6 +13,9 @@
       "node18-macos-x64",
       "node18-macos-arm64"
     ],
-    "outputPath": "binaries"
+    "outputPath": "binaries",
+    "options": [
+      "--no-bytecode"
+    ]
   }
 }

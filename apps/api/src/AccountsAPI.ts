@@ -16,6 +16,11 @@ let Prisma: any;
 let PrismaClient: any;
 
 try {
+  // Skip Prisma loading if explicitly disabled (e.g., in binaries)
+  if (process.env.SKIP_PRISMA === 'true') {
+    throw new Error('Prisma loading skipped for binary');
+  }
+  
   const prismaModule = require("@prisma/client");
   Prisma = prismaModule.Prisma;
   PrismaClient = prismaModule.PrismaClient;
