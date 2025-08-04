@@ -144,7 +144,36 @@ export function parseFilter(
   const availableFields = Object.values(ChartAvailableFieldsEnum.enum);
   const operators = [":", "=", ">", "<"];
 
-  const tokens = filter.split(" ");
+  // Parse tokens while respecting quoted strings
+  const tokens: string[] = [];
+  let currentToken = "";
+  let inQuotes = false;
+  let quoteChar = "";
+
+  for (let i = 0; i < filter.length; i++) {
+    const char = filter[i];
+
+    if ((char === '"' || char === "'") && !inQuotes) {
+      inQuotes = true;
+      quoteChar = char;
+    } else if (char === quoteChar && inQuotes) {
+      inQuotes = false;
+      quoteChar = "";
+    } else if (char === " " && !inQuotes) {
+      if (currentToken.trim()) {
+        tokens.push(currentToken.trim());
+        currentToken = "";
+      }
+      continue;
+    } else {
+      currentToken += char;
+    }
+  }
+
+  if (currentToken.trim()) {
+    tokens.push(currentToken.trim());
+  }
+
   const filters: TransactionsFilter[] = [];
 
   for (let i = 0; i < tokens.length; i++) {
@@ -161,6 +190,17 @@ export function parseFilter(
           field = token.split(op)[0].slice(1);
           operator = op;
           value = token.split(op).slice(1).join(op);
+
+          // Remove quotes from value if present
+          if (value && typeof value === "string") {
+            if (
+              (value.startsWith('"') && value.endsWith('"')) ||
+              (value.startsWith("'") && value.endsWith("'"))
+            ) {
+              value = value.slice(1, -1);
+            }
+          }
+
           break;
         }
       }
