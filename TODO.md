@@ -11,5 +11,5 @@
 - [ ] Add pages to TransactionsTable
 - [ ] Clean Settings UI
 - [ ] Add more CLI commands
-- [ ] Add filters in transactions search
+- [x] Add filters in transactions search
 - [ ] Add click events to charts (Ex: Open transactions list with filters)

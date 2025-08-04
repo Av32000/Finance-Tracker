@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBearStore } from "../GlobalState";
-import { FilterItem } from "../TransactionFilter";
+import { filterTransactions, parseFilter } from "../TransactionFilter";
 import { FormatDate } from "../Utils";
 import AmountTag from "./AmountTag";
 import FTCheckbox from "./FTCheckbox";
@@ -22,6 +22,21 @@ const TransactionsTable = ({
   const [transactionModalIsOpen, setTransactionModalIsOpen] = useState(false);
   const [currentTransaction, setCurrentTransaction] = useState("");
 
+  const [transactions, setTransactions] = useState(
+    account ? account.transactions : [],
+  );
+
+  useEffect(() => {
+    setTransactions(
+      account
+        ? filterTransactions(
+            account.transactions,
+            parseFilter(filter.trim(), account),
+          )
+        : [],
+    );
+  }, [account, account?.transactions, filter]);
+
   return (
     <>
       <div className="m-4 overflow-y-scroll">
@@ -31,26 +46,10 @@ const TransactionsTable = ({
               <tr className="text-active-text-color">
                 <th className="w-7">
                   <FTCheckbox
-                    checked={
-                      selected.length ===
-                        account.transactions.filter((t) =>
-                          FilterItem(filter.trim(), t, account),
-                        ).length &&
-                      account.transactions.filter((t) =>
-                        FilterItem(filter.trim(), t, account),
-                      ).length > 0
-                        ? true
-                        : false
-                    }
+                    checked={selected.length === transactions.length}
                     onChange={(e) => {
                       if (e.target.checked) {
-                        setSelected(
-                          account.transactions
-                            .filter((t) =>
-                              FilterItem(filter.trim(), t, account),
-                            )
-                            .map((t) => t.id),
-                        );
+                        setSelected(transactions.map((t) => t.id));
                       } else {
                         setSelected([]);
                       }
@@ -67,11 +66,9 @@ const TransactionsTable = ({
             <tbody>
               {
                 // TODO : Add ScrollBar
-                [...account.transactions]
+                [...transactions]
                   .sort((a, b) => b.date - a.date)
                   .map((t) => {
-                    if (!FilterItem(filter.trim(), t, account)) return;
-
                     return (
                       <tr
                         key={t.id}
