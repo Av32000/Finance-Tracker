@@ -20,9 +20,11 @@ import mimeTypes from "mime-types";
 import path from "path";
 import { pipeline } from "stream";
 import util from "util";
+import { exec } from "child_process";
 import AccountsAPI from "./AccountsAPI";
 import AuthAPI from "./AuthAPI";
 import Cmd from "./cmd";
+import { getDataPath, getFilesPath } from "./utils/paths";
 
 declare module "fastify" {
   interface FastifyInstance
@@ -48,9 +50,21 @@ if (offline) {
   );
 }
 
-const filesPath = "datas/files/";
-if (!existsSync("datas")) mkdirSync("datas");
-if (!existsSync(filesPath)) mkdirSync(filesPath);
+const standalone = process.argv.includes("--standalone");
+if (standalone) {
+  console.warn(
+    "\x1b[33m%s\x1b[0m",
+    "--standalone flag used => Using user config directory",
+  );
+}
+
+// Determine paths based on standalone mode
+const dataPath = getDataPath(standalone);
+const filesPath = getFilesPath(standalone);
+
+// Ensure directories exist
+if (!existsSync(dataPath)) mkdirSync(dataPath, { recursive: true });
+if (!existsSync(filesPath)) mkdirSync(filesPath, { recursive: true });
 
 fastify.register(cors, {
   origin: "*",
@@ -59,7 +73,7 @@ fastify.register(cors, {
 });
 
 fastify.register(require("@fastify/static"), {
-  root: path.join(__dirname, "../../", filesPath),
+  root: filesPath,
   prefix: "/api",
   decorateReply: false,
 });
@@ -136,9 +150,35 @@ fastify.addHook("onRequest", async (request, reply) => {
 
 const pump = util.promisify(pipeline);
 
-const accountsPath = path.join(__dirname, "../../", "datas");
-const accountsAPI = new AccountsAPI(accountsPath, filesPath, offline);
-const authAPI = new AuthAPI(accountsPath);
+// Function to open URL in default browser
+function openBrowser(url: string) {
+  const platform = process.platform;
+  let command: string;
+  
+  switch (platform) {
+    case 'darwin': // macOS
+      command = `open "${url}"`;
+      break;
+    case 'win32': // Windows
+      command = `start "" "${url}"`;
+      break;
+    default: // Linux and others
+      command = `xdg-open "${url}"`;
+      break;
+  }
+  
+  exec(command, (error) => {
+    if (error) {
+      console.log(`Could not open browser automatically: ${error.message}`);
+    }
+  });
+}
+
+// In standalone mode, force offline behavior (no database connection)
+const isOffline = offline || standalone;
+
+const accountsAPI = new AccountsAPI(dataPath, filesPath, isOffline);
+const authAPI = new AuthAPI(dataPath);
 accountsAPI.FixAccounts();
 
 const port = parseInt(
@@ -566,7 +606,7 @@ fastify.register(
     api.get("/files/:file", async (request, reply) => {
       let file = (request.params as any).file;
       file = file.replace(/[\\/]/g, "");
-      let fullPath = path.join(__dirname, "../", filesPath, file);
+      let fullPath = path.join(filesPath, file);
 
       if (!file || !existsSync(fullPath)) {
         return reply.code(404).send("File not found");
@@ -757,6 +797,15 @@ fastify.listen(
       process.exit(1);
     }
     console.log(`Finance Tracker listening on ${address}`);
+    
+    // Auto-open browser when in standalone mode
+    if (standalone) {
+      console.log("🌐 Opening Finance Tracker in your default browser...");
+      setTimeout(() => {
+        openBrowser(address);
+      }, 1000); // Wait 1 second for server to fully start
+    }
+    
     new Cmd(accountsAPI);
   },
 );
