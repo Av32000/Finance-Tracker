@@ -1,5 +1,4 @@
 import { Account, FTChart, Setting, Transaction } from "@finance-tracker/types";
-import { Prisma, PrismaClient } from "@prisma/client";
 import { randomUUID } from "crypto";
 import {
   existsSync,
@@ -11,6 +10,24 @@ import {
 } from "fs";
 import JSZip from "jszip";
 import path from "path";
+
+// Conditional Prisma imports - only load when needed
+let Prisma: any;
+let PrismaClient: any;
+
+try {
+  // Skip Prisma loading if explicitly disabled (e.g., in binaries)
+  if (process.env.SKIP_PRISMA === 'true') {
+    throw new Error('Prisma loading skipped for binary');
+  }
+  
+  const prismaModule = require("@prisma/client");
+  Prisma = prismaModule.Prisma;
+  PrismaClient = prismaModule.PrismaClient;
+} catch (error) {
+  // Prisma not available - this is fine for standalone mode
+  console.warn("Prisma client not available - running in standalone mode");
+}
 
 const newAccountSchema = {
   id: 0,
@@ -30,7 +47,7 @@ export default class AccountsAPI {
   filesPath: string;
   offline: boolean;
   accountsPath: string;
-  prisma: PrismaClient | null = null;
+  prisma: any = null;
 
   constructor(dataPath: string, filesPath: string, offline: boolean) {
     this.dataPath = dataPath;
@@ -455,6 +472,7 @@ export default class AccountsAPI {
   }
 
   async checkConnection() {
+    if (!PrismaClient) return false; // Prisma not available
     if (!this.prisma) this.prisma = new PrismaClient();
     try {
       await this.prisma.$queryRaw`SELECT 1`;
@@ -612,13 +630,13 @@ export default class AccountsAPI {
       });
 
       const accountsToDelete = dbAccounts
-        .filter((a) => !accountIds.includes(a.id))
-        .map((a) => a.id);
+        .filter((a: any) => !accountIds.includes(a.id))
+        .map((a: any) => a.id);
 
       if (accountsToDelete.length > 0) {
         // For each account to delete, clean up related records
         await Promise.all(
-          accountsToDelete.map(async (accountId) => {
+          accountsToDelete.map(async (accountId: string) => {
             // Find transactions with files
             const transactions = await prisma.transaction.findMany({
               where: {
@@ -632,8 +650,8 @@ export default class AccountsAPI {
 
             // Delete files first (if any)
             const fileIds = transactions
-              .filter((t) => t.fileId != null)
-              .map((t) => t.fileId!);
+              .filter((t: any) => t.fileId != null)
+              .map((t: any) => t.fileId!);
 
             if (fileIds.length > 0) {
               await prisma.file.deleteMany({
@@ -672,27 +690,10 @@ export default class AccountsAPI {
       const prisma = await this.checkPrismaClient();
       if (!prisma) return;
       const accountsPromises = (await prisma.account.findMany()).map(
-        async (account) => {
+        async (account: any) => {
           const transactionsPromise = prisma.transaction.findMany({
             where: { Account: { id: account.id } },
-          }) as Prisma.PrismaPromise<
-            ({
-              id: string;
-              created_at: number;
-              name: string;
-              description: string;
-              amount: number;
-              date: number;
-              tag: string;
-              fileId: string | null;
-              transactionId: string;
-            } & {
-              file: {
-                id: string;
-                name: string;
-              } | null;
-            })[]
-          >;
+          }) as any;
           const tagsPromise = prisma.transactionTag.findMany({
             where: { Account: { id: account.id } },
           });
@@ -703,7 +704,7 @@ export default class AccountsAPI {
           ]);
 
           const formattedTransactions = await Promise.all(
-            transactions.map(async (t) => {
+            transactions.map(async (t: any) => {
               if (t.fileId == null) {
                 t.file = null;
               } else {
@@ -719,7 +720,7 @@ export default class AccountsAPI {
             }),
           );
 
-          const formattedTags = tags.map((t) => {
+          const formattedTags = tags.map((t: any) => {
             delete (t as any)["tagId"];
             return t;
           });

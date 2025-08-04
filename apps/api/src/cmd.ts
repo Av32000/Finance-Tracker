@@ -1,9 +1,23 @@
-import { PrismaClient } from "@prisma/client";
 import { randomUUID } from "crypto";
 import { writeFileSync } from "fs";
 import { join } from "path";
 import AccountsAPI from "./AccountsAPI";
-const prisma = new PrismaClient();
+
+// Conditional Prisma import
+let PrismaClient: any;
+try {
+  // Skip Prisma loading if explicitly disabled (e.g., in binaries)
+  if (process.env.SKIP_PRISMA === 'true') {
+    throw new Error('Prisma loading skipped for binary');
+  }
+  
+  const prismaModule = require("@prisma/client");
+  PrismaClient = prismaModule.PrismaClient;
+} catch (error) {
+  console.warn("Prisma client not available - some commands may not work");
+}
+
+const prisma = PrismaClient ? new PrismaClient() : null;
 
 const readline = require("readline").createInterface({
   input: process.stdin,

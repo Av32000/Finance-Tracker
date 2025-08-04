@@ -1,0 +1,22 @@
+{
+  "name": "finance-tracker-standalone",
+  "bin": "dist/api/standalone.js",
+  "pkg": {
+    "scripts": ["dist/api/**/*.js"],
+    "assets": [
+      "dist/front/**/*",
+      "dist/api/KeysGenerator.cjs",
+      "dist/api/keys/**/*"
+    ],
+    "targets": [
+      "node18-linux-x64",
+      "node18-win-x64", 
+      "node18-macos-x64",
+      "node18-macos-arm64"
+    ],
+    "outputPath": "binaries",
+    "options": [
+      "--no-bytecode"
+    ]
+  }
+}
