@@ -12,4 +12,4 @@
 - [ ] Clean Settings UI
 - [ ] Add more CLI commands
 - [x] Add filters in transactions search
-- [ ] Add click events to charts (Ex: Open transactions list with filters)
+- [x] Add click events to charts (Ex: Open transactions list with filters)
