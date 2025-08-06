@@ -7,10 +7,10 @@ import AccountsAPI from "./AccountsAPI";
 let PrismaClient: any;
 try {
   // Skip Prisma loading if explicitly disabled (e.g., in binaries)
-  if (process.env.SKIP_PRISMA === 'true') {
-    throw new Error('Prisma loading skipped for binary');
+  if (process.env.SKIP_PRISMA === "true") {
+    throw new Error("Prisma loading skipped for binary");
   }
-  
+
   const prismaModule = require("@prisma/client");
   PrismaClient = prismaModule.PrismaClient;
 } catch (error) {
@@ -47,6 +47,7 @@ export default class Cmd {
         console.log("\x1b[32mlist-accounts\x1b[0m => List all accounts");
         console.log("\x1b[32mcreate-account\x1b[0m => Create an account");
         console.log("\x1b[32mdelete-account\x1b[0m => Delete an account");
+        console.log("\x1b[32msync-db\x1b[0m => Pull data from the database");
         console.log(
           "\x1b[32mexport [Account ID] (Path)\x1b[0m => Export the provided account",
         );
@@ -107,6 +108,16 @@ export default class Cmd {
           console.log("Not connected !");
         }
         isValid = true;
+        break;
+      case "sync-db":
+        if (await this.accountsAPI.checkConnection()) {
+          await this.accountsAPI.LoadDatabase();
+          console.log("Database synced");
+        } else {
+          console.log("Database not connected");
+        }
+        isValid = true;
+
         break;
       case "debug-mode":
         const status = input.split(" ")[1].toLowerCase();
