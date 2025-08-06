@@ -34,6 +34,11 @@ USER node
 
 EXPOSE 3000
 
-CMD pnpm prisma:push &&\
-    node dist/api/KeysGenerator.cjs && \
-    node dist/api/portable.js --host=0.0.0.0
+CMD sh -c "\
+  [ -z \"\$FT_STANDALONE\" ] && pnpm prisma:push; \
+  node dist/api/KeysGenerator.cjs && \
+  node dist/api/portable.js \
+    --host=\${FT_HOST:-0.0.0.0} \
+    --port=\${FT_PORT:-3000} \
+    \${FT_STANDALONE:+--standalone} \
+"

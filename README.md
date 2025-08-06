@@ -4,7 +4,16 @@
 
 ## Installation
 
-To install Finance Tracker locally, you can clone the repo with the following commands:
+To install Finance Tracker locally, the easiest method is using the GitHub-built Docker Container. This can be done by using these commands:
+
+```sh
+docker pull ghcr.io/av32000/finance-tracker:latest
+docker run -p 3000:3000 -e FT_HOST=0.0.0.0 -e FT_PORT=3000 -e FT_STANDALONE=true ghcr.io/av32000/finance-tracker:latest
+```
+
+## Building from source
+
+To build Finance Tracker from source, you can clone the repo with the following commands:
 
 ```sh
 git clone https://github.com/Av32000/Finance-Tracker
@@ -17,7 +26,7 @@ After these steps, you have two options:
 
 Using Docker is the easiest method to run Finance Tracker. Docker Compose will create, set up, and host a PostgreSQL database without additional configuration steps.
 
-To use Docker hosting, run the following commands:
+To use Docker Compose hosting, run the following commands:
 
 ```sh
 POSTGRES_PASSWORD="<your_password>" # Replace this with a custom password for the database

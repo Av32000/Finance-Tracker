@@ -13,6 +13,7 @@ import {
   VerifyRegistrationResponseOpts,
 } from "@simplewebauthn/server";
 import { isoBase64URL, isoUint8Array } from "@simplewebauthn/server/helpers";
+import { exec } from "child_process";
 import { randomUUID } from "crypto";
 import Fastify from "fastify";
 import { createWriteStream, existsSync, mkdirSync, readFileSync } from "fs";
@@ -20,7 +21,6 @@ import mimeTypes from "mime-types";
 import path from "path";
 import { pipeline } from "stream";
 import util from "util";
-import { exec } from "child_process";
 import AccountsAPI from "./AccountsAPI";
 import AuthAPI from "./AuthAPI";
 import Cmd from "./cmd";
@@ -154,24 +154,20 @@ const pump = util.promisify(pipeline);
 function openBrowser(url: string) {
   const platform = process.platform;
   let command: string;
-  
+
   switch (platform) {
-    case 'darwin': // macOS
+    case "darwin": // macOS
       command = `open "${url}"`;
       break;
-    case 'win32': // Windows
+    case "win32": // Windows
       command = `start "" "${url}"`;
       break;
     default: // Linux and others
       command = `xdg-open "${url}"`;
       break;
   }
-  
-  exec(command, (error) => {
-    if (error) {
-      console.log(`Could not open browser automatically: ${error.message}`);
-    }
-  });
+
+  exec(command);
 }
 
 // In standalone mode, force offline behavior (no database connection)
@@ -180,10 +176,6 @@ const isOffline = offline || standalone;
 const accountsAPI = new AccountsAPI(dataPath, filesPath, isOffline);
 const authAPI = new AuthAPI(dataPath);
 accountsAPI.FixAccounts();
-
-const port = parseInt(
-  process.argv.find((s) => s.startsWith("--port"))?.split("=")[1] || "3000",
-);
 
 fastify.register(
   async (api) => {
@@ -788,6 +780,9 @@ routes.forEach((route) => {
 });
 
 const hostArg = process.argv.find((arg) => arg.startsWith("--host="));
+const port = parseInt(
+  process.argv.find((s) => s.startsWith("--port="))?.split("=")[1] || "3000",
+);
 
 fastify.listen(
   { port, host: hostArg != null ? hostArg.split("=")[1] : "localhost" },
@@ -797,15 +792,17 @@ fastify.listen(
       process.exit(1);
     }
     console.log(`Finance Tracker listening on ${address}`);
-    
+
     // Auto-open browser when in standalone mode
     if (standalone) {
-      console.log("🌐 Opening Finance Tracker in your default browser...");
+      console.log(
+        "🌐 Attempting to open Finance Tracker in your default browser...",
+      );
       setTimeout(() => {
         openBrowser(address);
-      }, 1000); // Wait 1 second for server to fully start
+      }, 1000);
     }
-    
+
     new Cmd(accountsAPI);
   },
 );
