@@ -4,7 +4,6 @@ import { FormatDate, FormatMoney } from "../Utils";
 import AccountManagerCard from "../components/AccountManagerCard";
 import AmountTag from "../components/AmountTag";
 import FTChart from "../components/FTChart";
-import NavBar from "../components/NavBar";
 
 const Home = () => {
   const { account } = useBearStore();
@@ -13,8 +12,7 @@ const Home = () => {
     document.title = "Finance Tracker - Home";
   });
   return (
-    <div className="overflow-hidden flex">
-      <NavBar />
+    <>
       {account ? (
         <div className="bg-bg flex-1 h-screen grid grid-cols-9 grid-rows-6 gap-3 p-4 overflow-scroll mobile:flex mobile:flex-col mobile:h-auto mobile:mb-16">
           <div className="bg-bg-light col-start-1 col-end-5 row-start-1 rounded-2xl flex items-center px-5 shadow-lg mobile:h-24">
@@ -210,7 +208,7 @@ const Home = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

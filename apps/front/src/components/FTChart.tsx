@@ -10,53 +10,10 @@ import { useEffect, useState } from "react";
 import { Bar, Doughnut, Line, Pie } from "react-chartjs-2";
 import { useNavigate } from "react-router-dom";
 import tailwindConfig from "../../tailwind.config";
-import { BuildData } from "../ChartDataBuilder";
+import { BuildData, buildFilterFromChartClick } from "../ChartDataBuilder";
 import { useBearStore } from "../GlobalState";
 
 ChartJS.register(...registerables);
-
-// Function to build filter string from chart data click
-const buildFilterFromChartClick = (
-  chart: FTChartType,
-  label: string,
-): string => {
-  console.log(label);
-
-  const { groupBy } = chart.dataBuilderConfig;
-
-  switch (groupBy) {
-    case "name":
-      return `@name:"${label}"`;
-    case "tag":
-      return `@tag:"${label}"`;
-    case "amount":
-      return `@amount=${label}`;
-    case "year": {
-      // Label is a timestamp, convert to year
-      const year = new Date(label).getFullYear();
-      return `@year=${year}`;
-    }
-    case "month": {
-      // Label is a timestamp, convert to year-month format
-      const monthDate = new Date(label);
-      return `@year=${monthDate.getFullYear()} @month=${monthDate.getMonth()}`;
-    }
-    case "day":
-    case "date": {
-      // Label is a timestamp, convert to date format
-      const dayDate = new Date(label);
-      return `@year=${dayDate.getFullYear()} @month=${dayDate.getMonth()} @day=${dayDate.getDate()}`;
-    }
-    case "hour": {
-      // Label is a timestamp, convert to hour format
-      const hourDate = new Date(label);
-      return `@year=${hourDate.getFullYear()} @month=${hourDate.getMonth()} @day=${hourDate.getDate()} @hour=${hourDate.getHours()}`;
-    }
-    default:
-      // For id or other fields, use contains search
-      return `@${groupBy}:"${label}"`;
-  }
-};
 
 const FTChart = ({
   chart,
@@ -76,7 +33,7 @@ const FTChart = ({
     if (elements.length > 0) {
       const elementIndex = elements[0].index;
       const label = data.labels[elementIndex];
-      const filterString = buildFilterFromChartClick(chart, label);
+      const filterString = buildFilterFromChartClick(chart, label, account!);
       navigate(`/transactions?q=${encodeURIComponent(filterString)}`);
     }
   };

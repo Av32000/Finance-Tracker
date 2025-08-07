@@ -5,7 +5,6 @@ import AddTransactionModal from "../components/AddTransactionModal";
 import FTButton from "../components/FTButton";
 import FTInput from "../components/FTInput";
 import { useModal } from "../components/ModalProvider";
-import NavBar from "../components/NavBar";
 import TransactionsTable from "../components/TransactionsTable";
 import { useBearStore } from "../GlobalState";
 
@@ -44,8 +43,7 @@ const Transactions = () => {
     document.title = "Finance Tracker - Transactions";
   });
   return (
-    <div className="overflow-hidden flex">
-      <NavBar />
+    <>
       {account ? (
         <div className="bg-bg flex-1 h-screen flex flex-col desktop:relative">
           <div className="w-full p-4 flex flex-row justify-between mobile:flex-col mobile:items-center">
@@ -141,7 +139,7 @@ const Transactions = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

@@ -5,7 +5,6 @@ import AccountManagerCard from "../components/AccountManagerCard";
 import FTButton from "../components/FTButton";
 import FTInput from "../components/FTInput";
 import { useModal } from "../components/ModalProvider";
-import NavBar from "../components/NavBar";
 import TagsManager from "../components/TagsManager";
 import { useBearStore } from "../GlobalState";
 
@@ -122,8 +121,7 @@ const Settings = () => {
   });
 
   return (
-    <div className="overflow-hidden flex">
-      <NavBar />
+    <>
       {account ? (
         <div className="bg-bg flex-1 h-screen flex flex-col desktop:relative">
           <div className="w-full p-4 flex flex-row justify-between mobile:flex-col mobile:items-center mobile:mt-2 mobile:w-screen">
@@ -310,7 +308,7 @@ const Settings = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

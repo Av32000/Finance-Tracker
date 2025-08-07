@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { useBearStore } from "./GlobalState";
-import { ModalProvider } from "./components/ModalProvider";
+import Layout from "./components/Layout";
 import Home from "./views/Home";
 import Loading from "./views/Loading";
 import Login from "./views/Login";
@@ -13,27 +13,51 @@ import Transactions from "./views/Transactions";
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
+    element: (
+      <Layout>
+        <Home />
+      </Layout>
+    ),
   },
   {
     path: "/home",
-    element: <Home />,
+    element: (
+      <Layout>
+        <Home />
+      </Layout>
+    ),
   },
   {
     path: "/transactions",
-    element: <Transactions />,
+    element: (
+      <Layout>
+        <Transactions />
+      </Layout>
+    ),
   },
   {
     path: "/stats",
-    element: <Statistics />,
+    element: (
+      <Layout>
+        <Statistics />
+      </Layout>
+    ),
   },
   {
     path: "/settings",
-    element: <Settings />,
+    element: (
+      <Layout>
+        <Settings />
+      </Layout>
+    ),
   },
   {
     path: "/*",
-    element: <Home />,
+    element: (
+      <Layout>
+        <Home />
+      </Layout>
+    ),
   },
 ]);
 
@@ -71,9 +95,7 @@ function App() {
       {backendStatus == BACKEND_STATUS.LOADING && <Loading />}
 
       {backendStatus == BACKEND_STATUS.CONNECTED && (
-        <ModalProvider>
-          <RouterProvider router={router} />
-        </ModalProvider>
+        <RouterProvider router={router} />
       )}
 
       {backendStatus == BACKEND_STATUS.UNAUTHENTICATED && (

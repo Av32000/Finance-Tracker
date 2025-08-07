@@ -4,12 +4,12 @@ import {
   ChartDataBuilderConfig,
   ChartDataset,
   ChartMetric,
+  FTChart as FTChartType,
   Transaction,
 } from "@finance-tracker/types";
 import tailwindConfig from "../tailwind.config";
 import { filterTransactions } from "./TransactionFilter";
 import {
-  FormatDate,
   FormatDateHour,
   FormatDateMonth,
   FormatDateWithoutHours,
@@ -177,7 +177,7 @@ function groupTransactions(
         group.value = FormatMoney(parseInt(group.value)) + " €";
         break;
       case "date":
-        group.value = FormatDate(parseInt(group.value));
+        group.value = FormatDateWithoutHours(parseInt(group.value));
         break;
       case "hour":
         group.value = FormatDateHour(parseInt(group.value));
@@ -300,6 +300,87 @@ function buildDatasets(
   }
 
   return { labels, datasets };
+}
+
+export function buildFilterFromChartClick(
+  chart: FTChartType,
+  label: string,
+  account: Account,
+) {
+  const result = [];
+
+  switch (chart.dataBuilderConfig.groupBy) {
+    case "id":
+      result.push(`@id=${label}`);
+      break;
+    case "name":
+      result.push(`@name="${label}"`);
+      break;
+    case "tag":
+      result.push(`@tag="${label}"`);
+      break;
+    case "amount":
+      result.push(`@amount=${label}`);
+      break;
+    case "year": {
+      result.push(`@year=${label}`);
+      break;
+    }
+    case "month": {
+      const [monthName, year] = label.split(" ");
+      result.push(`@year=${year} @month=${monthName}`);
+      break;
+    }
+    case "day":
+    case "date": {
+      const dayDate = new Date(label);
+      result.push(
+        `@year=${dayDate.getFullYear()} @month=${dayDate.getMonth() + 1} @day=${dayDate.getDate()}`,
+      );
+      break;
+    }
+    case "hour": {
+      // Broken
+      const hourDate = new Date(label);
+      result.push(
+        `@year=${hourDate.getFullYear()} @month=${hourDate.getMonth() + 1} @day=${hourDate.getDate()} @hour=${hourDate.getHours()}`,
+      );
+      break;
+    }
+  }
+
+  for (const filter of chart.dataBuilderConfig.filters) {
+    if (filter.type === "property") {
+      let operator = "";
+
+      switch (filter.operator) {
+        case "equals":
+          operator = "=";
+          break;
+        case "not_equals":
+          operator = "!=";
+          break;
+        case "less_than":
+          operator = "<";
+          break;
+        case "greater_than":
+          operator = ">";
+          break;
+        case "contains":
+          operator = ":";
+          break;
+      }
+
+      let value = encodeURIComponent(filter.value);
+      if (filter.field === "tag") {
+        value =
+          account.tags.find((t) => t.id === filter.value)?.name || "No Tag";
+      }
+
+      result.push(`@${filter.field}${operator}"${value}"`);
+    }
+  }
+  return result.join(" ");
 }
 
 export function BuildData(config: ChartDataBuilderConfig, account: Account) {

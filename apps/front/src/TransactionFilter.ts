@@ -205,48 +205,80 @@ export function parseFilter(
         }
       }
 
-      if (field && availableFields.includes(field as ChartAvailableFields)) {
+      if (field) {
         const inverted = field.endsWith("!");
         if (inverted) {
           field = field.slice(0, -1);
         }
 
-        switch (operator) {
-          case ":":
-            operator = "contains";
-            break;
-          case "=":
-            operator = inverted ? "not_equals" : "equals";
-            break;
-          case ">":
-            operator = inverted ? "less_than" : "greater_than";
-            break;
-          case "<":
-            operator = inverted ? "greater_than" : "less_than";
-            break;
-        }
-
-        if (field === "tag") {
-          const tag = account.tags.find(
-            (tag) => tag.name.toLowerCase() === value?.toString().toLowerCase(),
-          );
-          if (tag) {
-            value = tag.id;
-          } else {
-            value = null; // No tag found, ignore this filter
+        if (availableFields.includes(field as ChartAvailableFields)) {
+          switch (operator) {
+            case ":":
+              operator = "contains";
+              break;
+            case "=":
+              operator = inverted ? "not_equals" : "equals";
+              break;
+            case ">":
+              operator = inverted ? "less_than" : "greater_than";
+              break;
+            case "<":
+              operator = inverted ? "greater_than" : "less_than";
+              break;
           }
-        }
 
-        if (value && !isNaN(Number(value)) && value.trim() !== "") {
-          value = Number(value);
-        }
+          if (field === "tag") {
+            const tag = account.tags.find(
+              (tag) =>
+                tag.name.toLowerCase() === value?.toString().toLowerCase(),
+            );
+            if (tag) {
+              value = tag.id;
+            } else {
+              value = null;
+            }
+          }
 
-        filters.push({
-          type: "property",
-          field: field as ChartAvailableFields,
-          operator: operator as ChartFilterOperators,
-          value: value,
-        });
+          if (field === "month") {
+            if (typeof value === "string") {
+              if (!isNaN(Number(value))) {
+                // Handle numeric month (1-12) -> convert to 0-based index
+                value = (Number(value) - 1).toString();
+              } else {
+                const tempDate = new Date(`${value} 1, 2000`);
+                if (!isNaN(tempDate.getTime())) {
+                  value = tempDate.getMonth().toString();
+                } else {
+                  const currentYear = new Date().getFullYear();
+                  const tempDate2 = new Date(`1 ${value} ${currentYear}`);
+                  if (!isNaN(tempDate2.getTime())) {
+                    value = tempDate2.getMonth().toString();
+                  } else {
+                    value = null;
+                  }
+                }
+              }
+            }
+          }
+
+          if (value && !isNaN(Number(value)) && value.trim() !== "") {
+            value = Number(value);
+          }
+
+          filters.push({
+            type: "property",
+            field: field as ChartAvailableFields,
+            operator: operator as ChartFilterOperators,
+            value: value,
+          });
+        } else {
+          filters.push({
+            type: "property",
+            field: "name",
+            operator: "contains",
+            value: token,
+          });
+        }
       } else {
         filters.push({
           type: "property",

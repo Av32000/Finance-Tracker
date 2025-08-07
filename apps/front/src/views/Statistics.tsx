@@ -6,7 +6,6 @@ import FTButton from "../components/FTButton";
 import FTChart from "../components/FTChart";
 import FTSelect from "../components/FTSelect";
 import { useModal } from "../components/ModalProvider";
-import NavBar from "../components/NavBar";
 
 const Statistics = () => {
   const { account, fetchServer, refreshAccount, setAccount } = useBearStore();
@@ -28,8 +27,7 @@ const Statistics = () => {
   }, [account, currentChartId]);
 
   return (
-    <div className="overflow-hidden flex">
-      <NavBar />
+    <>
       {account ? (
         <div className="bg-bg flex-1 h-screen flex flex-col desktop:relative">
           <div className="w-full p-4 flex flex-row justify-between mobile:flex-col mobile:items-center">
@@ -127,7 +125,7 @@ const Statistics = () => {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 };
 
