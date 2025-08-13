@@ -317,7 +317,7 @@ export function buildFilterFromChartClick(
       result.push(`@name="${label}"`);
       break;
     case "tag":
-      result.push(`@tag="${label}"`);
+      result.push(`@tag="${label == "No Tag" ? "" : label}"`);
       break;
     case "amount":
       result.push(`@amount=${label}`);
@@ -373,8 +373,7 @@ export function buildFilterFromChartClick(
 
       let value = encodeURIComponent(filter.value);
       if (filter.field === "tag") {
-        value =
-          account.tags.find((t) => t.id === filter.value)?.name || "No Tag";
+        value = account.tags.find((t) => t.id === filter.value)?.name || "";
       }
 
       result.push(`@${filter.field}${operator}"${value}"`);

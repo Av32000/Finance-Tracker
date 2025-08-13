@@ -235,7 +235,7 @@ export function parseFilter(
             if (tag) {
               value = tag.id;
             } else {
-              value = null;
+              value = "no_tag";
             }
           }
 
