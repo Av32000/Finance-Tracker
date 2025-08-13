@@ -1,9 +1,65 @@
+import { FTChart as FTChartType } from "@finance-tracker/types";
 import { useEffect } from "react";
 import { useBearStore } from "../GlobalState";
 import { FormatDate, FormatMoney } from "../Utils";
 import AccountManagerCard from "../components/AccountManagerCard";
 import AmountTag from "../components/AmountTag";
 import FTChart from "../components/FTChart";
+
+const EXPENSES_SOURCES_DEFAULT_CHART: FTChartType = {
+  id: "",
+  name: "",
+  type: "Pie",
+  dataBuilderConfig: {
+    filters: [
+      {
+        type: "property",
+        field: "amount",
+        operator: "less_than",
+        value: "0",
+      },
+      {
+        type: "property",
+        field: "tag",
+        operator: "not_equals",
+        value: "no_tag",
+      },
+    ],
+    groupBy: "tag",
+    metrics: [
+      {
+        filters: [],
+        field: "amount",
+        function: "sum",
+        cumulative: false,
+      },
+    ],
+  },
+};
+
+const BALANCE_EVOLUTION_DEFAULT_CHART: FTChartType = {
+  id: "",
+  name: "",
+  type: "Line",
+  dataBuilderConfig: {
+    filters: [
+      {
+        type: "sort",
+        field: "date",
+        order: "asc",
+      },
+    ],
+    groupBy: "day",
+    metrics: [
+      {
+        field: "balance",
+        function: "void",
+        cumulative: false,
+        filters: [],
+      },
+    ],
+  },
+};
 
 const Home = () => {
   const { account } = useBearStore();
@@ -52,36 +108,11 @@ const Home = () => {
             <p className="text-active-text-color">Expenses Sources</p>
             <div className="w-full h-full p-3 mobile:pb-3">
               <FTChart
-                chart={{
-                  id: "",
-                  name: "",
-                  type: "Pie",
-                  dataBuilderConfig: {
-                    filters: [
-                      {
-                        type: "property",
-                        field: "amount",
-                        operator: "less_than",
-                        value: "0",
-                      },
-                      {
-                        type: "property",
-                        field: "tag",
-                        operator: "not_equals",
-                        value: "no_tag",
-                      },
-                    ],
-                    groupBy: "tag",
-                    metrics: [
-                      {
-                        filters: [],
-                        field: "amount",
-                        function: "sum",
-                        cumulative: false,
-                      },
-                    ],
-                  },
-                }}
+                chart={
+                  (account.charts.find(
+                    (c) => c.name == "Expenses Sources",
+                  ) as FTChartType) || EXPENSES_SOURCES_DEFAULT_CHART
+                }
               />
             </div>
           </div>
@@ -173,29 +204,11 @@ const Home = () => {
                 customOptions={{
                   legend: false,
                 }}
-                chart={{
-                  id: "",
-                  name: "",
-                  type: "Line",
-                  dataBuilderConfig: {
-                    filters: [
-                      {
-                        type: "sort",
-                        field: "date",
-                        order: "asc",
-                      },
-                    ],
-                    groupBy: "day",
-                    metrics: [
-                      {
-                        field: "balance",
-                        function: "void",
-                        cumulative: false,
-                        filters: [],
-                      },
-                    ],
-                  },
-                }}
+                chart={
+                  (account.charts.find(
+                    (c) => c.name == "Balance Evolution",
+                  ) as FTChartType) || BALANCE_EVOLUTION_DEFAULT_CHART
+                }
               />
             </div>
           </div>
