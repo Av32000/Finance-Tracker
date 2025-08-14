@@ -24,6 +24,7 @@ import util from "util";
 import AccountsAPI from "./AccountsAPI";
 import AuthAPI from "./AuthAPI";
 import Cmd from "./cmd";
+import { buildInfo } from "./utils/buildInfo";
 import { getDataPath, getFilesPath } from "./utils/paths";
 
 declare module "fastify" {
@@ -132,6 +133,7 @@ const unauthenticatedRoutes = [
   "/api/generate-authentication-options",
   "/api/verify-authentication",
   "/api/verify-otp",
+  "/api/info",
 ];
 fastify.addHook("onRequest", async (request, reply) => {
   try {
@@ -448,6 +450,10 @@ fastify.register(
 
     api.get("/get-otp", async (req, res) => {
       return authAPI.GetOtpURL();
+    });
+
+    api.get("/version", async (req, res) => {
+      return buildInfo;
     });
 
     // Account

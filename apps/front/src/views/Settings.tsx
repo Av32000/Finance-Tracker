@@ -1,6 +1,6 @@
-import { Account, FetchServerType } from "@finance-tracker/types";
+import { Account, BuildInfo, FetchServerType } from "@finance-tracker/types";
 import { startRegistration } from "@simplewebauthn/browser";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AccountManagerCard from "../components/AccountManagerCard";
 import FTButton from "../components/FTButton";
 import FTInput from "../components/FTInput";
@@ -61,6 +61,7 @@ const Settings = () => {
     setNewAccountName(account.name);
     setNewMonthly(account.monthly);
   };
+  const versionInfo = useRef<BuildInfo | null>(null);
 
   const register = async (fetchServer: FetchServerType) => {
     return new Promise<void>(async (resolve, reject) => {
@@ -117,6 +118,16 @@ const Settings = () => {
   }, [account]);
 
   useEffect(() => {
+    // Fetch version info once on mount
+    fetchServer("/version")
+      .then((response) => response.json())
+      .then((data) => {
+        versionInfo.current = data;
+      })
+      .catch((error) => console.error("Failed to fetch version info:", error));
+  }, [fetchServer]);
+
+  useEffect(() => {
     document.title = "Finance Tracker - Settings";
   });
 
@@ -154,128 +165,193 @@ const Settings = () => {
               ) : null}
             </div>
           </div>
-          <div className="p-4 flex flex-col gap-4 overflow-y-scroll">
-            <div className="flex flex-row items-center gap-3">
-              <p className="text-active-text-color">Account Name : </p>
-              <FTInput
-                placeholder="Account Name"
-                value={newAccountName}
-                onChange={(e) => setNewAccountName(e.target.value)}
-              />
+          <div className="p-4 flex flex-col gap-6 overflow-y-scroll mobile:pb-40">
+            {/* Account Information Section */}
+            <div
+              className="bg-card rounded-lg p-4 border-text-color"
+              style={{ borderWidth: "0.9px" }}
+            >
+              <h2 className="text-active-text-color text-lg font-medium mb-4">
+                Account Information
+              </h2>
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-row items-center gap-3">
+                  <p className="text-active-text-color min-w-[120px]">
+                    Account Name:
+                  </p>
+                  <FTInput
+                    placeholder="Account Name"
+                    value={newAccountName}
+                    onChange={(e) => setNewAccountName(e.target.value)}
+                    className="flex-1"
+                  />
+                </div>
+                <div className="flex flex-row items-center gap-3">
+                  <p className="text-active-text-color min-w-[120px]">
+                    Monthly Budget:
+                  </p>
+                  <FTInput
+                    type="number"
+                    value={newMonthly}
+                    onChange={(e) => {
+                      const nRegex = /^\d+$/;
+                      if (nRegex.test(e.target.value))
+                        setNewMonthly(Number(e.target.value));
+                    }}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
             </div>
-            <div className="flex flex-row items-center gap-3">
-              <p className="text-active-text-color">Monthly Budget : </p>
-              <FTInput
-                type="number"
-                value={newMonthly}
-                onChange={(e) => {
-                  const nRegex = /^\d+$/;
-                  if (nRegex.test(e.target.value))
-                    setNewMonthly(Number(e.target.value));
-                }}
-              />
+
+            {/* Tags Management Section */}
+            <div
+              className="bg-card rounded-lg p-4 border-text-color"
+              style={{ borderWidth: "0.9px" }}
+            >
+              <h2 className="text-active-text-color text-lg font-medium mb-4">
+                Tags Management
+              </h2>
+              <TagsManager />
             </div>
-            <TagsManager />
-            <div className="flex gap-2">
-              <FTButton
-                onClick={() => {
-                  fetchServer(`/accounts/${account.id}/export`)
-                    .then((response) => response.blob())
-                    .then((blob) => {
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement("a");
-                      a.href = url;
-                      a.download =
-                        account.name.replace(/[^a-zA-Z0-9-_.]/g, "") + ".zip";
-                      document.body.appendChild(a);
-                      a.click();
-                      window.URL.revokeObjectURL(url);
-                    });
-                }}
-              >
-                Export Account Data
-              </FTButton>
-              <FTButton
-                onClick={() => {
-                  importAccount(
-                    async (response: Response) => {
-                      if (response.status == 200) {
-                        refreshAccountsCallback();
-                        response.json().then((json) => {
-                          showModal({
-                            type: "Info",
-                            title: `Account ${json.name} successfully imported`,
-                          });
+
+            {/* Data Management Section */}
+            <div
+              className="bg-card rounded-lg p-4 border-text-color"
+              style={{ borderWidth: "0.9px" }}
+            >
+              <h2 className="text-active-text-color text-lg font-medium mb-4">
+                Data Management
+              </h2>
+              <div className="flex flex-col mobile:flex-col gap-3">
+                <div className="flex gap-3 mobile:flex-col">
+                  <FTButton
+                    onClick={() => {
+                      fetchServer(`/accounts/${account.id}/export`)
+                        .then((response) => response.blob())
+                        .then((blob) => {
+                          const url = window.URL.createObjectURL(blob);
+                          const a = document.createElement("a");
+                          a.href = url;
+                          a.download =
+                            account.name.replace(/[^a-zA-Z0-9-_.]/g, "") +
+                            ".zip";
+                          document.body.appendChild(a);
+                          a.click();
+                          window.URL.revokeObjectURL(url);
                         });
-                      } else if (response.status == 403) {
-                        const showForceImportModal = () =>
-                          showModal({
-                            type: "Boolean",
-                            title:
-                              "An account with the same ID already exists. Would you like to replace the existing account?",
-                            confirmText: "Replace",
-                            cancelText: "Cancel",
-                            callback: () => {
-                              importAccount(
-                                async (response: Response) => {
-                                  if (response.status == 200) {
-                                    refreshAccountsCallback();
-                                    response.json().then((json) => {
-                                      showModal({
-                                        type: "Info",
-                                        title: `Account ${json.name} successfully imported`,
-                                      });
-                                    });
-                                  } else if (response.status == 403) {
-                                    showForceImportModal();
-                                  } else if (response.status == 400) {
-                                    const text = await response.text();
-                                    showModal({
-                                      type: "Info",
-                                      title: "Import Error : " + text,
-                                    });
-                                  }
+                    }}
+                    className="flex-1"
+                  >
+                    Export Account Data
+                  </FTButton>
+                  <FTButton
+                    onClick={() => {
+                      importAccount(
+                        async (response: Response) => {
+                          if (response.status == 200) {
+                            refreshAccountsCallback();
+                            response.json().then((json) => {
+                              showModal({
+                                type: "Info",
+                                title: `Account ${json.name} successfully imported`,
+                              });
+                            });
+                          } else if (response.status == 403) {
+                            const showForceImportModal = () =>
+                              showModal({
+                                type: "Boolean",
+                                title:
+                                  "An account with the same ID already exists. Would you like to replace the existing account?",
+                                confirmText: "Replace",
+                                cancelText: "Cancel",
+                                callback: () => {
+                                  importAccount(
+                                    async (response: Response) => {
+                                      if (response.status == 200) {
+                                        refreshAccountsCallback();
+                                        response.json().then((json) => {
+                                          showModal({
+                                            type: "Info",
+                                            title: `Account ${json.name} successfully imported`,
+                                          });
+                                        });
+                                      } else if (response.status == 403) {
+                                        showForceImportModal();
+                                      } else if (response.status == 400) {
+                                        const text = await response.text();
+                                        showModal({
+                                          type: "Info",
+                                          title: "Import Error : " + text,
+                                        });
+                                      }
+                                    },
+                                    fetchServer,
+                                    account!,
+                                    true,
+                                  );
                                 },
-                                fetchServer,
-                                account!,
-                                true,
-                              );
-                            },
-                          });
-                        showForceImportModal();
-                      } else if (response.status == 400) {
-                        const text = await response.text();
-                        showModal({
-                          type: "Info",
-                          title: "Import Error : " + text,
-                        });
-                      }
-                    },
-                    fetchServer,
-                    account,
-                  );
-                }}
-              >
-                Import Account Data
-              </FTButton>
+                              });
+                            showForceImportModal();
+                          } else if (response.status == 400) {
+                            const text = await response.text();
+                            showModal({
+                              type: "Info",
+                              title: "Import Error : " + text,
+                            });
+                          }
+                        },
+                        fetchServer,
+                        account,
+                      );
+                    }}
+                    className="flex-1"
+                  >
+                    Import Account Data
+                  </FTButton>
+                </div>
+              </div>
             </div>
-            <div className="flex gap-2">
+
+            {/* Security Settings Section */}
+            <div
+              className="bg-card rounded-lg p-4 border-text-color"
+              style={{ borderWidth: "0.9px" }}
+            >
+              <h2 className="text-active-text-color text-lg font-medium mb-4">
+                Security Settings
+              </h2>
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-3 mobile:flex-col">
+                  <FTButton
+                    onClick={() => {
+                      register(fetchServer);
+                    }}
+                    className="flex-1"
+                  >
+                    Add New Passkey
+                  </FTButton>
+                  <FTButton
+                    onClick={() => {
+                      showModal({ type: "OTP" });
+                    }}
+                    className="flex-1"
+                  >
+                    Get OTP QrCode
+                  </FTButton>
+                </div>
+              </div>
+            </div>
+
+            {/* Danger Zone Section */}
+            <div className="bg-red/10 rounded-lg p-4 border border-red/30">
+              <h2 className="text-red text-lg font-medium mb-4">Danger Zone</h2>
+              <p className="text-text-color text-sm mb-4">
+                This action cannot be undone. This will permanently delete the
+                account and all associated data.
+              </p>
               <FTButton
-                onClick={() => {
-                  register(fetchServer);
-                }}
-              >
-                Add New Passkey
-              </FTButton>
-              <FTButton
-                onClick={() => {
-                  showModal({ type: "OTP" });
-                }}
-              >
-                Get OTP QrCode
-              </FTButton>
-              <FTButton
-                className="bg-red"
+                className="bg-red hover:bg-red/80"
                 onClick={() => {
                   showModal({
                     type: "Boolean",
@@ -295,6 +371,26 @@ const Settings = () => {
                 Delete Account
               </FTButton>
             </div>
+            {versionInfo.current && (
+              <span className="text-sm text-text-color">
+                Finance-Tracker - v{versionInfo.current.version} -{" "}
+                <a
+                  href={`https://github.com/Av32000/Finance-Tracker/commit/${versionInfo.current.commitHash}`}
+                  target="_blank"
+                >
+                  {versionInfo.current.commitHash}
+                </a>{" "}
+                -{" "}
+                <a
+                  href={`https://github.com/Av32000/Finance-Tracker/tree/${versionInfo.current.branch}`}
+                  target="_blank"
+                >
+                  {versionInfo.current.branch}
+                </a>{" "}
+                - Build date :{" "}
+                {new Date(versionInfo.current.buildTimestamp).toLocaleString()}
+              </span>
+            )}
           </div>
           <div className="desktop:hidden">
             <AccountManagerCard />

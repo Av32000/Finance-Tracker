@@ -1,3 +1,10 @@
+interface BuildInfo {
+  version: string;
+  commitHash: string;
+  branch: string;
+  buildTimestamp: string;
+}
+
 import {
   Account,
   FetchServerType,
@@ -39,6 +46,7 @@ export {
   Account,
   AccountSchema,
   AccountsSchema,
+  BuildInfo,
   ChartAvailableFields,
   ChartAvailableFieldsEnum,
   ChartDataBuilderConfig,
