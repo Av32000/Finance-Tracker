@@ -5,6 +5,8 @@ FROM node:${NODE_VERSION}-alpine
 RUN --mount=type=cache,target=/root/.npm \
     npm install -g pnpm
 
+ENV NODE_ENV=production
+
 WORKDIR /usr/src/app
 
 COPY dist/front dist/front

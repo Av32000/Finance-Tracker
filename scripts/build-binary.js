@@ -66,6 +66,7 @@ const standaloneCode = `
 // Force standalone mode
 if (!process.argv.includes('--standalone')) {
   process.argv.push('--standalone');
+  process.argv.push('--host=0.0.0.0');
 }
 
 // Set NODE_ENV to production for binary
