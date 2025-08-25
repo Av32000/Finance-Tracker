@@ -15,5 +15,5 @@
 - [ ] Periodic transactions
 - [ ] Saved Filters
 - [ ] Transfer between accounts 
-- [ ] Local storage save
+- [x] Local storage save
 - [ ] Deprecate DB

@@ -11,7 +11,9 @@ const Statistics = () => {
   const { account, fetchServer, refreshAccount, setAccount } = useBearStore();
   const { showModal } = useModal();
 
-  const [currentChartId, setCurrentChartId] = useState("");
+  const [currentChartId, setCurrentChartId] = useState(
+    localStorage.getItem("lastChartId") || "",
+  );
 
   useEffect(() => {
     document.title = "Finance Tracker - Statistics";
@@ -58,7 +60,10 @@ const Statistics = () => {
                 <div className="flex flex-row gap-4 px-2">
                   <FTSelect
                     value={currentChartId}
-                    onChange={(e) => setCurrentChartId(e.target.value)}
+                    onChange={(e) => {
+                      setCurrentChartId(e.target.value);
+                      localStorage.setItem("lastChartId", e.target.value);
+                    }}
                     className="w-full text-start"
                   >
                     {account.charts.map((chart) => (

@@ -47,7 +47,10 @@ const fetchServer: FetchServerType = async (endpoint, options) => {
 export const useBearStore = create<AppState>((set) => ({
   account: null,
   apiURL,
-  setAccount: (account) => set({ account }),
+  setAccount: (account) => {
+    set({ account });
+    localStorage.setItem("lastAccountId", account.id);
+  },
   refreshAccount: async (id, setAccount) => {
     try {
       const fetchedAccouts = await fetchServer("/accounts/" + id);

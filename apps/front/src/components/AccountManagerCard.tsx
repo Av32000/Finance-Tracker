@@ -83,7 +83,10 @@ const AccountManagerCard = () => {
     }
 
     if (!account && accounts && accounts.length > 0) {
-      setAccount(accounts[0]);
+      const lastAccountId = localStorage.getItem("lastAccountId");
+      const lastAccountObj =
+        accounts.find((a) => a.id === lastAccountId) || accounts[0];
+      setAccount(lastAccountObj);
       setLoading(false);
     }
   }, [accounts, account, fetchServer, setAccount, refreshAccountsCallback]);
