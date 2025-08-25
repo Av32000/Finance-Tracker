@@ -17,10 +17,10 @@ let PrismaClient: any;
 
 try {
   // Skip Prisma loading if explicitly disabled (e.g., in binaries)
-  if (process.env.SKIP_PRISMA === 'true') {
-    throw new Error('Prisma loading skipped for binary');
+  if (process.env.SKIP_PRISMA === "true") {
+    throw new Error("Prisma loading skipped for binary");
   }
-  
+
   const prismaModule = require("@prisma/client");
   Prisma = prismaModule.Prisma;
   PrismaClient = prismaModule.PrismaClient;
@@ -72,6 +72,29 @@ export default class AccountsAPI {
       let fix = false;
 
       this.UpdateBalance(element.id);
+
+      // Migrate transactions from string tag to array tags
+      if (element.transactions) {
+        element.transactions.forEach((transaction: any) => {
+          if (transaction.tag !== undefined) {
+            // Convert single string tag to array format
+            transaction.tags =
+              transaction.tag === "no_tag" ||
+              transaction.tag === "" ||
+              !transaction.tag
+                ? []
+                : [transaction.tag];
+            // Remove old 'tag' field
+            delete transaction.tag;
+            fix = true;
+          }
+          // Ensure tags field exists as array (for transactions without tags)
+          else if (!transaction.tags || !Array.isArray(transaction.tags)) {
+            transaction.tags = [];
+            fix = true;
+          }
+        });
+      }
 
       // Add new keys
       Object.keys(newAccountSchema).forEach((key) => {
@@ -248,7 +271,7 @@ export default class AccountsAPI {
     description: string,
     amount: number,
     date: number,
-    tag: string,
+    tags: string[],
     file: {
       id: string;
       name: string;
@@ -262,7 +285,7 @@ export default class AccountsAPI {
       description,
       amount,
       date,
-      tag,
+      tags,
       file: null,
     } as Transaction;
 
@@ -537,7 +560,7 @@ export default class AccountsAPI {
             date: t.date,
             description: t.description,
             name: t.name,
-            tag: t.tag,
+            tag: t.tags,
             Account: {
               connect: { id: account.id },
             },

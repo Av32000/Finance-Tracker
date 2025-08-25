@@ -559,10 +559,10 @@ fastify.register(
       const description = (request.body as any).description;
       const amount = (request.body as any).amount;
       const date = (request.body as any).date;
-      const tag = (request.body as any).tag;
+      const tags = (request.body as any).tags;
       const file = (request.body as any).file;
 
-      if (!accountId || !name || !amount || !date || !tag)
+      if (!accountId || !name || !amount || !date || !tags)
         throw new Error("Required field not found");
       if (file && (!file.id || !file.name)) throw new Error("File not found");
       return accountsAPI.AddTransaction(
@@ -571,7 +571,7 @@ fastify.register(
         description,
         amount,
         date,
-        tag,
+        tags,
         file,
       );
     });

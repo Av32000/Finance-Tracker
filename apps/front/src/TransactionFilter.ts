@@ -44,31 +44,49 @@ export function filterTransactions(
             propsValue = new Date(transaction.date).getFullYear();
             break;
           case "tag":
-            propsValue = transaction.tag;
+            propsValue = transaction.tags;
+            if (propsValue.length === 0) propsValue = ["no_tag"];
             break;
         }
 
-        switch (filter.operator) {
-          case "equals":
-            if (propsValue === filter.value) newResult.push(transaction);
-            break;
-          case "not_equals":
-            if (propsValue !== filter.value) newResult.push(transaction);
-            break;
-          case "greater_than":
-            if (propsValue > filter.value) newResult.push(transaction);
-            break;
-          case "less_than":
-            if (propsValue < filter.value) newResult.push(transaction);
-            break;
-          case "between":
-            if (propsValue > filter.value[0] && propsValue < filter.value[1])
-              newResult.push(transaction);
-            break;
-          case "contains":
-            if (propsValue.toString().includes(filter.value))
-              newResult.push(transaction);
-            break;
+        if (filter.field == "tag" && Array.isArray(propsValue)) {
+          switch (filter.operator) {
+            case "equals":
+              if (propsValue.includes(filter.value))
+                newResult.push(transaction);
+              break;
+            case "not_equals":
+              if (!propsValue.includes(filter.value))
+                newResult.push(transaction);
+              break;
+            case "contains":
+              if (propsValue.toString().includes(filter.value))
+                newResult.push(transaction);
+              break;
+          }
+        } else {
+          switch (filter.operator) {
+            case "equals":
+              if (propsValue === filter.value) newResult.push(transaction);
+              break;
+            case "not_equals":
+              if (propsValue !== filter.value) newResult.push(transaction);
+              break;
+            case "greater_than":
+              if (propsValue > filter.value) newResult.push(transaction);
+              break;
+            case "less_than":
+              if (propsValue < filter.value) newResult.push(transaction);
+              break;
+            case "between":
+              if (propsValue > filter.value[0] && propsValue < filter.value[1])
+                newResult.push(transaction);
+              break;
+            case "contains":
+              if (propsValue.toString().includes(filter.value))
+                newResult.push(transaction);
+              break;
+          }
         }
       });
 

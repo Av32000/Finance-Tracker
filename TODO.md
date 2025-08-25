@@ -10,6 +10,10 @@
 - [x] Add filters in transactions search
 - [x] Add click events to charts (Ex: Open transactions list with filters)
 - [ ] Deferred transactions
-- [ ] Multiple tags per transaction 
+- [x] Multiple tags per transaction
 - [ ] New export types (PDF, CSV...)
 - [ ] Periodic transactions
+- [ ] Saved Filters
+- [ ] Transfer between accounts 
+- [ ] Local storage save
+- [ ] Deprecate DB

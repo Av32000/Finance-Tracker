@@ -116,10 +116,22 @@ const TransactionsTable = ({
                           {FormatDate(t.date)}
                         </td>
                         <td className="text-center text-active-text-color mobile:hidden">
-                          <TransactionTagElement
-                            tagId={t.tag}
-                            accountTags={account.tags}
-                          />
+                          {t.tags.length > 0 ? (
+                            <span className="flex items-center justify-center gap-1">
+                              <TransactionTagElement
+                                key={t.tags[0]}
+                                tagId={t.tags[0]}
+                                accountTags={account.tags}
+                              />
+                              {t.tags.length > 1 && (
+                                <span className="text-active-text-color w-7 text-center  rounded-2xl flex items-center justify-center bg-text-color h-7">
+                                  +{t.tags.length - 1}
+                                </span>
+                              )}
+                            </span>
+                          ) : (
+                            <p className="text-text-color">No Tag</p>
+                          )}
                         </td>
                         <td className="text-center text-active-text-color">
                           <AmountTag amount={t.amount} />

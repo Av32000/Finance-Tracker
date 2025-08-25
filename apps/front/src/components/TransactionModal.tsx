@@ -4,6 +4,7 @@ import { useBearStore } from "../GlobalState";
 import { FormatDate } from "../Utils";
 import AmountTag from "./AmountTag";
 import FileTag from "./FileTag";
+import TransactionTagElement from "./TransactionTagElement";
 
 const TransactionModal = ({
   isOpen,
@@ -51,6 +52,19 @@ const TransactionModal = ({
             <p className="text-active-text-color my-5 whitespace-pre-line">
               {transaction.description}
             </p>
+          )}
+          {transaction.tags.length > 0 ? (
+            <div className="flex flex-row flex-wrap gap-2">
+              {transaction.tags.map((tag) => (
+                <TransactionTagElement
+                  tagId={tag}
+                  accountTags={account!.tags}
+                  key={tag}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="text-text-color italic">No Tags</p>
           )}
           <span className="self-start mobile:hidden">
             {transaction.file && <FileTag file={transaction.file} />}

@@ -24,7 +24,7 @@ const TransactionSchema = z.object({
   description: z.string(),
   amount: z.number(),
   date: z.number(),
-  tag: z.string(),
+  tags: z.array(z.string()),
   file: z
     .object({
       id: z.string(),

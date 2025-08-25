@@ -249,7 +249,7 @@ export default class Cmd {
                     Math.random() * (now + twoYears - (now - twoYears) + 1),
                   ) +
                   (now - twoYears);
-                const tag = tags[Math.floor(Math.random() * tags.length)];
+                const tag = [tags[Math.floor(Math.random() * tags.length)]];
                 const file =
                   Math.random() < 0.5
                     ? {

@@ -146,12 +146,15 @@ function groupTransactions(
         break;
       }
       case "tag": {
-        const group = groups.find((g) => g.value == transaction.tag);
+        // Handle empty tags array - group all transactions with no tags together
+        const tagValue =
+          transaction.tags.length === 0 ? "no_tag" : transaction.tags.at(0);
+        const group = groups.find((g) => g.value == tagValue);
         if (group) {
           group.transactions.push(transaction);
         } else {
           groups.push({
-            value: transaction.tag,
+            value: tagValue || "no_tag",
             transactions: [transaction],
           });
         }

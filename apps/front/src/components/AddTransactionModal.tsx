@@ -6,7 +6,7 @@ import FTButton from "./FTButton";
 import { FileInput } from "./FTFileInput";
 import FTInput from "./FTInput";
 import FTTextArea from "./FTTextArea";
-import TransactionTagSelect from "./TransactionTagSelect";
+import TransactionTagsSelect from "./TransactionTagsSelect";
 
 const UploadFile = async (file: File, fetchServer: FetchServerType) => {
   try {
@@ -31,7 +31,7 @@ const SaveTransaction = async (
   name: string,
   description: string,
   date: number,
-  tag: string,
+  tags: string[],
   amount: number,
   file: {
     id: string;
@@ -46,14 +46,14 @@ const SaveTransaction = async (
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description, date, tag, amount }),
+        body: JSON.stringify({ name, description, date, tags, amount }),
       },
     );
   } else {
     await fetchServer("/accounts/" + accountId + "/transactions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, description, date, tag, amount, file }),
+      body: JSON.stringify({ name, description, date, tags, amount, file }),
     });
   }
 };
@@ -72,7 +72,7 @@ const AddTransactionModal = ({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
-  const [tag, setTag] = useState("no_tag");
+  const [tags, setTags] = useState<string[]>([]);
   const [amount, setAmount] = useState(0);
   const fileInput = useRef<HTMLInputElement | null>();
 
@@ -92,8 +92,10 @@ const AddTransactionModal = ({
         setName(transaction.name);
         setDescription(transaction.description);
         setDate(adjustToLocalTime(transaction.date));
-        setTag(
-          account.tags.find((t) => t.id === transaction?.tag)?.id || "no_tag",
+        setTags(
+          transaction.tags
+            .map((t) => account.tags.find((tag) => tag.id === t)?.id)
+            .filter((id): id is string => typeof id === "string"),
         );
         setAmount(transaction.amount);
       }
@@ -111,7 +113,7 @@ const AddTransactionModal = ({
           setName("");
           setDate("");
           setAmount(0);
-          setTag(account!.tags[0].id);
+          setTags([]);
           if (fileInput.current) {
             fileInput.current.value = "";
           }
@@ -147,9 +149,9 @@ const AddTransactionModal = ({
         />
         <div className="flex flex-row gap-3 items-center">
           <p className="text-text-color">Tag : </p>
-          <TransactionTagSelect
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}
+          <TransactionTagsSelect
+            value={tags}
+            onChange={(tags) => setTags(tags)}
           />
         </div>
         <FTTextArea
@@ -171,7 +173,7 @@ const AddTransactionModal = ({
         <FTButton
           className="m-2"
           onClick={async () => {
-            if (!name || !date || !tag || !amount) return;
+            if (!name || !date || !tags || !amount) return;
             let fileObject = null;
             if (fileInput.current && fileInput.current.files) {
               fileObject = await UploadFile(
@@ -184,7 +186,7 @@ const AddTransactionModal = ({
               name,
               description,
               new Date(date).getTime(),
-              tag,
+              tags,
               amount,
               fileObject,
               fetchServer,
@@ -196,7 +198,7 @@ const AddTransactionModal = ({
             setDescription("");
             setDate("");
             setAmount(0);
-            setTag("no_tag");
+            setTags([]);
             if (fileInput.current) {
               fileInput.current.value = "";
             }

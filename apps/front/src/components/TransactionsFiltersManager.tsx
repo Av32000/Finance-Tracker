@@ -129,7 +129,7 @@ const FilterItem: React.FC<{
 
   useEffect(() => {
     if (filter.type == "property" && filter.field == "tag") {
-      if (!["equals", "not_equals"].includes(filter.operator)) {
+      if (!["equals", "not_equals", "contains"].includes(filter.operator)) {
         updateFilter({ ...filter, operator: "equals" });
       }
 
@@ -183,7 +183,7 @@ const FilterItem: React.FC<{
             {availableOperators
               .filter((op) =>
                 filter.field == "tag"
-                  ? ["equals", "not_equals"].includes(op)
+                  ? ["equals", "not_equals", "contains"].includes(op)
                   : true,
               )
               .map((operator) => (
