@@ -37,7 +37,7 @@ const TransactionModal = ({
           }
         }}
       >
-        <div className="px-9 py-8 bg-bg-light rounded-xl flex flex-col w-1/2 mobile:w-2/3">
+        <div className="px-9 py-8 bg-bg-light rounded-xl flex flex-col w-1/2 mobile:w-2/3 gap-1">
           <div className="w-full flex flex-row justify-between mobile:flex-col mobile:gap-3 mobile:my-3">
             <p className="text-active-text-color text-xl">{transaction.name}</p>
             <div className="flex flex-col mobile:flex-row mobile:gap-3">
@@ -49,7 +49,7 @@ const TransactionModal = ({
           </div>
           <p className="text-text-color">{FormatDate(transaction.date)}</p>
           {transaction.description && (
-            <p className="text-active-text-color my-5 whitespace-pre-line">
+            <p className="text-active-text-color my-3 whitespace-pre-line">
               {transaction.description}
             </p>
           )}

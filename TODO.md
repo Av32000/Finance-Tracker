@@ -2,7 +2,7 @@
 
 - [x] Fix Checkbox
 - [x] Fix Tags filters during charts creation
-- [ ] Add Auto Refresh for multiple connected devices
+- [ ] Switch API ping / event to Websocket
 - [ ] Update and enhance Monthly Budget
 - [ ] Add pages to TransactionsTable
 - [x] Clean Settings UI
