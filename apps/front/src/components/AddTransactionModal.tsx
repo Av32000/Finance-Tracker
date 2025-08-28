@@ -1,4 +1,8 @@
-import { FetchServerType, TransactionTypeSchema } from "@finance-tracker/types";
+import {
+  FetchServerType,
+  Transaction,
+  TransactionTypeSchema,
+} from "@finance-tracker/types";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { useBearStore } from "../GlobalState";
@@ -26,54 +30,20 @@ const UploadFile = async (file: File, fetchServer: FetchServerType) => {
   }
 };
 
-const SaveTransaction = async (
-  type: z.infer<typeof TransactionTypeSchema>,
-  accountId: string,
-  name: string,
-  description: string,
-  date: number,
-  tags: string[],
-  amount: number,
-  file: {
-    id: string;
-    name: string;
-  } | null,
-  fetchServer: FetchServerType,
-  transactionId?: string,
-) => {
-  if (transactionId) {
-    await fetchServer(
-      "/accounts/" + accountId + "/transactions/" + transactionId,
-      {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, name, description, date, tags, amount }),
-      },
-    );
-  } else {
-    await fetchServer("/accounts/" + accountId + "/transactions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        type,
-        name,
-        description,
-        date,
-        tags,
-        amount,
-        file,
-      }),
-    });
-  }
-};
-
 const AddTransactionModal = ({
   isOpen,
+  saveTransaction,
   setIsOpen,
   transactionId,
 }: {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
+  saveTransaction: (
+    transaction: Omit<Transaction, "id">,
+    accountId: string,
+    fetchServer: FetchServerType,
+    transactionId?: string,
+  ) => Promise<void>;
   transactionId?: string;
 }) => {
   const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
@@ -186,21 +156,24 @@ const AddTransactionModal = ({
           onClick={async () => {
             if (!name || !date || !tags || !amount) return;
             let fileObject = null;
-            if (fileInput.current && fileInput.current.files) {
+            if (fileInput.current?.files) {
               fileObject = await UploadFile(
                 fileInput.current.files[0],
                 fetchServer,
               );
             }
-            await SaveTransaction(
-              type,
+            await saveTransaction(
+              {
+                type,
+                name,
+                created_at: Date.now(),
+                description,
+                date: new Date(date).getTime(),
+                tags,
+                amount,
+                file: fileObject,
+              },
               account!.id,
-              name,
-              description,
-              new Date(date).getTime(),
-              tags,
-              amount,
-              fileObject,
               fetchServer,
               transactionId,
             );

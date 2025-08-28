@@ -1,4 +1,4 @@
-import { FetchServerType } from "@finance-tracker/types";
+import { FetchServerType, Transaction } from "@finance-tracker/types";
 import { useEffect, useState } from "react";
 import AccountManagerCard from "../components/AccountManagerCard";
 import AddTransactionModal from "../components/AddTransactionModal";
@@ -16,6 +16,30 @@ const DeleteTransaction = async (
   await fetchServer("/accounts/" + accountId + "/transactions/" + tId, {
     method: "DELETE",
   });
+};
+
+const SaveTransaction = async (
+  transaction: Omit<Transaction, "id">,
+  accountId: string,
+  fetchServer: FetchServerType,
+  transactionId?: string,
+) => {
+  if (transactionId) {
+    await fetchServer(
+      "/accounts/" + accountId + "/transactions/" + transactionId,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ transaction }),
+      },
+    );
+  } else {
+    await fetchServer("/accounts/" + accountId + "/transactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transaction }),
+    });
+  }
 };
 
 const Transactions = () => {
@@ -123,10 +147,12 @@ const Transactions = () => {
           />
           <AddTransactionModal
             setIsOpen={setAddNewTransactionModalIsOpen}
+            saveTransaction={SaveTransaction}
             isOpen={addNewTransactionModalIsOpen}
           />
           <AddTransactionModal
             setIsOpen={setEditTransactionModalIsOpen}
+            saveTransaction={SaveTransaction}
             isOpen={editTransactionModalIsOpen}
             transactionId={selected[0]}
           />

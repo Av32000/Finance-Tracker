@@ -14,7 +14,7 @@ import {
   rmSync,
   writeFileSync,
 } from "fs";
-import JSZip from "jszip";
+import JSZip, { file } from "jszip";
 import path from "path";
 
 // Conditional Prisma imports - only load when needed
@@ -280,38 +280,19 @@ export default class AccountsAPI {
 
   // Transactions
   AddTransaction(
-    type: Zod.infer<typeof TransactionTypeSchema>,
+    transaction: Omit<Transaction, "id" | "created_at">,
     accountId: string,
-    name: string,
-    description: string,
-    amount: number,
-    date: number,
-    tags: string[],
-    file: {
-      id: string;
-      name: string;
-    } | null,
   ) {
     const id = randomUUID();
-    const transaction = {
-      type,
+    const newTransaction = {
       id,
-      created_at: Date.now(),
-      name,
-      description,
-      amount,
-      date,
-      tags,
-      file: null,
+      ...transaction,
     } as Transaction;
-
-    if (file) Object.assign(transaction, { file });
-    else Object.assign(transaction, { file: null });
 
     const account = this.accounts.find((a) => a.id === accountId);
     if (!account) return;
 
-    account.transactions.push(transaction);
+    account.transactions.push(newTransaction);
     this.UpdateBalance(accountId);
     return id;
   }

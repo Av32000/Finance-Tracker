@@ -119,8 +119,8 @@ importers:
         specifier: ^6.28.0
         version: 6.28.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       zod:
-        specifier: ^3.23.8
-        version: 3.23.8
+        specifier: ^4.1.4
+        version: 4.1.4
       zustand:
         specifier: ^4.5.5
         version: 4.5.5(@types/react@18.3.12)(react@18.3.1)
@@ -174,8 +174,8 @@ importers:
         specifier: ^5.6.3
         version: 5.6.3
       zod:
-        specifier: ^3.23.8
-        version: 3.23.8
+        specifier: ^4.1.4
+        version: 4.1.4
 
 packages:
 
@@ -2384,8 +2384,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@3.23.8:
-    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
+  zod@4.1.4:
+    resolution: {integrity: sha512-2YqJuWkU6IIK9qcE4k1lLLhyZ6zFw7XVRdQGpV97jEIZwTrscUw+DY31Xczd8nwaoksyJUIxCojZXwckJovWxA==}
 
   zustand@4.5.5:
     resolution: {integrity: sha512-+0PALYNJNgK6hldkgDq2vLrw5f6g/jCInz52n9RTpropGgeAf/ioFUCdtsjCqu4gNhW9D01rUQBROoRjdzyn2Q==}
@@ -4626,7 +4626,7 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@3.23.8: {}
+  zod@4.1.4: {}
 
   zustand@4.5.5(@types/react@18.3.12)(react@18.3.1):
     dependencies:

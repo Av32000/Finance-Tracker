@@ -265,14 +265,16 @@ export default class Cmd {
                     : null;
 
                 this.accountsAPI.AddTransaction(
-                  "classic",
+                  {
+                    type: "classic",
+                    name,
+                    description,
+                    amount,
+                    date,
+                    tags: tag,
+                    file,
+                  },
                   accountId,
-                  name,
-                  description,
-                  amount,
-                  date,
-                  tag,
-                  file,
                 );
 
                 await new Promise((resolve) => setTimeout(resolve, 800));

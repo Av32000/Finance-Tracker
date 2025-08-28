@@ -1,7 +1,7 @@
 import cors from "@fastify/cors";
 import { FastifyJwtNamespace } from "@fastify/jwt";
 import multipart from "@fastify/multipart";
-import { ChartSchema } from "@finance-tracker/types";
+import { ChartSchema, TransactionSchema } from "@finance-tracker/types";
 import {
   generateAuthenticationOptions,
   GenerateAuthenticationOptionsOpts,
@@ -555,27 +555,20 @@ fastify.register(
 
     api.post("/accounts/:accountId/transactions", async (request, reply) => {
       const accountId = (request.params as any).accountId;
-      const type = (request.body as any).type;
-      const name = (request.body as any).name;
-      const description = (request.body as any).description;
-      const amount = (request.body as any).amount;
-      const date = (request.body as any).date;
-      const tags = (request.body as any).tags;
-      const file = (request.body as any).file;
+      const transaction = (request.body as any).transaction;
 
-      if (!accountId || !name || !amount || !date || !tags || !type)
-        throw new Error("Required field not found");
-      if (file && (!file.id || !file.name)) throw new Error("File not found");
-      return accountsAPI.AddTransaction(
-        type,
-        accountId,
-        name,
-        description,
-        amount,
-        date,
-        tags,
-        file,
-      );
+      // Use zod to check if every field except id are present
+      const validationResult = TransactionSchema.safeParse({
+        ...transaction,
+        id: "",
+      });
+      if (!validationResult.success) {
+        throw new Error("Invalid transaction data");
+      }
+
+      if (transaction.file && (!transaction.file.id || !transaction.file.name))
+        throw new Error("File not found");
+      return accountsAPI.AddTransaction(transaction, accountId);
     });
 
     api.patch(
@@ -586,7 +579,7 @@ fastify.register(
         accountsAPI.PatchTransaction(
           accountId,
           transactionId,
-          request.body as any,
+          (request.body as any).transaction,
         );
         reply.status(200);
       },

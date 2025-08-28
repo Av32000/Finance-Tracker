@@ -51,7 +51,7 @@ const TransactionSchema = z.discriminatedUnion("type", [
     type: z.literal("reimbursement"),
   }),
   BaseTransactionSchema.extend({
-    type: z.literal("transfer"),
+    type: z.literal("internal"),
     from: z.object({
       name: z.string(),
       id: z.string(),
