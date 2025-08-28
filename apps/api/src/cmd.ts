@@ -1,5 +1,6 @@
 import { randomUUID } from "crypto";
 import { writeFileSync } from "fs";
+import { type } from "os";
 import { join } from "path";
 import AccountsAPI from "./AccountsAPI";
 
@@ -264,6 +265,7 @@ export default class Cmd {
                     : null;
 
                 this.accountsAPI.AddTransaction(
+                  "classic",
                   accountId,
                   name,
                   description,

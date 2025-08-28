@@ -1,4 +1,4 @@
-import { FetchServerType } from "@finance-tracker/types";
+import { FetchServerType, TransactionTypeSchema } from "@finance-tracker/types";
 import { useEffect, useRef, useState } from "react";
 import { z } from "zod";
 import { useBearStore } from "../GlobalState";
@@ -27,6 +27,7 @@ const UploadFile = async (file: File, fetchServer: FetchServerType) => {
 };
 
 const SaveTransaction = async (
+  type: z.infer<typeof TransactionTypeSchema>,
   accountId: string,
   name: string,
   description: string,
@@ -46,14 +47,22 @@ const SaveTransaction = async (
       {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description, date, tags, amount }),
+        body: JSON.stringify({ type, name, description, date, tags, amount }),
       },
     );
   } else {
     await fetchServer("/accounts/" + accountId + "/transactions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, description, date, tags, amount, file }),
+      body: JSON.stringify({
+        type,
+        name,
+        description,
+        date,
+        tags,
+        amount,
+        file,
+      }),
     });
   }
 };
@@ -69,6 +78,8 @@ const AddTransactionModal = ({
 }) => {
   const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
 
+  const [type, setType] =
+    useState<z.infer<typeof TransactionTypeSchema>>("classic");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState("");
@@ -182,6 +193,7 @@ const AddTransactionModal = ({
               );
             }
             await SaveTransaction(
+              type,
               account!.id,
               name,
               description,
@@ -194,6 +206,7 @@ const AddTransactionModal = ({
             );
             await refreshAccount(account!.id, setAccount);
             setIsOpen(false);
+            setType("classic");
             setName("");
             setDescription("");
             setDate("");

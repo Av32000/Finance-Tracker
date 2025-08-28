@@ -40,6 +40,7 @@ import {
   SettingSchema,
   TransactionSchema,
   TransactionTagSchema,
+  TransactionTypeSchema,
 } from "./Schemas";
 
 export {
@@ -72,4 +73,5 @@ export {
   TransactionsFilterSchema,
   TransactionTag,
   TransactionTagSchema,
+  TransactionTypeSchema,
 };

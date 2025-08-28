@@ -1,4 +1,10 @@
-import { Account, FTChart, Setting, Transaction } from "@finance-tracker/types";
+import {
+  Account,
+  FTChart,
+  Setting,
+  Transaction,
+  TransactionTypeSchema,
+} from "@finance-tracker/types";
 import { randomUUID } from "crypto";
 import {
   existsSync,
@@ -76,6 +82,14 @@ export default class AccountsAPI {
       // Migrate transactions from string tag to array tags
       if (element.transactions) {
         element.transactions.forEach((transaction: any) => {
+          if (
+            transaction.type === undefined ||
+            TransactionTypeSchema.safeParse(transaction.type).success === false
+          ) {
+            transaction.type = "classic";
+            fix = true;
+          }
+
           if (transaction.tag !== undefined) {
             // Convert single string tag to array format
             transaction.tags =
@@ -266,6 +280,7 @@ export default class AccountsAPI {
 
   // Transactions
   AddTransaction(
+    type: Zod.infer<typeof TransactionTypeSchema>,
     accountId: string,
     name: string,
     description: string,
@@ -279,6 +294,7 @@ export default class AccountsAPI {
   ) {
     const id = randomUUID();
     const transaction = {
+      type,
       id,
       created_at: Date.now(),
       name,

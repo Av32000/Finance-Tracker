@@ -555,6 +555,7 @@ fastify.register(
 
     api.post("/accounts/:accountId/transactions", async (request, reply) => {
       const accountId = (request.params as any).accountId;
+      const type = (request.body as any).type;
       const name = (request.body as any).name;
       const description = (request.body as any).description;
       const amount = (request.body as any).amount;
@@ -562,10 +563,11 @@ fastify.register(
       const tags = (request.body as any).tags;
       const file = (request.body as any).file;
 
-      if (!accountId || !name || !amount || !date || !tags)
+      if (!accountId || !name || !amount || !date || !tags || !type)
         throw new Error("Required field not found");
       if (file && (!file.id || !file.name)) throw new Error("File not found");
       return accountsAPI.AddTransaction(
+        type,
         accountId,
         name,
         description,

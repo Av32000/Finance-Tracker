@@ -6,6 +6,13 @@ import {
   TransactionsFilterSchema,
 } from "./charts";
 
+const TransactionTypeSchema = z.enum([
+  "classic",
+  "lend",
+  "reimbursement",
+  "internal",
+]);
+
 const SettingSchema = z.object({
   name: z.string(),
   value: z.any().nullish(),
@@ -17,7 +24,7 @@ const TransactionTagSchema = z.object({
   color: z.string(),
 });
 
-const TransactionSchema = z.object({
+const BaseTransactionSchema = z.object({
   id: z.string(),
   created_at: z.number(),
   name: z.string(),
@@ -32,6 +39,29 @@ const TransactionSchema = z.object({
     })
     .or(z.null()),
 });
+
+const TransactionSchema = z.discriminatedUnion("type", [
+  BaseTransactionSchema.extend({
+    type: z.literal("classic"),
+  }),
+  BaseTransactionSchema.extend({
+    type: z.literal("lend"),
+  }),
+  BaseTransactionSchema.extend({
+    type: z.literal("reimbursement"),
+  }),
+  BaseTransactionSchema.extend({
+    type: z.literal("transfer"),
+    from: z.object({
+      name: z.string(),
+      id: z.string(),
+    }),
+    to: z.object({
+      name: z.string(),
+      id: z.string(),
+    }),
+  }),
+]);
 
 // Charts
 const ChartDataBuilderConfigSchema = z.object({
@@ -76,5 +106,7 @@ export {
   ChartSchema,
   SettingSchema,
   TransactionSchema,
+  TransactionsFilterSchema,
   TransactionTagSchema,
+  TransactionTypeSchema,
 };
