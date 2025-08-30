@@ -1,6 +1,6 @@
 import { Account, BuildInfo, FetchServerType } from "@finance-tracker/types";
 import { startRegistration } from "@simplewebauthn/browser";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import AccountManagerCard from "../components/AccountManagerCard";
 import FTButton from "../components/FTButton";
 import FTInput from "../components/FTInput";
@@ -61,7 +61,7 @@ const Settings = () => {
     setNewAccountName(account.name);
     setNewMonthly(account.monthly);
   };
-  const versionInfo = useRef<BuildInfo | null>(null);
+  const [versionInfo, setVersionInfo] = useState<BuildInfo | null>(null);
 
   const register = async (fetchServer: FetchServerType) => {
     return new Promise<void>(async (resolve, reject) => {
@@ -117,19 +117,19 @@ const Settings = () => {
     }
   }, [account]);
 
-  useEffect(() => {
-    // Fetch version info once on mount
+  const fetchVersionInfo = async (fetchServer: FetchServerType) => {
     fetchServer("/version")
       .then((response) => response.json())
       .then((data) => {
-        versionInfo.current = data;
+        setVersionInfo(data);
       })
       .catch((error) => console.error("Failed to fetch version info:", error));
-  }, [fetchServer]);
+  };
 
   useEffect(() => {
     document.title = "Finance Tracker - Settings";
-  });
+    if (versionInfo === null) fetchVersionInfo(fetchServer);
+  }, [fetchServer, versionInfo]);
 
   return (
     <>
@@ -371,24 +371,24 @@ const Settings = () => {
                 Delete Account
               </FTButton>
             </div>
-            {versionInfo.current && (
+            {versionInfo && (
               <span className="text-sm text-text-color">
-                Finance-Tracker - v{versionInfo.current.version} -{" "}
+                Finance-Tracker - v{versionInfo.version} -{" "}
                 <a
-                  href={`https://github.com/Av32000/Finance-Tracker/commit/${versionInfo.current.commitHash}`}
+                  href={`https://github.com/Av32000/Finance-Tracker/commit/${versionInfo.commitHash}`}
                   target="_blank"
                 >
-                  {versionInfo.current.commitHash}
+                  {versionInfo.commitHash}
                 </a>{" "}
                 -{" "}
                 <a
-                  href={`https://github.com/Av32000/Finance-Tracker/tree/${versionInfo.current.branch}`}
+                  href={`https://github.com/Av32000/Finance-Tracker/tree/${versionInfo.branch}`}
                   target="_blank"
                 >
-                  {versionInfo.current.branch}
+                  {versionInfo.branch}
                 </a>{" "}
                 - Build date :{" "}
-                {new Date(versionInfo.current.buildTimestamp).toLocaleString()}
+                {new Date(versionInfo.buildTimestamp).toLocaleString()}
               </span>
             )}
           </div>
