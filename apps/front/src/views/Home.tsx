@@ -1,10 +1,10 @@
 import { FTChart as FTChartType } from "@finance-tracker/types";
 import { useEffect } from "react";
 import { useBearStore } from "../GlobalState";
-import { FormatDate, FormatMoney } from "../Utils";
+import { FormatDateWithoutHours, FormatMoney } from "../Utils";
 import AccountManagerCard from "../components/AccountManagerCard";
-import AmountTag from "../components/AmountTag";
 import FTChart from "../components/FTChart";
+import TransactionsTable from "../components/TransactionsTable";
 
 const EXPENSES_SOURCES_DEFAULT_CHART: FTChartType = {
   id: "",
@@ -83,26 +83,30 @@ const Home = () => {
             </div>
           </div>
           <div className="bg-bg-light col-start-1 col-end-5 row-start-2 row-end-5 rounded-2xl flex p-3 shadow-lg flex-col gap-3 overflow-hidden mobile:h-80">
-            <p className="text-active-text-color text-lg">Last Transactions</p>
-            <div
-              className="flex flex-col gap-3 overflow-hidden"
-              style={{ flexFlow: "column wrap" }}
-            >
-              {[...account.transactions]
+            <p className="text-active-text-color text-lg mb-[-10px]">
+              Last Transactions
+            </p>
+            <TransactionsTable
+              transactions={[...account.transactions]
                 .sort((a, b) => b.date - a.date)
-                .slice(0, 19)
-                .map((t) => (
-                  <div
-                    className="flex flex-row justify-between w-full"
-                    key={t.id}
-                  >
-                    <p className="text-text-color">
-                      {t.name} - {FormatDate(t.date).split(" ")[0]}
-                    </p>
-                    <AmountTag amount={t.amount} />
-                  </div>
-                ))}
-            </div>
+                .slice(0, 19)}
+              selected={[]}
+              setSelected={() => {}}
+              tableClassName="!m-0"
+              config={{
+                showHeader: false,
+                fields: ["name", "date", "amount"],
+                allowSelection: false,
+                allowClick: false,
+                dateFormat: FormatDateWithoutHours,
+                allowScroll: false,
+              }}
+              fieldsClassName={[
+                { field: "name", className: "text-text-color px-0" },
+                { field: "date", className: "mobile:hidden" },
+                { field: "amount", className: "*:justify-end" },
+              ]}
+            />
           </div>
           <div className="bg-bg-light col-start-5 col-end-10 row-start-1 row-end-4 rounded-2xl flex flex-col p-3 shadow-lg mobile:h-96">
             <p className="text-active-text-color">Expenses Sources</p>
