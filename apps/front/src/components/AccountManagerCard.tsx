@@ -1,27 +1,11 @@
-import {
-  Account,
-  AccountsSchema,
-  FetchServerType,
-} from "@finance-tracker/types";
+import { Account, FetchServerType } from "@finance-tracker/types";
 import { useEffect, useState } from "react";
 import { useBearStore } from "../GlobalState";
+import { FetchAccounts } from "../Utils";
 import FTButton from "./FTButton";
 import FTInput from "./FTInput";
 
 type State = "Closed" | "Switch" | "Create";
-
-const RefreshAccounts = async (
-  setAccounts: (accounts: Account[]) => void,
-  fetchServer: FetchServerType,
-) => {
-  try {
-    const fetchedAccouts = await fetchServer("/accounts");
-    const accounts = AccountsSchema.parse(await fetchedAccouts.json());
-    setAccounts(accounts);
-  } catch (e) {
-    console.error(e);
-  }
-};
 
 const createAccount = async (
   newAccount: string,
@@ -66,15 +50,15 @@ const AccountManagerCard = () => {
         console.error("Can't create Account");
       }
     });
-    RefreshAccounts(setAccounts, fetchServer);
+    FetchAccounts(setAccounts, fetchServer);
   };
 
   useEffect(() => {
     refreshAccountsCallback(() => {
-      RefreshAccounts(setAccounts, fetchServer);
+      FetchAccounts(setAccounts, fetchServer);
     });
     if (!accounts) {
-      RefreshAccounts(setAccounts, fetchServer);
+      FetchAccounts(setAccounts, fetchServer);
     }
 
     if (accounts && accounts?.length == 0) {

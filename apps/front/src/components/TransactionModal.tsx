@@ -1,7 +1,7 @@
 import { Transaction } from "@finance-tracker/types";
 import { useEffect, useState } from "react";
 import { useBearStore } from "../GlobalState";
-import { FormatDate } from "../Utils";
+import { FormatDate, renderTransactions } from "../Utils";
 import AmountTag from "./AmountTag";
 import FileTag from "./FileTag";
 import TransactionTagElement from "./TransactionTagElement";
@@ -21,7 +21,9 @@ const TransactionModal = ({
 
   useEffect(() => {
     if (transactionId && account) {
-      setTransaction(account.transactions.find((t) => t.id === transactionId));
+      setTransaction(
+        renderTransactions(account).find((t) => t.id === transactionId),
+      );
     }
   }, [transactionId, account, isOpen]);
 

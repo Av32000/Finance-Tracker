@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useBearStore } from "../GlobalState";
 import { filterTransactions, parseFilter } from "../TransactionFilter";
-import { FormatDate } from "../Utils";
+import { FormatDate, renderTransactions } from "../Utils";
 import AmountTag from "./AmountTag";
 import FTCheckbox from "./FTCheckbox";
 import FileTag from "./FileTag";
@@ -23,19 +23,19 @@ const TransactionsTable = ({
   const [currentTransaction, setCurrentTransaction] = useState("");
 
   const [transactions, setTransactions] = useState(
-    account ? account.transactions : [],
+    account ? renderTransactions(account) : [],
   );
 
   useEffect(() => {
     setTransactions(
       account
         ? filterTransactions(
-            account.transactions,
+            renderTransactions(account),
             parseFilter(filter.trim(), account),
           )
         : [],
     );
-  }, [account, account?.transactions, filter]);
+  }, [account, filter]);
 
   return (
     <>

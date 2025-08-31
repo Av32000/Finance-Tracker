@@ -14,6 +14,7 @@ import {
   FormatDateMonth,
   FormatDateWithoutHours,
   FormatMoney,
+  renderTransactions,
 } from "./Utils";
 
 type TransactionsGroup = {
@@ -387,7 +388,7 @@ export function buildFilterFromChartClick(
 
 export function BuildData(config: ChartDataBuilderConfig, account: Account) {
   const filteredTransactions = filterTransactions(
-    account.transactions,
+    renderTransactions(account),
     config.filters,
   );
   const groups = groupTransactions(
@@ -396,5 +397,5 @@ export function BuildData(config: ChartDataBuilderConfig, account: Account) {
     account,
   );
 
-  return buildDatasets(groups, config.metrics, account.transactions);
+  return buildDatasets(groups, config.metrics, renderTransactions(account));
 }

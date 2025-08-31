@@ -289,11 +289,34 @@ export default class AccountsAPI {
       ...transaction,
     } as Transaction;
 
-    const account = this.accounts.find((a) => a.id === accountId);
-    if (!account) return;
+    if (newTransaction.type === "classic") {
+      const account = this.accounts.find((a) => a.id === accountId);
+      if (!account) return;
 
-    account.transactions.push(newTransaction);
-    this.UpdateBalance(accountId);
+      account.transactions.push(newTransaction);
+      this.UpdateBalance(accountId);
+    } else if (newTransaction.type === "internal") {
+      const sourceAccount = this.accounts.find(
+        (a) => a.id === newTransaction.from.id,
+      );
+      const targetAccount = this.accounts.find(
+        (a) => a.id === newTransaction.to.id,
+      );
+
+      if (!sourceAccount || !targetAccount) return;
+
+      if (sourceAccount.id === accountId) {
+        sourceAccount.transactions.push(newTransaction);
+        targetAccount.transactions.push({ ...newTransaction, tags: [] });
+      } else {
+        targetAccount.transactions.push(newTransaction);
+        sourceAccount.transactions.push({ ...newTransaction, tags: [] });
+      }
+
+      this.UpdateBalance(sourceAccount.id);
+      this.UpdateBalance(targetAccount.id);
+    }
+
     return id;
   }
 
@@ -305,12 +328,91 @@ export default class AccountsAPI {
     const account = this.accounts.find((a) => a.id === accountId);
     if (!account) return;
 
-    let transaction = account.transactions.find((t) => t.id === transactionId);
+    const transaction = account.transactions.find(
+      (t) => t.id === transactionId,
+    );
+    if (!transaction) return;
+
+    // Track which fields should NOT be synchronized across internal transactions
+    const fieldsNotToSync = ["tags"];
+    const isInternalTransaction = transaction.type === "internal";
+
+    // For internal transactions, check if the other account is changing
+    let oldOtherAccountId: string | null = null;
+    let newOtherAccountId: string | null = null;
+    let accountChanged = false;
+
+    if (isInternalTransaction) {
+      oldOtherAccountId =
+        transaction.from.id === accountId
+          ? transaction.to.id
+          : transaction.from.id;
+
+      if (data.type === "internal" && (data.from || data.to)) {
+        const updatedFrom = data.from || transaction.from;
+        const updatedTo = data.to || transaction.to;
+
+        newOtherAccountId =
+          updatedFrom.id === accountId ? updatedTo.id : updatedFrom.id;
+
+        accountChanged = oldOtherAccountId !== newOtherAccountId;
+      }
+    }
+
+    // If account changed, remove transaction from old other account
+    if (accountChanged && oldOtherAccountId) {
+      const oldOtherAccount = this.accounts.find(
+        (a) => a.id === oldOtherAccountId,
+      );
+      if (oldOtherAccount) {
+        oldOtherAccount.transactions = oldOtherAccount.transactions.filter(
+          (t) => t.id !== transactionId,
+        );
+        this.UpdateBalance(oldOtherAccountId);
+      }
+    }
+
+    // Update the current transaction
     Object.keys(data).forEach((key) => {
       if ((transaction as any)[key] !== undefined) {
         (transaction as any)[key] = (data as any)[key];
       }
     });
+
+    // For internal transactions, sync fields with the other account
+    if (isInternalTransaction && transaction.type === "internal") {
+      const currentOtherAccountId =
+        transaction.from.id === accountId
+          ? transaction.to.id
+          : transaction.from.id;
+      const otherAccount = this.accounts.find(
+        (a) => a.id === currentOtherAccountId,
+      );
+
+      if (otherAccount) {
+        let otherTransaction = otherAccount.transactions.find(
+          (t) => t.id === transactionId,
+        );
+
+        // If account changed or transaction doesn't exist in other account, create it
+        if (accountChanged || !otherTransaction) {
+          otherTransaction = { ...transaction, tags: [] };
+          otherAccount.transactions.push(otherTransaction);
+        } else {
+          // Update existing transaction
+          Object.keys(data).forEach((field) => {
+            if (
+              !fieldsNotToSync.includes(field) &&
+              data[field as keyof Transaction] !== undefined
+            ) {
+              (otherTransaction as any)[field] = (data as any)[field];
+            }
+          });
+        }
+        this.UpdateBalance(currentOtherAccountId);
+      }
+    }
+
     this.UpdateBalance(accountId);
   }
 
@@ -318,10 +420,41 @@ export default class AccountsAPI {
     const account = this.accounts.find((a) => a.id === accountId);
     if (!account) return;
 
-    account.transactions = account.transactions.filter(
-      (t) => t.id !== transactionId,
+    const transaction = account.transactions.find(
+      (t) => t.id === transactionId,
     );
-    this.UpdateBalance(accountId);
+    if (!transaction) return;
+
+    if (transaction.type === "classic") {
+      const account = this.accounts.find((a) => a.id === accountId);
+      if (!account) return;
+
+      account.transactions = account.transactions.filter(
+        (t) => t.id !== transaction.id,
+      );
+
+      this.UpdateBalance(accountId);
+    } else if (transaction.type === "internal") {
+      const sourceAccount = this.accounts.find(
+        (a) => a.id === transaction.from.id,
+      );
+      const targetAccount = this.accounts.find(
+        (a) => a.id === transaction.to.id,
+      );
+
+      if (sourceAccount) {
+        sourceAccount.transactions = sourceAccount.transactions.filter(
+          (t) => t.id !== transaction.id,
+        );
+        this.UpdateBalance(sourceAccount.id);
+      }
+      if (targetAccount) {
+        targetAccount.transactions = targetAccount.transactions.filter(
+          (t) => t.id !== transaction.id,
+        );
+        this.UpdateBalance(targetAccount.id);
+      }
+    }
   }
 
   GetTransactions(accountId: string) {
@@ -340,7 +473,11 @@ export default class AccountsAPI {
     if (!account) return;
 
     account.transactions.forEach((t) => {
-      balance += t.amount;
+      if (t.type === "classic") balance += t.amount;
+      else if (t.type === "internal") {
+        if (account.id === t.from.id) balance -= t.amount;
+        else if (account.id === t.to.id) balance += t.amount;
+      }
     });
 
     account.balance = parseFloat(balance.toFixed(2));

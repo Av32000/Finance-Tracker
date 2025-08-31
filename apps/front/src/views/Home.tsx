@@ -1,7 +1,7 @@
 import { FTChart as FTChartType } from "@finance-tracker/types";
 import { useEffect } from "react";
 import { useBearStore } from "../GlobalState";
-import { FormatDate, FormatMoney } from "../Utils";
+import { FormatDate, FormatMoney, renderTransactions } from "../Utils";
 import AccountManagerCard from "../components/AccountManagerCard";
 import AmountTag from "../components/AmountTag";
 import FTChart from "../components/FTChart";
@@ -88,7 +88,7 @@ const Home = () => {
               className="flex flex-col gap-3 overflow-hidden"
               style={{ flexFlow: "column wrap" }}
             >
-              {[...account.transactions]
+              {[...renderTransactions(account)]
                 .sort((a, b) => b.date - a.date)
                 .slice(0, 19)
                 .map((t) => (
