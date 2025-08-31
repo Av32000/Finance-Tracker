@@ -17,3 +17,9 @@
 - [ ] Transfer between accounts 
 - [x] Local storage save
 - [ ] Deprecate DB
+- [ ] Add animations
+- [ ] Transaction Table stats
+
+# Small Fixes
+
+- [ ] AddTransactionModal Amount field

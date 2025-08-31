@@ -7,6 +7,8 @@ import FTInput from "../components/FTInput";
 import { useModal } from "../components/ModalProvider";
 import TransactionsTable from "../components/TransactionsTable";
 import { useBearStore } from "../GlobalState";
+import { filterTransactions, parseFilter } from "../TransactionFilter";
+import { renderTransactions } from "../Utils";
 
 const DeleteTransaction = async (
   tId: string,
@@ -141,9 +143,30 @@ const Transactions = () => {
             </div>
           </div>
           <TransactionsTable
-            filter={filter}
+            transactions={filterTransactions(
+              renderTransactions(account),
+              parseFilter(filter.trim(), account),
+            )}
             selected={selected}
             setSelected={setSelected}
+            tableClassName="mobile:hidden"
+          />
+          <TransactionsTable
+            transactions={filterTransactions(
+              renderTransactions(account),
+              parseFilter(filter.trim(), account),
+            )}
+            selected={selected}
+            setSelected={setSelected}
+            tableClassName="desktop:hidden"
+            config={{
+              showHeader: true,
+              fields: ["name", "date", "amount"],
+              allowSelection: true,
+              allowClick: true,
+              dateFormat: null,
+              allowScroll: true,
+            }}
           />
           <AddTransactionModal
             setIsOpen={setAddNewTransactionModalIsOpen}
