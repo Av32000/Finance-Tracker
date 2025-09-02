@@ -1,6 +1,7 @@
 import {
   Account,
   FTChart,
+  PeriodicTransaction,
   Setting,
   Transaction,
   TransactionTypeSchema,
@@ -40,6 +41,7 @@ const newAccountSchema = {
   name: "",
   balance: 0,
   transactions: [],
+  periodicTransactions: [],
   settings: [],
   monthly: 1000,
   currentMonthly: 0,
@@ -467,6 +469,40 @@ export default class AccountsAPI {
       ?.transactions.find((t) => t.id === transactionId);
   }
 
+  GetPeriodicTransactions(accountId: string) {
+    return this.accounts.find((a) => a.id === accountId)?.periodicTransactions;
+  }
+
+  GetPeriodicTransaction(accountId: string, transactionId: string) {
+    return this.accounts
+      .find((a) => a.id === accountId)
+      ?.periodicTransactions.find((t) => t.id === transactionId);
+  }
+
+  AddPeriodicTransaction(transaction: PeriodicTransaction, accountId: string) {
+    const account = this.accounts.find((a) => a.id === accountId);
+    if (!account) return;
+
+    const id = randomUUID();
+    transaction.id = id;
+    transaction.transaction.id = id;
+
+    account.periodicTransactions.push(transaction);
+    this.UpdateBalance(accountId);
+
+    return id;
+  }
+
+  DeletePeriodicTransaction(transactionId: string, accountId: string) {
+    const account = this.accounts.find((a) => a.id === accountId);
+    if (!account) return;
+
+    account.periodicTransactions = account.periodicTransactions.filter(
+      (t) => t.id !== transactionId,
+    );
+    this.UpdateBalance(accountId);
+  }
+
   UpdateBalance(accountId: string) {
     let balance = 0;
     let account = this.accounts.find((a) => a.id === accountId);
@@ -479,6 +515,8 @@ export default class AccountsAPI {
         else if (account.id === t.to.id) balance += t.amount;
       }
     });
+
+    // TODO: Periodic Transactions
 
     account.balance = parseFloat(balance.toFixed(2));
     this.ComputeCurrentMonthly(accountId);

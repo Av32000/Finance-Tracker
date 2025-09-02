@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   AccountSchema,
+  PeriodicTransactionSchema,
   SettingSchema,
   TransactionSchema,
   TransactionTagSchema,
@@ -8,6 +9,7 @@ import {
 
 type Account = z.infer<typeof AccountSchema>;
 type Transaction = z.infer<typeof TransactionSchema>;
+type PeriodicTransaction = z.infer<typeof PeriodicTransactionSchema>;
 type Setting = z.infer<typeof SettingSchema>;
 type TransactionTag = z.infer<typeof TransactionTagSchema>;
 
@@ -16,4 +18,11 @@ type FetchServerType = (
   options?: RequestInit,
 ) => Promise<Response>;
 
-export { Account, FetchServerType, Setting, Transaction, TransactionTag };
+export {
+  Account,
+  FetchServerType,
+  PeriodicTransaction,
+  Setting,
+  Transaction,
+  TransactionTag,
+};
