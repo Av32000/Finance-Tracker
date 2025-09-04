@@ -56,17 +56,80 @@ const FetchAccounts = async (
 const renderTransactions = (account: Account): Transaction[] => {
   const renderedTransactions: Transaction[] = [];
 
-  for (const transaction of account.transactions) {
-    if (transaction.type === "internal") {
+  const addTransaction = (t: Transaction) => {
+    if (t.type === "internal") {
       renderedTransactions.push({
-        ...transaction,
-        amount:
-          transaction.from.id === account.id
-            ? -transaction.amount
-            : transaction.amount,
+        ...t,
+        amount: t.from.id === account.id ? -t.amount : t.amount,
       });
     } else {
-      renderedTransactions.push(transaction);
+      renderedTransactions.push(t);
+    }
+  };
+
+  for (const transaction of account.transactions) {
+    if (transaction.periodic != null) {
+      const now = new Date();
+      let currentOccurence = 0;
+      const currentDate = new Date(transaction.date);
+      const periodicRule = transaction.periodic;
+
+      const advanceDate = () => {
+        if (periodicRule.rule.freq === "daily") {
+          currentDate.setDate(
+            currentDate.getDate() + periodicRule.rule.interval,
+          );
+        } else if (periodicRule.rule.freq === "weekly") {
+          currentDate.setDate(
+            currentDate.getDate() + 7 * periodicRule.rule.interval,
+          );
+        } else if (periodicRule.rule.freq === "monthly") {
+          currentDate.setMonth(
+            currentDate.getMonth() + periodicRule.rule.interval,
+          );
+        } else if (periodicRule.rule.freq === "yearly") {
+          currentDate.setFullYear(
+            currentDate.getFullYear() + periodicRule.rule.interval,
+          );
+        }
+      };
+
+      const processOccurrence = () => {
+        if (currentDate > now) return false;
+
+        const mod = periodicRule.modified.find(
+          (m) => m.occurence === currentOccurence,
+        );
+        if (mod && mod.value != null) {
+          const modifiedTransaction = account.transactions.find(
+            (tr) => tr.id === mod.value,
+          );
+          if (modifiedTransaction) addTransaction(modifiedTransaction);
+        } else {
+          addTransaction(transaction);
+        }
+
+        currentOccurence++;
+        advanceDate();
+        return true;
+      };
+
+      if (periodicRule.rule.endRule.type === "afterOccurrences") {
+        while (currentOccurence < periodicRule.rule.endRule.value) {
+          if (!processOccurrence()) break;
+        }
+      } else {
+        const targetDate =
+          periodicRule.rule.endRule.type === "afterDate"
+            ? new Date(periodicRule.rule.endRule.value)
+            : now;
+
+        while (currentDate <= targetDate) {
+          if (!processOccurrence()) break;
+        }
+      }
+    } else {
+      addTransaction(transaction);
     }
   }
 

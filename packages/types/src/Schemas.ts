@@ -38,6 +38,29 @@ const BaseTransactionSchema = z.object({
       name: z.string(),
     })
     .or(z.null()),
+  periodic: z
+    .object({
+      rule: z.object({
+        freq: z.enum(["daily", "weekly", "monthly", "yearly"]),
+        interval: z.number().min(1),
+        endRule: z
+          .object({
+            type: z.literal("afterDate"),
+            value: z.date(),
+          })
+          .or(
+            z.object({
+              type: z.literal("afterOccurrences"),
+              value: z.number().min(1),
+            }),
+          )
+          .or(z.object({ type: z.literal("never") })),
+      }),
+      modified: z.array(
+        z.object({ occurence: z.number(), value: z.string().nullable() }),
+      ),
+    })
+    .nullable(),
 });
 
 const TransactionSchema = z.discriminatedUnion("type", [
@@ -62,28 +85,6 @@ const TransactionSchema = z.discriminatedUnion("type", [
     }),
   }),
 ]);
-
-const PeriodicTransactionSchema = z.object({
-  id: z.string(),
-  rule: z.object({
-    freq: z.enum(["daily", "weekly", "monthly", "yearly"]),
-    interval: z.number().min(1),
-    endRule: z
-      .object({
-        type: z.literal("afterDate"),
-        value: z.date(),
-      })
-      .or(
-        z.object({
-          type: z.literal("afterOccurrences"),
-          value: z.number().min(1),
-        }),
-      )
-      .or(z.literal("never")),
-  }),
-  transaction: TransactionSchema,
-  modified: z.array(z.string().nullable()),
-});
 
 // Charts
 const ChartDataBuilderConfigSchema = z.object({
@@ -111,7 +112,6 @@ const AccountSchema = z.object({
   name: z.string(),
   balance: z.number(),
   transactions: z.array(TransactionSchema),
-  periodicTransactions: z.array(PeriodicTransactionSchema),
   monthly: z.number(),
   charts: z.array(ChartSchema),
   currentMonthly: z.number(),
@@ -127,7 +127,6 @@ export {
   ChartDataBuilderConfigSchema,
   ChartDatasetSchema,
   ChartSchema,
-  PeriodicTransactionSchema,
   SettingSchema,
   TransactionSchema,
   TransactionsFilterSchema,

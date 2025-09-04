@@ -1,11 +1,7 @@
 import cors from "@fastify/cors";
 import { FastifyJwtNamespace } from "@fastify/jwt";
 import multipart from "@fastify/multipart";
-import {
-  ChartSchema,
-  PeriodicTransactionSchema,
-  TransactionSchema,
-} from "@finance-tracker/types";
+import { ChartSchema, TransactionSchema } from "@finance-tracker/types";
 import {
   generateAuthenticationOptions,
   GenerateAuthenticationOptionsOpts,
@@ -183,9 +179,19 @@ const accountsAPI = new AccountsAPI(dataPath, filesPath, isOffline);
 const authAPI = new AuthAPI(dataPath);
 accountsAPI.FixAccounts();
 
+let lastUpdate = Date.now();
+
 fastify.register(
   async (api) => {
     api.get("/", async () => {
+      // Update every five minutes (handle new periodic transactions occurrences)
+      if (Date.now() - lastUpdate > 5 * 60 * 1000) {
+        accountsAPI.GetAccounts().forEach((account) => {
+          accountsAPI.UpdateBalance(account.id);
+        });
+        lastUpdate = Date.now();
+      }
+
       return "Finance Tracker !";
     });
 
@@ -595,58 +601,6 @@ fastify.register(
         const accountId = (request.params as any).accountId;
         const transactionId = (request.params as any).transactionId;
         accountsAPI.DeleteTransaction(accountId, transactionId);
-        reply.status(200);
-      },
-    );
-
-    // Periodic Transactions
-    api.get(
-      "/accounts/:accountId/periodic-transactions",
-      async (request, reply) => {
-        const accountId = (request.params as any).accountId;
-        return accountsAPI.GetPeriodicTransactions(accountId);
-      },
-    );
-
-    api.get(
-      "/accounts/:accountId/periodic-transactions/:transactionId",
-      async (request, reply) => {
-        const accountId = (request.params as any).accountId;
-        const transactionId = (request.params as any).transactionId;
-        return accountsAPI.GetPeriodicTransaction(accountId, transactionId);
-      },
-    );
-
-    api.post(
-      "/accounts/:accountId/periodic-transactions",
-      async (request, reply) => {
-        const accountId = (request.params as any).accountId;
-        const transaction = (request.body as any).transaction;
-
-        // Use zod to check if every field except id are present
-        const validationResult = PeriodicTransactionSchema.safeParse({
-          ...transaction,
-          id: "",
-        });
-        if (!validationResult.success) {
-          throw new Error("Invalid transaction data");
-        }
-
-        if (
-          transaction.file &&
-          (!transaction.file.id || !transaction.file.name)
-        )
-          throw new Error("File not found");
-        return accountsAPI.AddPeriodicTransaction(transaction, accountId);
-      },
-    );
-
-    api.delete(
-      "/accounts/:accountId/periodic-transactions/:transactionId",
-      async (request, reply) => {
-        const accountId = (request.params as any).accountId;
-        const transactionId = (request.params as any).transactionId;
-        accountsAPI.DeletePeriodicTransaction(accountId, transactionId);
         reply.status(200);
       },
     );

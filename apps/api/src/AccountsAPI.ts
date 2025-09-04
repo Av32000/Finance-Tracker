@@ -1,7 +1,6 @@
 import {
   Account,
   FTChart,
-  PeriodicTransaction,
   Setting,
   Transaction,
   TransactionTypeSchema,
@@ -89,6 +88,11 @@ export default class AccountsAPI {
             TransactionTypeSchema.safeParse(transaction.type).success === false
           ) {
             transaction.type = "classic";
+            fix = true;
+          }
+
+          if (transaction.periodic === undefined) {
+            transaction.periodic = null;
             fix = true;
           }
 
@@ -469,54 +473,84 @@ export default class AccountsAPI {
       ?.transactions.find((t) => t.id === transactionId);
   }
 
-  GetPeriodicTransactions(accountId: string) {
-    return this.accounts.find((a) => a.id === accountId)?.periodicTransactions;
-  }
-
-  GetPeriodicTransaction(accountId: string, transactionId: string) {
-    return this.accounts
-      .find((a) => a.id === accountId)
-      ?.periodicTransactions.find((t) => t.id === transactionId);
-  }
-
-  AddPeriodicTransaction(transaction: PeriodicTransaction, accountId: string) {
-    const account = this.accounts.find((a) => a.id === accountId);
-    if (!account) return;
-
-    const id = randomUUID();
-    transaction.id = id;
-    transaction.transaction.id = id;
-
-    account.periodicTransactions.push(transaction);
-    this.UpdateBalance(accountId);
-
-    return id;
-  }
-
-  DeletePeriodicTransaction(transactionId: string, accountId: string) {
-    const account = this.accounts.find((a) => a.id === accountId);
-    if (!account) return;
-
-    account.periodicTransactions = account.periodicTransactions.filter(
-      (t) => t.id !== transactionId,
-    );
-    this.UpdateBalance(accountId);
-  }
-
   UpdateBalance(accountId: string) {
     let balance = 0;
     let account = this.accounts.find((a) => a.id === accountId);
     if (!account) return;
 
     account.transactions.forEach((t) => {
-      if (t.type === "classic") balance += t.amount;
-      else if (t.type === "internal") {
-        if (account.id === t.from.id) balance -= t.amount;
-        else if (account.id === t.to.id) balance += t.amount;
+      const applyTransaction = (t: Transaction) => {
+        if (t.type === "classic") balance += t.amount;
+        else if (t.type === "internal") {
+          if (account.id === t.from.id) balance -= t.amount;
+          else if (account.id === t.to.id) balance += t.amount;
+        }
+      };
+
+      if (t.periodic != null) {
+        const now = new Date();
+        let currentOccurence = 0;
+        let currentDate = new Date(t.date);
+        const periodicRule = t.periodic;
+
+        const advanceDate = () => {
+          if (periodicRule.rule.freq === "daily") {
+            currentDate.setDate(
+              currentDate.getDate() + periodicRule.rule.interval,
+            );
+          } else if (periodicRule.rule.freq === "weekly") {
+            currentDate.setDate(
+              currentDate.getDate() + 7 * periodicRule.rule.interval,
+            );
+          } else if (periodicRule.rule.freq === "monthly") {
+            currentDate.setMonth(
+              currentDate.getMonth() + periodicRule.rule.interval,
+            );
+          } else if (periodicRule.rule.freq === "yearly") {
+            currentDate.setFullYear(
+              currentDate.getFullYear() + periodicRule.rule.interval,
+            );
+          }
+        };
+
+        const processOccurrence = () => {
+          if (currentDate > now) return false;
+
+          const mod = periodicRule.modified.find(
+            (m) => m.occurence === currentOccurence,
+          );
+          if (mod && mod.value != null) {
+            const modifiedTransaction = account.transactions.find(
+              (tr) => tr.id === mod.value,
+            );
+            if (modifiedTransaction) applyTransaction(modifiedTransaction);
+          } else {
+            applyTransaction(t);
+          }
+
+          currentOccurence++;
+          advanceDate();
+          return true;
+        };
+
+        if (periodicRule.rule.endRule.type === "afterOccurrences") {
+          while (currentOccurence < periodicRule.rule.endRule.value) {
+            if (!processOccurrence()) break;
+          }
+        } else {
+          const targetDate =
+            periodicRule.rule.endRule.type === "afterDate"
+              ? new Date(periodicRule.rule.endRule.value)
+              : now;
+
+          while (currentDate <= targetDate) {
+            if (!processOccurrence()) break;
+          }
+        }
+      } else {
+        applyTransaction(t);
       }
     });
-
-    // TODO: Periodic Transactions
 
     account.balance = parseFloat(balance.toFixed(2));
     this.ComputeCurrentMonthly(accountId);

@@ -273,6 +273,7 @@ export default class Cmd {
                     date,
                     tags: tag,
                     file,
+                    periodic: null,
                   },
                   accountId,
                 );
