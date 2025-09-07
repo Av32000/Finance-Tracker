@@ -1,4 +1,10 @@
-import { ReactNode, createContext, useContext, useState } from "react";
+import {
+  ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import FTBooleanModal from "./FTBooleanModal";
 import FTCreateChartModal from "./FTCreateChartModal";
 import FTInfoModal from "./FTInfoModal";
@@ -36,14 +42,23 @@ const ModalContext = createContext<ModalContextType | undefined>(undefined);
 
 export const ModalProvider = ({ children }: { children: ReactNode }) => {
   const [modalData, setModalData] = useState<ShowModalProps | null>(null);
+  const [modalStack, setModalStack] = useState<ShowModalProps[]>([]);
 
   const showModal = (props: ShowModalProps) => {
-    setModalData(props);
+    setModalStack((prev) => [...prev, props]);
   };
 
   const hideModal = () => {
-    setModalData(null);
+    setModalStack((prev) => prev.slice(0, -1));
   };
+
+  useEffect(() => {
+    if (modalStack.length > 0) {
+      setModalData(modalStack[modalStack.length - 1]);
+    } else {
+      setModalData(null);
+    }
+  }, [modalStack]);
 
   return (
     <ModalContext.Provider value={{ showModal, hideModal }}>
