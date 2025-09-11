@@ -1,12 +1,9 @@
-import {
-  ReactNode,
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { FetchServerType, Transaction } from "@finance-tracker/types";
+import { ReactNode, createContext, useContext, useState } from "react";
+import AddTransactionModal from "./AddTransactionModal";
 import FTBooleanModal from "./FTBooleanModal";
 import FTCreateChartModal from "./FTCreateChartModal";
+import FTCreateScheduledModal from "./FTCreateScheduledModal";
 import FTInfoModal from "./FTInfoModal";
 import FTOTPModal from "./FTOTPModal";
 
@@ -31,6 +28,19 @@ type ShowModalProps =
   | {
       type: "Chart";
       chartId?: string;
+    }
+  | {
+      type: "AddTransaction";
+      saveTransaction: (
+        transaction: Omit<Transaction, "id">,
+        accountId: string,
+        fetchServer: FetchServerType,
+        transactionId?: string,
+      ) => Promise<void>;
+      transactionId?: string;
+    }
+  | {
+      type: "AddScheduled";
     };
 
 interface ModalContextType {
@@ -41,7 +51,7 @@ interface ModalContextType {
 const ModalContext = createContext<ModalContextType | undefined>(undefined);
 
 export const ModalProvider = ({ children }: { children: ReactNode }) => {
-  const [modalData, setModalData] = useState<ShowModalProps | null>(null);
+  // Removed modalData, not needed with stack rendering
   const [modalStack, setModalStack] = useState<ShowModalProps[]>([]);
 
   const showModal = (props: ShowModalProps) => {
@@ -52,47 +62,81 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     setModalStack((prev) => prev.slice(0, -1));
   };
 
-  useEffect(() => {
-    if (modalStack.length > 0) {
-      setModalData(modalStack[modalStack.length - 1]);
-    } else {
-      setModalData(null);
-    }
-  }, [modalStack]);
+  // Removed modalData effect, not needed with stack rendering
 
   return (
     <ModalContext.Provider value={{ showModal, hideModal }}>
       {children}
-      {modalData && (
-        <div className="absolute top-0 left-[280px] mobile:left-0 h-screen w-[calc(100vw-280px)] mobile:w-screen flex justify-center items-center">
-          {modalData.type === "Info" && (
-            <FTInfoModal
-              confirmText={modalData.confirmText || "Ok"}
-              hideModal={hideModal}
-              title={modalData.title}
-              callback={modalData.callback}
-            />
-          )}
-
-          {modalData.type === "Boolean" && (
-            <FTBooleanModal
-              confirmText={modalData.confirmText || "Ok"}
-              hideModal={hideModal}
-              title={modalData.title}
-              callback={modalData.callback}
-              cancelText={modalData.cancelText || "No"}
-              cancelCallback={modalData.cancelCallback}
-            />
-          )}
-
-          {modalData.type === "OTP" && <FTOTPModal hideModal={hideModal} />}
-          {modalData.type === "Chart" && (
-            <FTCreateChartModal
-              hideModal={hideModal}
-              chartId={modalData.chartId}
-            />
-          )}
-        </div>
+      {modalStack.length > 0 && (
+        <>
+          {modalStack.map((modal, idx) => {
+            const isTop = idx === modalStack.length - 1;
+            const commonProps = {
+              style: { display: isTop ? "flex" : "none" },
+              className:
+                "absolute top-0 left-[280px] mobile:left-0 h-screen w-[calc(100vw-280px)] mobile:w-screen flex justify-center items-center z-[1000]",
+            };
+            switch (modal.type) {
+              case "Info":
+                return (
+                  <div key={idx} {...commonProps}>
+                    <FTInfoModal
+                      confirmText={modal.confirmText || "Ok"}
+                      hideModal={hideModal}
+                      title={modal.title}
+                      callback={modal.callback}
+                    />
+                  </div>
+                );
+              case "Boolean":
+                return (
+                  <div key={idx} {...commonProps}>
+                    <FTBooleanModal
+                      confirmText={modal.confirmText || "Ok"}
+                      hideModal={hideModal}
+                      title={modal.title}
+                      callback={modal.callback}
+                      cancelText={modal.cancelText || "No"}
+                      cancelCallback={modal.cancelCallback}
+                    />
+                  </div>
+                );
+              case "OTP":
+                return (
+                  <div key={idx} {...commonProps}>
+                    <FTOTPModal hideModal={hideModal} />
+                  </div>
+                );
+              case "AddScheduled":
+                return (
+                  <div key={idx} {...commonProps}>
+                    <FTCreateScheduledModal hideModal={hideModal} />
+                  </div>
+                );
+              case "Chart":
+                return (
+                  <div key={idx} {...commonProps}>
+                    <FTCreateChartModal
+                      hideModal={hideModal}
+                      chartId={modal.chartId}
+                    />
+                  </div>
+                );
+              case "AddTransaction":
+                return (
+                  <div key={idx} {...commonProps}>
+                    <AddTransactionModal
+                      saveTransaction={modal.saveTransaction}
+                      transactionId={modal.transactionId}
+                      hideModal={hideModal}
+                    />
+                  </div>
+                );
+              default:
+                return null;
+            }
+          })}
+        </>
       )}
     </ModalContext.Provider>
   );

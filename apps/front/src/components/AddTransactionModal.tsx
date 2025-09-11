@@ -35,13 +35,11 @@ const UploadFile = async (file: File, fetchServer: FetchServerType) => {
 };
 
 const AddTransactionModal = ({
-  isOpen,
   saveTransaction,
-  setIsOpen,
+  hideModal,
   transactionId,
 }: {
-  isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
+  hideModal: () => void;
   saveTransaction: (
     transaction: Omit<Transaction, "id">,
     accountId: string,
@@ -78,7 +76,7 @@ const AddTransactionModal = ({
   };
 
   const closeModal = () => {
-    setIsOpen(false);
+    hideModal();
     setType("classic");
     setName("");
     setDescription("");
@@ -122,7 +120,7 @@ const AddTransactionModal = ({
         }
       }
     }
-  }, [transactionId, account, isOpen]);
+  }, [transactionId, account]);
 
   useEffect(() => {
     if (type === "internal" && !accounts) {
@@ -146,9 +144,7 @@ const AddTransactionModal = ({
 
   return (
     <div
-      className={`${
-        isOpen ? "flex" : "hidden"
-      } absolute items-center justify-center h-screen w-full bg-[black] bg-opacity-60`}
+      className="absolute flex items-center justify-center h-screen w-full bg-[black] bg-opacity-60"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           closeModal();
@@ -303,6 +299,7 @@ const AddTransactionModal = ({
                   date: new Date(date).getTime(),
                   tags,
                   amount,
+                  periodic: null,
                   file: fileObject,
                 } as Transaction;
 

@@ -1,9 +1,12 @@
 import { useEffect } from "react";
 import AccountManagerCard from "../components/AccountManagerCard";
+import FTButton from "../components/FTButton";
+import { useModal } from "../components/ModalProvider";
 import { useBearStore } from "../GlobalState";
 
 const Scheduled = () => {
   const { account } = useBearStore();
+  const { showModal } = useModal();
 
   useEffect(() => {
     document.title = "Finance Tracker - Scheduled";
@@ -25,6 +28,16 @@ const Scheduled = () => {
                   Create and manage periodic transactions
                 </p>
               </div>
+            </div>
+            <div className="flex flex-row items-center gap-3">
+              <FTButton
+                className="h-10"
+                onClick={() => {
+                  showModal({ type: "AddScheduled" });
+                }}
+              >
+                Add Transaction
+              </FTButton>
             </div>
           </div>
           <div className="p-4 flex flex-col gap-6 overflow-y-scroll mobile:pb-40"></div>

@@ -1,7 +1,6 @@
 import { FetchServerType, Transaction } from "@finance-tracker/types";
 import { useEffect, useState } from "react";
 import AccountManagerCard from "../components/AccountManagerCard";
-import AddTransactionModal from "../components/AddTransactionModal";
 import FTButton from "../components/FTButton";
 import FTInput from "../components/FTInput";
 import { useModal } from "../components/ModalProvider";
@@ -45,10 +44,6 @@ const SaveTransaction = async (
 };
 
 const Transactions = () => {
-  const [addNewTransactionModalIsOpen, setAddNewTransactionModalIsOpen] =
-    useState(false);
-  const [editTransactionModalIsOpen, setEditTransactionModalIsOpen] =
-    useState(false);
   const [filter, setFilter] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
@@ -98,7 +93,12 @@ const Transactions = () => {
                   />
                   <FTButton
                     className="h-10"
-                    onClick={() => setAddNewTransactionModalIsOpen(true)}
+                    onClick={() =>
+                      showModal({
+                        type: "AddTransaction",
+                        saveTransaction: SaveTransaction,
+                      })
+                    }
                   >
                     Add Transaction
                   </FTButton>
@@ -108,7 +108,13 @@ const Transactions = () => {
                   {selected.length == 1 && (
                     <FTButton
                       className="h-10"
-                      onClick={() => setEditTransactionModalIsOpen(true)}
+                      onClick={() =>
+                        showModal({
+                          type: "AddTransaction",
+                          saveTransaction: SaveTransaction,
+                          transactionId: selected[0],
+                        })
+                      }
                     >
                       Edit Transaction
                     </FTButton>
@@ -167,17 +173,6 @@ const Transactions = () => {
               dateFormat: null,
               allowScroll: true,
             }}
-          />
-          <AddTransactionModal
-            setIsOpen={setAddNewTransactionModalIsOpen}
-            saveTransaction={SaveTransaction}
-            isOpen={addNewTransactionModalIsOpen}
-          />
-          <AddTransactionModal
-            setIsOpen={setEditTransactionModalIsOpen}
-            saveTransaction={SaveTransaction}
-            isOpen={editTransactionModalIsOpen}
-            transactionId={selected[0]}
           />
         </div>
       ) : (
