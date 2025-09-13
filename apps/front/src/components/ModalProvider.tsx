@@ -36,7 +36,7 @@ type ShowModalProps =
         accountId: string,
         fetchServer: FetchServerType,
         transactionId?: string,
-      ) => Promise<void>;
+      ) => Promise<string>;
       transactionId?: string;
     }
   | {

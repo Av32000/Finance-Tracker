@@ -45,7 +45,7 @@ const AddTransactionModal = ({
     accountId: string,
     fetchServer: FetchServerType,
     transactionId?: string,
-  ) => Promise<void>;
+  ) => Promise<string>;
   transactionId?: string;
 }) => {
   const { account, setAccount, refreshAccount, fetchServer } = useBearStore();

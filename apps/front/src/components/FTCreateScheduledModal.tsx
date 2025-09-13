@@ -30,20 +30,21 @@ const FTCreateScheduledModal = ({ hideModal }: { hideModal: () => void }) => {
         }
       }}
     >
-      <div className="p-10 bg-bg-light rounded-xl flex flex-col gap-4 items-center justify-center mobile:w-5/6">
+      <div className="p-10 bg-bg-light rounded-xl flex flex-col gap-4 items-center justify-center w-3/5 mobile:w-5/6">
         <p className="text-active-text-color">Create periodic transaction</p>
         {transaction != null ? (
           <TransactionsTable
             transactions={[transaction]}
             selected={[]}
             setSelected={() => {}}
+            tableClassName="px-4"
             config={{
               allowClick: true,
               allowScroll: false,
               allowSelection: false,
               dateFormat: null,
-              fields: ["name", "amount", "date"],
-              showHeader: false,
+              fields: ["name", "tag", "amount"],
+              showHeader: true,
             }}
           />
         ) : (
@@ -52,15 +53,12 @@ const FTCreateScheduledModal = ({ hideModal }: { hideModal: () => void }) => {
               showModal({
                 type: "AddTransaction",
                 saveTransaction: async (transaction) => {
-                  console.log(
-                    "Transaction selected for periodic scheduling:",
-                    transaction,
-                  );
-
                   setTransaction({
                     ...transaction,
                     id: "temp-id",
                   } as Transaction);
+
+                  return "temp-id";
                 },
               });
             }}
@@ -169,19 +167,16 @@ const FTCreateScheduledModal = ({ hideModal }: { hideModal: () => void }) => {
               },
             };
 
-            // Remove the temporary id since the API will assign a real one
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { id, ...transactionData } = periodicTransaction;
 
             try {
-              // Save the transaction to the API
               await fetchServer("/accounts/" + account.id + "/transactions", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ transaction: transactionData }),
               });
 
-              // Refresh the account data to show the new transactions
               await refreshAccount(account.id, setAccount);
 
               console.log("Periodic transaction saved successfully");

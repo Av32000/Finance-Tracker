@@ -14,9 +14,37 @@ const DeleteTransaction = async (
   accountId: string,
   fetchServer: FetchServerType,
 ) => {
-  await fetchServer("/accounts/" + accountId + "/transactions/" + tId, {
-    method: "DELETE",
-  });
+  if (tId.includes("#")) {
+    const [transactionId, occurenceStr] = tId.split("#");
+    const occurence = parseInt(occurenceStr);
+    const transaction = await fetchServer(
+      "/accounts/" + accountId + "/transactions/" + transactionId,
+    );
+    const transactionData: Transaction = await transaction.json();
+    await fetchServer(
+      "/accounts/" + accountId + "/transactions/" + transactionId,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transaction: {
+            ...transactionData,
+            periodic: {
+              ...transactionData.periodic,
+              modified: [
+                ...(transactionData.periodic?.modified || []),
+                { occurence, value: null },
+              ],
+            },
+          },
+        }),
+      },
+    );
+  } else {
+    await fetchServer("/accounts/" + accountId + "/transactions/" + tId, {
+      method: "DELETE",
+    });
+  }
 };
 
 const SaveTransaction = async (
@@ -24,22 +52,66 @@ const SaveTransaction = async (
   accountId: string,
   fetchServer: FetchServerType,
   transactionId?: string,
-) => {
+): Promise<string> => {
   if (transactionId) {
-    await fetchServer(
-      "/accounts/" + accountId + "/transactions/" + transactionId,
+    if (transactionId.includes("#")) {
+      const [baseTransactionId, occurenceStr] = transactionId.split("#");
+      const occurence = parseInt(occurenceStr);
+
+      const newTransactionId = (await SaveTransaction(
+        { ...transaction, periodic: null },
+        accountId,
+        fetchServer,
+      )) as string;
+
+      const originalTransaction = await fetchServer(
+        "/accounts/" + accountId + "/transactions/" + baseTransactionId,
+      );
+      const transactionData: Transaction = await originalTransaction.json();
+      await fetchServer(
+        "/accounts/" + accountId + "/transactions/" + transactionId,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            transaction: {
+              ...transactionData,
+              periodic: {
+                ...transactionData.periodic,
+                modified: [
+                  ...(transactionData.periodic?.modified || []),
+                  { occurence, value: newTransactionId },
+                ],
+              },
+            },
+          }),
+        },
+      );
+
+      return newTransactionId;
+    } else {
+      await fetchServer(
+        "/accounts/" + accountId + "/transactions/" + transactionId,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ transaction }),
+        },
+      );
+
+      return transactionId;
+    }
+  } else {
+    const response = await fetchServer(
+      "/accounts/" + accountId + "/transactions",
       {
-        method: "PATCH",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transaction }),
       },
     );
-  } else {
-    await fetchServer("/accounts/" + accountId + "/transactions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ transaction }),
-    });
+
+    return await response.text();
   }
 };
 

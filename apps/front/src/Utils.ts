@@ -100,13 +100,12 @@ const renderTransactions = (account: Account): Transaction[] => {
         const mod = periodicRule.modified.find(
           (m) => m.occurence === currentOccurence,
         );
-        if (mod && mod.value != null) {
-          const modifiedTransaction = account.transactions.find(
-            (tr) => tr.id === mod.value,
-          );
-          if (modifiedTransaction) addTransaction(modifiedTransaction);
-        } else {
-          addTransaction(transaction);
+        if (!mod) {
+          addTransaction({
+            ...transaction,
+            date: currentDate.getTime(),
+            id: `${transaction.id}#${currentOccurence}`,
+          });
         }
 
         currentOccurence++;
