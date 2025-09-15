@@ -135,6 +135,45 @@ const renderTransactions = (account: Account): Transaction[] => {
   return renderedTransactions;
 };
 
+const periodicRuleStringify = (transaction: Transaction): string => {
+  if (transaction.periodic == null)
+    throw new Error("Transaction is not periodic");
+
+  let result = "";
+  result += "Every ";
+  result +=
+    transaction.periodic.rule.interval > 1
+      ? transaction.periodic.rule.interval
+      : "" + " ";
+
+  switch (transaction.periodic.rule.freq) {
+    case "daily":
+      result += transaction.periodic.rule.interval > 1 ? "days" : "day";
+      break;
+    case "weekly":
+      result += transaction.periodic.rule.interval > 1 ? "weeks" : "week";
+      break;
+    case "monthly":
+      result += transaction.periodic.rule.interval > 1 ? "months" : "month";
+      break;
+    case "yearly":
+      result += transaction.periodic.rule.interval > 1 ? "years" : "year";
+      break;
+  }
+
+  if (transaction.periodic.rule.endRule.type === "afterOccurrences") {
+    result += `, for ${transaction.periodic.rule.endRule.value} occurrences`;
+  } else if (transaction.periodic.rule.endRule.type === "afterDate") {
+    result += `, until ${FormatDateWithoutHours(
+      new Date(transaction.periodic.rule.endRule.value).getTime(),
+    )}`;
+  } else {
+    result += ", forever";
+  }
+
+  return result;
+};
+
 export {
   FetchAccounts,
   FormatDate,
@@ -142,5 +181,6 @@ export {
   FormatDateMonth,
   FormatDateWithoutHours,
   FormatMoney,
+  periodicRuleStringify,
   renderTransactions,
 };

@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import AccountManagerCard from "../components/AccountManagerCard";
 import FTButton from "../components/FTButton";
 import { useModal } from "../components/ModalProvider";
+import PeriodicTransactionCard from "../components/PeriodicTransactionCard";
 import { useBearStore } from "../GlobalState";
 
 const Scheduled = () => {
@@ -40,7 +41,18 @@ const Scheduled = () => {
               </FTButton>
             </div>
           </div>
-          <div className="p-4 flex flex-col gap-6 overflow-y-scroll mobile:pb-40"></div>
+          <div className="p-4 flex gap-4 overflow-y-scroll mobile:pb-40">
+            {account.transactions.filter((t) => t.periodic != null).length ===
+            0 ? (
+              <p className="text-text-color">No scheduled transactions</p>
+            ) : (
+              account.transactions
+                .filter((t) => t.periodic != null)
+                .map((t) => (
+                  <PeriodicTransactionCard key={t.id} transaction={t} />
+                ))
+            )}
+          </div>
         </div>
       ) : (
         <div className="flex-1 h-screen bg-bg flex items-center justify-center">
