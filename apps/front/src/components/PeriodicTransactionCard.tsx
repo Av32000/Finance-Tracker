@@ -21,22 +21,17 @@ const PeriodicTransactionCard = ({
     >
       <TransactionsTable
         transactions={[transaction]}
-        selected={[]}
-        setSelected={() => {}}
-        tableClassName="!m-0"
-        fieldsClassName={[
-          {
-            field: "name",
-            className: "!p-0",
-          },
-        ]}
         config={{
-          allowClick: false,
-          allowSelection: false,
           allowScroll: false,
-          dateFormat: null,
           fields: ["name", "date", "tag", "amount"],
           showHeader: false,
+          tableClassName: "!m-0",
+          fieldsClassName: [
+            {
+              field: "name",
+              className: "!p-0",
+            },
+          ],
         }}
       />
 

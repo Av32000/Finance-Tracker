@@ -225,25 +225,34 @@ const Transactions = () => {
               renderTransactions(account),
               parseFilter(filter.trim(), account),
             )}
-            selected={selected}
-            setSelected={setSelected}
-            tableClassName="mobile:hidden"
+            config={{
+              selected,
+              setSelected,
+              tableClassName: "mobile:hidden",
+              onTransactionClick: (transactionId) => {
+                showModal({
+                  type: "TransactionDetails",
+                  transactionId,
+                });
+              },
+            }}
           />
           <TransactionsTable
             transactions={filterTransactions(
               renderTransactions(account),
               parseFilter(filter.trim(), account),
             )}
-            selected={selected}
-            setSelected={setSelected}
-            tableClassName="desktop:hidden"
             config={{
-              showHeader: true,
               fields: ["name", "date", "amount"],
-              allowSelection: true,
-              allowClick: true,
-              dateFormat: null,
-              allowScroll: true,
+              selected,
+              setSelected,
+              tableClassName: "desktop:hidden",
+              onTransactionClick: (transactionId) => {
+                showModal({
+                  type: "TransactionDetails",
+                  transactionId,
+                });
+              },
             }}
           />
         </div>

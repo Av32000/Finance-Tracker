@@ -67,16 +67,24 @@ const FTCreateScheduledModal = ({
         {transaction != null ? (
           <TransactionsTable
             transactions={[transaction]}
-            selected={[]}
-            setSelected={() => {}}
-            tableClassName="px-4"
             config={{
-              allowClick: true,
+              tableClassName: "px-4",
               allowScroll: false,
-              allowSelection: false,
-              dateFormat: null,
               fields: ["name", "tag", "amount"],
-              showHeader: true,
+              onTransactionClick: () => {
+                showModal({
+                  type: "AddTransaction",
+                  transaction,
+                  saveTransaction: async (transaction) => {
+                    setTransaction({
+                      ...transaction,
+                      id: "temp-id",
+                    } as Transaction);
+
+                    return "temp-id";
+                  },
+                });
+              },
             }}
           />
         ) : (

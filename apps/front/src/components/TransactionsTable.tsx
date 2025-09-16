@@ -5,79 +5,81 @@ import { FormatDate } from "../Utils";
 import AmountTag from "./AmountTag";
 import FTCheckbox from "./FTCheckbox";
 import FileTag from "./FileTag";
-import TransactionModal from "./TransactionModal";
 import TransactionTagElement from "./TransactionTagElement";
 
 type TransactionTableConfig = {
-  showHeader: boolean;
-  fields: ("name" | "files" | "date" | "tag" | "amount")[];
-  allowSelection: boolean;
-  allowClick: boolean;
-  dateFormat: ((date: number) => string) | null;
-  allowScroll: boolean;
+  showHeader?: boolean;
+  fields?: ("name" | "files" | "date" | "tag" | "amount")[];
+  selected?: string[];
+  setSelected?: ((selected: string[]) => void) | null;
+  onTransactionClick?: ((transactionId: string) => void) | null;
+  dateFormat?: ((date: number) => string) | null;
+  allowScroll?: boolean;
+  tableClassName?: string;
+  fieldsClassName?: { field: string; className: string }[];
 };
 
 const defaultConfig: TransactionTableConfig = {
   showHeader: true,
   fields: ["name", "files", "date", "tag", "amount"],
-  allowSelection: true,
-  allowClick: true,
+  selected: [],
+  setSelected: null,
+  onTransactionClick: null,
   dateFormat: null,
   allowScroll: true,
+  tableClassName: "",
+  fieldsClassName: [],
 };
 
 const TransactionsTable = ({
   transactions,
-  selected,
-  setSelected,
-  config = defaultConfig,
-  tableClassName,
-  fieldsClassName,
+  config = {},
 }: {
   transactions: Transaction[];
-  selected: string[];
-  setSelected: (selected: string[]) => void;
   config?: TransactionTableConfig;
-  tableClassName?: string;
-  fieldsClassName?: { field: string; className: string }[];
 }) => {
   const { account } = useBearStore();
 
-  const [transactionModalIsOpen, setTransactionModalIsOpen] = useState(false);
-  const [currentTransaction, setCurrentTransaction] = useState("");
   const [renderedFields, setRenderedFields] = useState<string[]>([]);
+
+  // Merge provided config with default config
+  const mergedConfig = { ...defaultConfig, ...config };
 
   useEffect(() => {
     const fields =
-      config.fields.length > 0
-        ? config.fields
+      mergedConfig.fields && mergedConfig.fields.length > 0
+        ? [...mergedConfig.fields]
         : ["name", "files", "date", "tag", "amount"];
 
-    if (config.allowSelection && !fields.includes("select"))
+    if (mergedConfig.setSelected && !fields.includes("select"))
       fields.push("select");
 
     setRenderedFields(fields);
-  }, [config.fields, config.allowSelection]);
+  }, [mergedConfig.fields, mergedConfig.setSelected]);
 
   return (
     <>
       <div
-        className={`m-4 ${config.allowScroll ? "overflow-y-scroll" : "overflow-y-hidden"} ${tableClassName}`}
+        className={`m-4 ${mergedConfig.allowScroll ? "overflow-y-scroll" : "overflow-y-hidden"} ${mergedConfig.tableClassName}`}
       >
         {account ? (
           <table className={`table-fixed w-full border-spacing-y-px`}>
-            {config.showHeader && (
+            {mergedConfig.showHeader && (
               <thead className="border-b-[1px] p-4 border-text-color">
                 <tr className="text-active-text-color">
                   {renderedFields.includes("select") && (
                     <th className="w-7">
                       <FTCheckbox
-                        checked={selected.length === transactions.length}
+                        checked={
+                          mergedConfig.selected?.length === transactions.length
+                        }
                         onChange={(e) => {
                           if (e.target.checked) {
-                            setSelected(transactions.map((t) => t.id));
+                            mergedConfig.setSelected?.(
+                              transactions.map((t) => t.id),
+                            );
                           } else {
-                            setSelected([]);
+                            mergedConfig.setSelected?.([]);
                           }
                         }}
                       />
@@ -112,29 +114,36 @@ const TransactionsTable = ({
                       <tr
                         key={t.id}
                         className={
-                          config.allowClick
-                            ? `hover:bg-bg-light ${selected.indexOf(t.id) != -1 ? "bg-bg-light" : ""}`
+                          mergedConfig.onTransactionClick
+                            ? `hover:bg-bg-light ${mergedConfig.selected?.indexOf(t.id) != -1 ? "bg-bg-light" : ""}`
                             : ""
                         }
                       >
                         {renderedFields.includes("select") && (
                           <td
-                            className={`w-7 ${fieldsClassName?.find((f) => f.field === "select")?.className}`}
+                            className={`w-7 ${mergedConfig.fieldsClassName?.find((f) => f.field === "select")?.className}`}
                           >
                             <FTCheckbox
-                              checked={selected.indexOf(t.id) != -1}
+                              checked={
+                                mergedConfig.selected?.indexOf(t.id) != -1
+                              }
                               onChange={(e) => {
                                 if (
                                   e.target.checked &&
-                                  selected.indexOf(t.id) == -1
+                                  mergedConfig.selected?.indexOf(t.id) == -1
                                 )
-                                  setSelected([...selected, t.id]);
+                                  mergedConfig.setSelected?.([
+                                    ...mergedConfig.selected,
+                                    t.id,
+                                  ]);
                                 if (
                                   !e.target.checked &&
-                                  selected.indexOf(t.id) != -1
+                                  mergedConfig.selected?.indexOf(t.id) != -1
                                 )
-                                  setSelected(
-                                    selected.filter((i) => i !== t.id),
+                                  mergedConfig.setSelected?.(
+                                    mergedConfig.selected?.filter(
+                                      (i) => i !== t.id,
+                                    ) || [],
                                   );
                               }}
                             />
@@ -142,11 +151,10 @@ const TransactionsTable = ({
                         )}
                         {renderedFields.includes("name") && (
                           <td
-                            className={`text-start text-active-text-color p-2 ${config.allowClick ? "cursor-pointer" : ""} truncate ${fieldsClassName?.find((f) => f.field === "name")?.className}`}
+                            className={`text-start text-active-text-color p-2 ${mergedConfig.onTransactionClick ? "cursor-pointer" : ""} truncate ${mergedConfig.fieldsClassName?.find((f) => f.field === "name")?.className}`}
                             onClick={() => {
-                              if (config.allowClick) {
-                                setCurrentTransaction(t.id);
-                                setTransactionModalIsOpen(true);
+                              if (mergedConfig.onTransactionClick) {
+                                mergedConfig.onTransactionClick(t.id);
                               }
                             }}
                           >
@@ -156,8 +164,9 @@ const TransactionsTable = ({
                         {renderedFields.includes("files") && (
                           <td
                             className={
-                              fieldsClassName?.find((f) => f.field === "files")
-                                ?.className
+                              mergedConfig.fieldsClassName?.find(
+                                (f) => f.field === "files",
+                              )?.className
                             }
                           >
                             {t.file ? (
@@ -171,16 +180,16 @@ const TransactionsTable = ({
                         )}
                         {renderedFields.includes("date") && (
                           <td
-                            className={`text-center text-text-color ${fieldsClassName?.find((f) => f.field === "date")?.className}`}
+                            className={`text-center text-text-color ${mergedConfig.fieldsClassName?.find((f) => f.field === "date")?.className}`}
                           >
-                            {config.dateFormat
-                              ? config.dateFormat(t.date)
+                            {mergedConfig.dateFormat
+                              ? mergedConfig.dateFormat(t.date)
                               : FormatDate(t.date)}
                           </td>
                         )}
                         {renderedFields.includes("tag") && (
                           <td
-                            className={`text-center text-active-text-color ${fieldsClassName?.find((f) => f.field === "tag")?.className}`}
+                            className={`text-center text-active-text-color ${mergedConfig.fieldsClassName?.find((f) => f.field === "tag")?.className}`}
                           >
                             {t.tags.length > 0 ? (
                               <span className="flex items-center justify-center gap-1">
@@ -202,7 +211,7 @@ const TransactionsTable = ({
                         )}
                         {renderedFields.includes("amount") && (
                           <td
-                            className={`text-center text-active-text-color ${fieldsClassName?.find((f) => f.field === "amount")?.className}`}
+                            className={`text-center text-active-text-color ${mergedConfig.fieldsClassName?.find((f) => f.field === "amount")?.className}`}
                           >
                             <AmountTag amount={t.amount} />
                           </td>
@@ -217,13 +226,6 @@ const TransactionsTable = ({
           <p>No Account</p>
         )}
       </div>
-      {config.allowClick && (
-        <TransactionModal
-          isOpen={transactionModalIsOpen}
-          setIsOpen={setTransactionModalIsOpen}
-          transactionId={currentTransaction}
-        />
-      )}
     </>
   );
 };

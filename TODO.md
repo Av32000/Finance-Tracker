@@ -17,6 +17,7 @@
 - [ ] Transfer between accounts 
 - [x] Local storage save
 - [ ] Deprecate DB
+- [ ] Server rework
 - [ ] Add animations
 - [ ] Transaction Table stats
 

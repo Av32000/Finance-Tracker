@@ -94,22 +94,18 @@ const Home = () => {
               transactions={renderTransactions(account)
                 .sort((a, b) => b.date - a.date)
                 .slice(0, 19)}
-              selected={[]}
-              setSelected={() => {}}
-              tableClassName="!m-0"
               config={{
+                tableClassName: "!m-0",
                 showHeader: false,
                 fields: ["name", "date", "amount"],
-                allowSelection: false,
-                allowClick: false,
                 dateFormat: FormatDateWithoutHours,
                 allowScroll: false,
+                fieldsClassName: [
+                  { field: "name", className: "text-text-color px-0" },
+                  { field: "date", className: "mobile:hidden" },
+                  { field: "amount", className: "*:justify-end" },
+                ],
               }}
-              fieldsClassName={[
-                { field: "name", className: "text-text-color px-0" },
-                { field: "date", className: "mobile:hidden" },
-                { field: "amount", className: "*:justify-end" },
-              ]}
             />
           </div>
           <div className="bg-bg-light col-start-5 col-end-10 row-start-1 row-end-4 rounded-2xl flex flex-col p-3 shadow-lg mobile:h-96">

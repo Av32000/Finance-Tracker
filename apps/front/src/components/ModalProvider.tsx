@@ -6,6 +6,7 @@ import FTCreateChartModal from "./FTCreateChartModal";
 import FTCreateScheduledModal from "./FTCreateScheduledModal";
 import FTInfoModal from "./FTInfoModal";
 import FTOTPModal from "./FTOTPModal";
+import TransactionModal from "./TransactionModal";
 
 type ShowModalProps =
   | {
@@ -38,10 +39,15 @@ type ShowModalProps =
         transactionId?: string,
       ) => Promise<string>;
       transactionId?: string;
+      transaction?: Transaction;
     }
   | {
       type: "AddScheduled";
       transactionId?: string;
+    }
+  | {
+      type: "TransactionDetails";
+      transactionId: string;
     };
 
 interface ModalContextType {
@@ -131,6 +137,16 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
                   <div key={idx} {...commonProps}>
                     <AddTransactionModal
                       saveTransaction={modal.saveTransaction}
+                      transactionId={modal.transactionId}
+                      transaction={modal.transaction}
+                      hideModal={hideModal}
+                    />
+                  </div>
+                );
+              case "TransactionDetails":
+                return (
+                  <div key={idx} {...commonProps}>
+                    <TransactionModal
                       transactionId={modal.transactionId}
                       hideModal={hideModal}
                     />
