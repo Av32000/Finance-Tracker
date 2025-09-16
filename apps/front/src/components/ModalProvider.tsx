@@ -41,6 +41,7 @@ type ShowModalProps =
     }
   | {
       type: "AddScheduled";
+      transactionId?: string;
     };
 
 interface ModalContextType {
@@ -110,7 +111,10 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
               case "AddScheduled":
                 return (
                   <div key={idx} {...commonProps}>
-                    <FTCreateScheduledModal hideModal={hideModal} />
+                    <FTCreateScheduledModal
+                      hideModal={hideModal}
+                      transactionId={modal.transactionId}
+                    />
                   </div>
                 );
               case "Chart":

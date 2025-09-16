@@ -6,8 +6,21 @@ import PeriodicTransactionCard from "../components/PeriodicTransactionCard";
 import { useBearStore } from "../GlobalState";
 
 const Scheduled = () => {
-  const { account } = useBearStore();
+  const { account, fetchServer, refreshAccount, setAccount } = useBearStore();
   const { showModal } = useModal();
+
+  const deleteTransaction = async (txId: string) => {
+    if (!account) return;
+    await fetchServer("/accounts/" + account.id + "/transactions/" + txId, {
+      method: "DELETE",
+    });
+
+    await refreshAccount(account.id, setAccount);
+  };
+
+  const editTransaction = (txId: string) => {
+    showModal({ type: "AddScheduled", transactionId: txId });
+  };
 
   useEffect(() => {
     document.title = "Finance Tracker - Scheduled";
@@ -49,7 +62,12 @@ const Scheduled = () => {
               account.transactions
                 .filter((t) => t.periodic != null)
                 .map((t) => (
-                  <PeriodicTransactionCard key={t.id} transaction={t} />
+                  <PeriodicTransactionCard
+                    key={t.id}
+                    transaction={t}
+                    deleteTransaction={deleteTransaction}
+                    editTransaction={editTransaction}
+                  />
                 ))
             )}
           </div>

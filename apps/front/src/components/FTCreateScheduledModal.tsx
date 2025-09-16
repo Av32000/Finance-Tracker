@@ -1,5 +1,5 @@
 import { Transaction } from "@finance-tracker/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useBearStore } from "../GlobalState";
 import FTButton from "./FTButton";
 import FTInput from "./FTInput";
@@ -7,7 +7,13 @@ import FTSelect from "./FTSelect";
 import { useModal } from "./ModalProvider";
 import TransactionsTable from "./TransactionsTable";
 
-const FTCreateScheduledModal = ({ hideModal }: { hideModal: () => void }) => {
+const FTCreateScheduledModal = ({
+  hideModal,
+  transactionId,
+}: {
+  hideModal: () => void;
+  transactionId?: string;
+}) => {
   const { showModal } = useModal();
   const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
 
@@ -20,6 +26,32 @@ const FTCreateScheduledModal = ({ hideModal }: { hideModal: () => void }) => {
     "never" | "afterDate" | "afterOccurrences"
   >("never");
   const [endValue, setEndValue] = useState<Date | number | null>(null);
+
+  useEffect(() => {
+    if (transactionId && account) {
+      const existingTransaction = account.transactions.find(
+        (t) => t.id === transactionId,
+      );
+      if (existingTransaction) {
+        setTransaction(existingTransaction);
+        if (existingTransaction.periodic) {
+          setFrequency(existingTransaction.periodic.rule.freq);
+          setInterval(existingTransaction.periodic.rule.interval);
+          const ruleEnd = existingTransaction.periodic.rule.endRule;
+          if (ruleEnd.type === "never") {
+            setEndCondition("never");
+            setEndValue(null);
+          } else if (ruleEnd.type === "afterDate") {
+            setEndCondition("afterDate");
+            setEndValue(new Date(ruleEnd.value));
+          } else if (ruleEnd.type === "afterOccurrences") {
+            setEndCondition("afterOccurrences");
+            setEndValue(ruleEnd.value);
+          }
+        }
+      }
+    }
+  }, [transactionId, account]);
 
   return (
     <div
@@ -171,11 +203,18 @@ const FTCreateScheduledModal = ({ hideModal }: { hideModal: () => void }) => {
             const { id, ...transactionData } = periodicTransaction;
 
             try {
-              await fetchServer("/accounts/" + account.id + "/transactions", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ transaction: transactionData }),
-              });
+              const method = transactionId ? "PATCH" : "POST";
+              await fetchServer(
+                "/accounts/" +
+                  account.id +
+                  "/transactions" +
+                  (transactionId ? `/${transactionId}` : ""),
+                {
+                  method: method,
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ transaction: transactionData }),
+                },
+              );
 
               await refreshAccount(account.id, setAccount);
 

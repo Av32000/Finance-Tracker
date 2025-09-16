@@ -46,7 +46,7 @@ const BaseTransactionSchema = z.object({
         endRule: z
           .object({
             type: z.literal("afterDate"),
-            value: z.date(),
+            value: z.string(),
           })
           .or(
             z.object({
