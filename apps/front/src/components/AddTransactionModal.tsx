@@ -35,20 +35,20 @@ const UploadFile = async (file: File, fetchServer: FetchServerType) => {
 };
 
 const AddTransactionModal = ({
-  isOpen,
   saveTransaction,
-  setIsOpen,
+  hideModal,
   transactionId,
+  transaction,
 }: {
-  isOpen: boolean;
-  setIsOpen: (isOpen: boolean) => void;
+  hideModal: () => void;
   saveTransaction: (
     transaction: Omit<Transaction, "id">,
     accountId: string,
     fetchServer: FetchServerType,
     transactionId?: string,
-  ) => Promise<void>;
+  ) => Promise<string>;
   transactionId?: string;
+  transaction?: Transaction;
 }) => {
   const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
 
@@ -78,7 +78,7 @@ const AddTransactionModal = ({
   };
 
   const closeModal = () => {
-    setIsOpen(false);
+    hideModal();
     setType("classic");
     setName("");
     setDescription("");
@@ -92,37 +92,37 @@ const AddTransactionModal = ({
   };
 
   useEffect(() => {
-    if (transactionId && account) {
-      const transaction = renderTransactions(account).find(
-        (t) => t.id === transactionId,
-      );
-      if (transaction) {
-        setType(transaction.type);
-        setName(transaction.name);
-        setDescription(transaction.description);
-        setDate(adjustToLocalTime(transaction.date));
+    if ((transactionId || transaction) && account) {
+      const editedTransaction =
+        transaction ||
+        renderTransactions(account).find((t) => t.id === transactionId);
+      if (editedTransaction) {
+        setType(editedTransaction.type);
+        setName(editedTransaction.name);
+        setDescription(editedTransaction.description);
+        setDate(adjustToLocalTime(editedTransaction.date));
         setTags(
-          transaction.tags
+          editedTransaction.tags
             .map((t) => account.tags.find((tag) => tag.id === t)?.id)
             .filter((id): id is string => typeof id === "string"),
         );
-        setAmount(transaction.amount);
+        setAmount(editedTransaction.amount);
 
-        if (transaction.type === "internal") {
+        if (editedTransaction.type === "internal") {
           setTargetAccount({
             id:
-              transaction.from.id === account.id
-                ? transaction.to.id
-                : transaction.from.id,
+              editedTransaction.from.id === account.id
+                ? editedTransaction.to.id
+                : editedTransaction.from.id,
             name:
-              transaction.from.id === account.id
-                ? transaction.to.name
-                : transaction.from.name,
+              editedTransaction.from.id === account.id
+                ? editedTransaction.to.name
+                : editedTransaction.from.name,
           });
         }
       }
     }
-  }, [transactionId, account, isOpen]);
+  }, [transactionId, transaction, account]);
 
   useEffect(() => {
     if (type === "internal" && !accounts) {
@@ -146,9 +146,7 @@ const AddTransactionModal = ({
 
   return (
     <div
-      className={`${
-        isOpen ? "flex" : "hidden"
-      } absolute items-center justify-center h-screen w-full bg-[black] bg-opacity-60`}
+      className="absolute flex items-center justify-center h-screen w-full bg-[black] bg-opacity-60"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           closeModal();
@@ -157,11 +155,11 @@ const AddTransactionModal = ({
     >
       <div className="p-10 bg-bg-light rounded-xl flex flex-col items-center justify-center">
         <p className="m-2 text-active-text-color text-xl">
-          {transactionId ? "Edit" : "Add"} Transaction
+          {transactionId || transaction ? "Edit" : "Add"} Transaction
         </p>
         {step === 0 && (
           <>
-            {!transactionId && (
+            {!(transactionId || transaction) && (
               <FTTabSelector
                 options={[
                   { name: "Classic", value: "classic" },
@@ -224,7 +222,7 @@ const AddTransactionModal = ({
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
-            {!transactionId && (
+            {!(transactionId || transaction) && (
               <FileInput
                 className="m-2 w-3/4"
                 ref={(element) => {
@@ -303,6 +301,7 @@ const AddTransactionModal = ({
                   date: new Date(date).getTime(),
                   tags,
                   amount,
+                  periodic: null,
                   file: fileObject,
                 } as Transaction;
 
@@ -321,7 +320,7 @@ const AddTransactionModal = ({
                   transaction,
                   account!.id,
                   fetchServer,
-                  transactionId,
+                  transactionId || transaction?.id,
                 );
                 await refreshAccount(account!.id, setAccount);
                 closeModal();

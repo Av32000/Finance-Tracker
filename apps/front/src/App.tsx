@@ -6,6 +6,7 @@ import Home from "./views/Home";
 import Loading from "./views/Loading";
 import Login from "./views/Login";
 import NoBackend from "./views/NoBackend";
+import Scheduled from "./views/Scheduled";
 import Settings from "./views/Settings";
 import Statistics from "./views/Statistics";
 import Transactions from "./views/Transactions";
@@ -40,6 +41,14 @@ const router = createBrowserRouter([
     element: (
       <Layout>
         <Statistics />
+      </Layout>
+    ),
+  },
+  {
+    path: "/scheduled",
+    element: (
+      <Layout>
+        <Scheduled />
       </Layout>
     ),
   },

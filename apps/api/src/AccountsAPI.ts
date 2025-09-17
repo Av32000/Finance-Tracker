@@ -40,6 +40,7 @@ const newAccountSchema = {
   name: "",
   balance: 0,
   transactions: [],
+  periodicTransactions: [],
   settings: [],
   monthly: 1000,
   currentMonthly: 0,
@@ -87,6 +88,11 @@ export default class AccountsAPI {
             TransactionTypeSchema.safeParse(transaction.type).success === false
           ) {
             transaction.type = "classic";
+            fix = true;
+          }
+
+          if (transaction.periodic === undefined) {
+            transaction.periodic = null;
             fix = true;
           }
 
@@ -473,10 +479,76 @@ export default class AccountsAPI {
     if (!account) return;
 
     account.transactions.forEach((t) => {
-      if (t.type === "classic") balance += t.amount;
-      else if (t.type === "internal") {
-        if (account.id === t.from.id) balance -= t.amount;
-        else if (account.id === t.to.id) balance += t.amount;
+      const applyTransaction = (t: Transaction) => {
+        if (t.type === "classic") balance += t.amount;
+        else if (t.type === "internal") {
+          if (account.id === t.from.id) balance -= t.amount;
+          else if (account.id === t.to.id) balance += t.amount;
+        }
+      };
+
+      if (t.periodic != null) {
+        const now = new Date();
+        let currentOccurence = 0;
+        let currentDate = new Date(t.date);
+        const periodicRule = t.periodic;
+
+        const advanceDate = () => {
+          if (periodicRule.rule.freq === "daily") {
+            currentDate.setDate(
+              currentDate.getDate() + periodicRule.rule.interval,
+            );
+          } else if (periodicRule.rule.freq === "weekly") {
+            currentDate.setDate(
+              currentDate.getDate() + 7 * periodicRule.rule.interval,
+            );
+          } else if (periodicRule.rule.freq === "monthly") {
+            currentDate.setMonth(
+              currentDate.getMonth() + periodicRule.rule.interval,
+            );
+          } else if (periodicRule.rule.freq === "yearly") {
+            currentDate.setFullYear(
+              currentDate.getFullYear() + periodicRule.rule.interval,
+            );
+          }
+        };
+
+        const processOccurrence = () => {
+          if (currentDate > now) return false;
+
+          const mod = periodicRule.modified.find(
+            (m) => m.occurence === currentOccurence,
+          );
+          if (mod && mod.value != null) {
+            const modifiedTransaction = account.transactions.find(
+              (tr) => tr.id === mod.value,
+            );
+            if (modifiedTransaction) applyTransaction(modifiedTransaction);
+          } else {
+            applyTransaction(t);
+          }
+
+          currentOccurence++;
+          advanceDate();
+          return true;
+        };
+
+        if (periodicRule.rule.endRule.type === "afterOccurrences") {
+          while (currentOccurence < periodicRule.rule.endRule.value) {
+            if (!processOccurrence()) break;
+          }
+        } else {
+          const targetDate =
+            periodicRule.rule.endRule.type === "afterDate"
+              ? new Date(periodicRule.rule.endRule.value)
+              : now;
+
+          while (currentDate <= targetDate) {
+            if (!processOccurrence()) break;
+          }
+        }
+      } else {
+        applyTransaction(t);
       }
     });
 

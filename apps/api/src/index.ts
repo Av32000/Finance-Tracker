@@ -179,9 +179,19 @@ const accountsAPI = new AccountsAPI(dataPath, filesPath, isOffline);
 const authAPI = new AuthAPI(dataPath);
 accountsAPI.FixAccounts();
 
+let lastUpdate = Date.now();
+
 fastify.register(
   async (api) => {
     api.get("/", async () => {
+      // Update every five minutes (handle new periodic transactions occurrences)
+      if (Date.now() - lastUpdate > 5 * 60 * 1000) {
+        accountsAPI.GetAccounts().forEach((account) => {
+          accountsAPI.UpdateBalance(account.id);
+        });
+        lastUpdate = Date.now();
+      }
+
       return "Finance Tracker !";
     });
 

@@ -15,6 +15,10 @@ const menu = [
     path: "/stats",
   },
   {
+    name: "Scheduled",
+    path: "/scheduled",
+  },
+  {
     name: "Settings",
     path: "/settings",
   },
