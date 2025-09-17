@@ -12,7 +12,7 @@
 - [ ] Deferred transactions
 - [x] Multiple tags per transaction
 - [ ] New export types (PDF, CSV...)
-- [ ] Periodic transactions
+- [x] Periodic transactions
 - [ ] Saved Filters
 - [ ] Transfer between accounts 
 - [x] Local storage save
