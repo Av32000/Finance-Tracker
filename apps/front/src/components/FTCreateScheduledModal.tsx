@@ -226,8 +226,6 @@ const FTCreateScheduledModal = ({
               );
 
               await refreshAccount(account.id, setAccount);
-
-              console.log("Periodic transaction saved successfully");
               hideModal();
             } catch (error) {
               console.error("Failed to save periodic transaction:", error);

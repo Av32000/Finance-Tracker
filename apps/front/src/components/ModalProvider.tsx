@@ -20,7 +20,8 @@ type ShowModalProps =
       title: string;
       confirmText?: string;
       cancelText?: string;
-      callback?: () => void;
+      options?: { key: string; label: string }[];
+      callback?: (options?: { key: string; value: boolean }[]) => void;
       cancelCallback?: () => void;
     }
   | {
@@ -102,6 +103,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
                       confirmText={modal.confirmText || "Ok"}
                       hideModal={hideModal}
                       title={modal.title}
+                      options={modal.options}
                       callback={modal.callback}
                       cancelText={modal.cancelText || "No"}
                       cancelCallback={modal.cancelCallback}

@@ -1,7 +1,6 @@
 import { Transaction } from "@finance-tracker/types";
 import { periodicRuleStringify } from "../Utils";
 import FTButton from "./FTButton";
-import { useModal } from "./ModalProvider";
 import TransactionsTable from "./TransactionsTable";
 
 const PeriodicTransactionCard = ({
@@ -13,7 +12,6 @@ const PeriodicTransactionCard = ({
   editTransaction: (txId: string) => void;
   deleteTransaction: (txId: string) => void;
 }) => {
-  const { showModal } = useModal();
   return transaction.periodic ? (
     <div
       key={transaction.id}
@@ -50,17 +48,7 @@ const PeriodicTransactionCard = ({
           </FTButton>
           <FTButton
             className="!p-0 h-8 w-8 flex items-center justify-center bg-red"
-            onClick={() =>
-              showModal({
-                type: "Boolean",
-                title: "Are you sure you want to delete this transaction?",
-                confirmText: "Delete Transaction",
-                cancelText: "Cancel",
-                callback: () => {
-                  deleteTransaction(transaction.id);
-                },
-              })
-            }
+            onClick={() => deleteTransaction(transaction.id)}
           >
             <img
               className="w-4"

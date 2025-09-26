@@ -566,19 +566,38 @@ fastify.register(
     api.post("/accounts/:accountId/transactions", async (request, reply) => {
       const accountId = (request.params as any).accountId;
       const transaction = (request.body as any).transaction;
+      const transactions = (request.body as any).transactions;
 
-      // Use zod to check if every field except id are present
-      const validationResult = TransactionSchema.safeParse({
-        ...transaction,
-        id: "",
-      });
-      if (!validationResult.success) {
+      if (!accountId || (!transaction && !transactions))
         throw new Error("Invalid transaction data");
+
+      const handleTransaction = (transaction: any) => {
+        const validationResult = TransactionSchema.safeParse({
+          ...transaction,
+          id: "",
+        });
+        if (!validationResult.success) {
+          throw new Error("Invalid transaction data " + validationResult.error);
+        }
+
+        if (
+          transaction.file &&
+          (!transaction.file.id || !transaction.file.name)
+        )
+          throw new Error("File not found");
+        return accountsAPI.AddTransaction(transaction, accountId);
+      };
+
+      const results = [];
+      if (transaction) {
+        results.push(handleTransaction(transaction));
+      } else if (transactions && Array.isArray(transactions)) {
+        for (const tx of transactions) {
+          results.push(handleTransaction(tx));
+        }
       }
 
-      if (transaction.file && (!transaction.file.id || !transaction.file.name))
-        throw new Error("File not found");
-      return accountsAPI.AddTransaction(transaction, accountId);
+      return results.length === 1 ? results[0] : results;
     });
 
     api.patch(

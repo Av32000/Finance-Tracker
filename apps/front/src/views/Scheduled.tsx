@@ -4,6 +4,7 @@ import FTButton from "../components/FTButton";
 import { useModal } from "../components/ModalProvider";
 import PeriodicTransactionCard from "../components/PeriodicTransactionCard";
 import { useBearStore } from "../GlobalState";
+import { renderTransactions } from "../Utils";
 
 const Scheduled = () => {
   const { account, fetchServer, refreshAccount, setAccount } = useBearStore();
@@ -11,11 +12,60 @@ const Scheduled = () => {
 
   const deleteTransaction = async (txId: string) => {
     if (!account) return;
-    await fetchServer("/accounts/" + account.id + "/transactions/" + txId, {
-      method: "DELETE",
-    });
 
-    await refreshAccount(account.id, setAccount);
+    showModal({
+      type: "Boolean",
+      title: "Are you sure you want to delete this periodic transaction rules?",
+      confirmText: "Delete Transaction",
+      cancelText: "Cancel",
+      options: [
+        {
+          key: "deleteChilds",
+          label: "Also delete all childs (as if it had never existed)?",
+        },
+      ],
+      callback: async (options) => {
+        const deleteAllChilds = options?.find(
+          (o) => o.key === "deleteChilds",
+        )?.value;
+        if (deleteAllChilds) {
+          const tx = account.transactions.find((t) => t.id === txId);
+          const childsIds = tx?.periodic?.modified.values() || [];
+          const allIdsToDelete = [txId, ...childsIds];
+          for (const id of allIdsToDelete) {
+            await fetchServer(
+              "/accounts/" + account.id + "/transactions/" + id,
+              {
+                method: "DELETE",
+              },
+            );
+          }
+        } else {
+          const accountTransactions = renderTransactions(account);
+          const transactions = accountTransactions
+            .filter((t) => t.id.startsWith(txId) && t.id !== txId)
+            .map((t) => {
+              const newTx = { ...t };
+              newTx.periodic = null;
+              // @ts-expect-error a new id will be generated server side
+              delete newTx.id;
+              return newTx;
+            });
+          await fetchServer("/accounts/" + account.id + "/transactions", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ transactions }),
+          });
+          await fetchServer(
+            "/accounts/" + account.id + "/transactions/" + txId,
+            {
+              method: "DELETE",
+            },
+          );
+        }
+        await refreshAccount(account.id, setAccount);
+      },
+    });
   };
 
   const editTransaction = (txId: string) => {
