@@ -104,7 +104,9 @@ const Scheduled = () => {
               </FTButton>
             </div>
           </div>
-          <div className="p-4 flex gap-4 overflow-y-scroll mobile:pb-40">
+          <div
+            className={`p-4 flex gap-4 overflow-y-scroll mobile:pb-40 ${account.transactions.filter((t) => t.periodic != null).length === 0 ? "justify-center items-center h-full" : ""}`}
+          >
             {account.transactions.filter((t) => t.periodic != null).length ===
             0 ? (
               <p className="text-text-color">No scheduled transactions</p>
