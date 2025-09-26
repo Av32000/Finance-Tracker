@@ -1,3 +1,4 @@
+import { WSEventType } from "@finance-tracker/types";
 import { useEffect, useState } from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { useBearStore } from "./GlobalState";
@@ -83,12 +84,51 @@ function App() {
   };
 
   useEffect(() => {
-    pingBackend();
+    let ws: WebSocket | null = null;
+    const connectWs = () => {
+      ws = new WebSocket(`${import.meta.env.VITE_API_URL || ""}/ws`);
+      const wsTimeout = setTimeout(() => {
+        if (ws && ws.readyState !== WebSocket.OPEN) {
+          ws.close();
+          setbackendStatus(BACKEND_STATUS.DISCONNECTED);
+        }
+      }, 4000);
+
+      ws.onopen = () => {
+        clearTimeout(wsTimeout);
+        console.log("WebSocket connected");
+        setbackendStatus(BACKEND_STATUS.CONNECTED);
+      };
+
+      ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if (message.type === WSEventType.PING) {
+          ws?.send(
+            JSON.stringify({ type: WSEventType.PONG, timestamp: Date.now() }),
+          );
+        } else if (message.type === WSEventType.PONG) {
+          setbackendStatus(BACKEND_STATUS.CONNECTED);
+        }
+      };
+
+      ws.onclose = () => {
+        clearTimeout(wsTimeout);
+        setbackendStatus(BACKEND_STATUS.DISCONNECTED);
+      };
+    };
+
+    connectWs();
 
     setInterval(() => {
-      pingBackend();
-    }, 3000);
-  });
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(
+          JSON.stringify({ type: WSEventType.PING, timestamp: Date.now() }),
+        );
+      } else {
+        connectWs();
+      }
+    }, 5000);
+  }, []);
 
   return (
     <div>

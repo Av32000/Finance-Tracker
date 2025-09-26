@@ -1,4 +1,10 @@
-import { Account, FTChart, Setting, Transaction } from "@finance-tracker/types";
+import {
+  Account,
+  FTChart,
+  Setting,
+  Transaction,
+  WSEventType,
+} from "@finance-tracker/types";
 import { randomUUID } from "crypto";
 import {
   existsSync,
@@ -10,6 +16,7 @@ import {
 } from "fs";
 import JSZip from "jszip";
 import path from "path";
+import { FTWSServer } from "./ws";
 
 // Conditional Prisma imports - only load when needed
 let Prisma: any;
@@ -17,10 +24,10 @@ let PrismaClient: any;
 
 try {
   // Skip Prisma loading if explicitly disabled (e.g., in binaries)
-  if (process.env.SKIP_PRISMA === 'true') {
-    throw new Error('Prisma loading skipped for binary');
+  if (process.env.SKIP_PRISMA === "true") {
+    throw new Error("Prisma loading skipped for binary");
   }
-  
+
   const prismaModule = require("@prisma/client");
   Prisma = prismaModule.Prisma;
   PrismaClient = prismaModule.PrismaClient;
@@ -48,6 +55,7 @@ export default class AccountsAPI {
   offline: boolean;
   accountsPath: string;
   prisma: any = null;
+  wsServer: FTWSServer | undefined;
 
   constructor(dataPath: string, filesPath: string, offline: boolean) {
     this.dataPath = dataPath;
@@ -469,6 +477,8 @@ export default class AccountsAPI {
     writeFileSync(this.accountsPath, JSON.stringify(this.accounts));
     this.CleanFiles();
     if (saveDb && !this.offline) this.UpdateDatabase();
+    if (this.wsServer)
+      this.wsServer.broadcast({ type: WSEventType.RefreshEvent });
   }
 
   async checkConnection() {

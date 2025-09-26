@@ -26,6 +26,7 @@ import AuthAPI from "./AuthAPI";
 import Cmd from "./cmd";
 import { buildInfo } from "./utils/buildInfo";
 import { getDataPath, getFilesPath } from "./utils/paths";
+import { FTWSServer as WSServer } from "./ws";
 
 declare module "fastify" {
   interface FastifyInstance
@@ -150,6 +151,13 @@ fastify.addHook("onRequest", async (request, reply) => {
   }
 });
 
+// Initialize WebSocket server after Fastify is ready
+fastify.ready().then(() => {
+  wsServer = new WSServer(fastify.server);
+  accountsAPI.wsServer = wsServer;
+  console.log("WebSocket server initialized");
+});
+
 const pump = util.promisify(pipeline);
 
 // Function to open URL in default browser
@@ -171,6 +179,9 @@ function openBrowser(url: string) {
 
   exec(command);
 }
+
+// WebSocket server instance - will be initialized after fastify is ready
+let wsServer: WSServer;
 
 // In standalone mode, force offline behavior (no database connection)
 const isOffline = offline || standalone;
@@ -798,6 +809,7 @@ fastify.listen(
       process.exit(1);
     }
     console.log(`Finance Tracker listening on ${address}`);
+    console.log(`WebSocket server available at ${address}/ws`);
 
     // Auto-open browser when in standalone mode
     if (standalone) {
