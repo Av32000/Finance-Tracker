@@ -120,11 +120,7 @@ function App() {
     connectWs();
 
     setInterval(() => {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(
-          JSON.stringify({ type: WSEventType.PING, timestamp: Date.now() }),
-        );
-      } else {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
         connectWs();
       }
     }, 5000);
