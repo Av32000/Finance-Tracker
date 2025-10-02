@@ -71,7 +71,7 @@ const BACKEND_STATUS = {
 
 function App() {
   const [backendStatus, setbackendStatus] = useState(BACKEND_STATUS.LOADING);
-  const { fetchServer } = useBearStore();
+  const { fetchServer, refreshAccount, setAccount } = useBearStore();
 
   const pingBackend = () => {
     fetchServer("/")
@@ -108,6 +108,9 @@ function App() {
           );
         } else if (message.type === WSEventType.PONG) {
           setbackendStatus(BACKEND_STATUS.CONNECTED);
+        } else if (message.type === WSEventType.RefreshEvent) {
+          const currentAccount = useBearStore.getState().account;
+          if (currentAccount) refreshAccount(currentAccount.id, setAccount);
         }
       };
 
@@ -124,6 +127,7 @@ function App() {
         connectWs();
       }
     }, 5000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
