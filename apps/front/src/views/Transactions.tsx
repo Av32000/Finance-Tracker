@@ -253,6 +253,7 @@ const Transactions = () => {
                   transactionId,
                 });
               },
+              allowStats: true,
             }}
           />
         </div>
