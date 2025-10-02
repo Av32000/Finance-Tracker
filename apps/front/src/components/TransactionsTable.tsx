@@ -38,57 +38,40 @@ const statsOptions = [
   {
     name: "Sum",
     func: (transactions: Transaction[]) =>
-      Number(
-        transactions
-          .reduce((acc, t) => acc + t.amount, 0)
-          .toFixed(2)
-          .padEnd(2, "0"),
-      ),
+      transactions.reduce((acc, t) => acc + t.amount, 0).toFixed(2),
   },
   {
     name: "Average",
     func: (transactions: Transaction[]) =>
       transactions.length === 0
-        ? 0
-        : Number(
-            (
-              transactions.reduce((acc, t) => acc + t.amount, 0) /
-              transactions.length
-            )
-              .toFixed(2)
-              .padEnd(2, "0"),
-          ),
+        ? "0.00"
+        : (
+            transactions.reduce((acc, t) => acc + t.amount, 0) /
+            transactions.length
+          ).toFixed(2),
   },
   {
     name: "Count",
-    func: (transactions: Transaction[]) => transactions.length,
+    func: (transactions: Transaction[]) => transactions.length.toString(),
   },
   {
     name: "Max",
     func: (transactions: Transaction[]) =>
       transactions.length === 0
-        ? 0
-        : Number(
-            Math.max(...transactions.map((t) => t.amount))
-              .toFixed(2)
-              .padEnd(2, "0"),
-          ),
+        ? "0.00"
+        : Math.max(...transactions.map((t) => t.amount)).toFixed(2),
   },
   {
     name: "Min",
     func: (transactions: Transaction[]) =>
       transactions.length === 0
-        ? 0
-        : Number(
-            Math.min(...transactions.map((t) => t.amount))
-              .toFixed(2)
-              .padEnd(2, "0"),
-          ),
+        ? "0.00"
+        : Math.min(...transactions.map((t) => t.amount)).toFixed(2),
   },
   {
     name: "Median",
     func: (transactions: Transaction[]) => {
-      if (transactions.length === 0) return 0;
+      if (transactions.length === 0) return "0.00";
       const sorted = [...transactions]
         .map((t) => t.amount)
         .sort((a, b) => a - b);
@@ -97,7 +80,7 @@ const statsOptions = [
         sorted.length % 2 !== 0
           ? sorted[mid]
           : (sorted[mid - 1] + sorted[mid]) / 2;
-      return Number(median.toFixed(2).padEnd(2, "0"));
+      return median.toFixed(2);
     },
   },
 ];

@@ -19,7 +19,7 @@
 - [ ] Deprecate DB
 - [ ] Server rework
 - [ ] Add animations
-- [ ] Transaction Table stats
+- [x] Transaction Table stats
 
 # Small Fixes
 
