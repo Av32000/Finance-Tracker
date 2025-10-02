@@ -1,8 +1,8 @@
-import { BuildInfo } from "@finance-tracker/types/dist/types";
 
+import { BuildInfo } from "@finance-tracker/types";
 export const buildInfo: BuildInfo = {
-  version: process.env.npm_package_version || "unknown",
-  commitHash: process.env.GIT_COMMIT_HASH || "unknown",
-  buildTimestamp: process.env.BUILD_TIMESTAMP || new Date().toISOString(),
-  branch: process.env.GIT_BRANCH || "unknown",
+  "version": "2.0.0-dev",
+  "commitHash": "2af0270",
+  "branch": "feat/new-transaction-types",
+  "buildTimestamp": "2025-10-02T08:56:45.454Z"
 };

@@ -1,3 +1,4 @@
+import { WSEventType } from "@finance-tracker/types";
 import { useEffect, useState } from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { useBearStore } from "./GlobalState";
@@ -79,7 +80,7 @@ const BACKEND_STATUS = {
 
 function App() {
   const [backendStatus, setbackendStatus] = useState(BACKEND_STATUS.LOADING);
-  const { fetchServer } = useBearStore();
+  const { fetchServer, refreshAccount, setAccount } = useBearStore();
 
   const pingBackend = () => {
     fetchServer("/")
@@ -92,12 +93,51 @@ function App() {
   };
 
   useEffect(() => {
-    pingBackend();
+    let ws: WebSocket | null = null;
+    const connectWs = () => {
+      ws = new WebSocket(`${import.meta.env.VITE_API_URL || ""}/ws`);
+      const wsTimeout = setTimeout(() => {
+        if (ws && ws.readyState !== WebSocket.OPEN) {
+          ws.close();
+          setbackendStatus(BACKEND_STATUS.DISCONNECTED);
+        }
+      }, 4000);
+
+      ws.onopen = () => {
+        clearTimeout(wsTimeout);
+        console.log("WebSocket connected");
+        setbackendStatus(BACKEND_STATUS.CONNECTED);
+      };
+
+      ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if (message.type === WSEventType.PING) {
+          ws?.send(
+            JSON.stringify({ type: WSEventType.PONG, timestamp: Date.now() }),
+          );
+        } else if (message.type === WSEventType.PONG) {
+          setbackendStatus(BACKEND_STATUS.CONNECTED);
+        } else if (message.type === WSEventType.RefreshEvent) {
+          const currentAccount = useBearStore.getState().account;
+          if (currentAccount) refreshAccount(currentAccount.id, setAccount);
+        }
+      };
+
+      ws.onclose = () => {
+        clearTimeout(wsTimeout);
+        setbackendStatus(BACKEND_STATUS.DISCONNECTED);
+      };
+    };
+
+    connectWs();
 
     setInterval(() => {
-      pingBackend();
-    }, 3000);
-  });
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        connectWs();
+      }
+    }, 5000);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div>
