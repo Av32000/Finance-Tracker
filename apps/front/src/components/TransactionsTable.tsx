@@ -31,7 +31,7 @@ const defaultConfig: TransactionTableConfig = {
   allowScroll: true,
   tableClassName: "",
   fieldsClassName: [],
-  allowStats: true,
+  allowStats: false,
 };
 
 const statsOptions = [
@@ -122,7 +122,9 @@ const TransactionsTable = ({
               <thead className="border-b-[1px] p-4 border-text-color">
                 <tr className="text-active-text-color">
                   {renderedFields.includes("select") && (
-                    <th className="w-7">
+                    <th
+                      className={`w-7 ${mergedConfig.fieldsClassName?.find((f) => f.field === "select")?.className}`}
+                    >
                       <FTCheckbox
                         checked={
                           mergedConfig.selected?.length === transactions.length
@@ -140,20 +142,40 @@ const TransactionsTable = ({
                     </th>
                   )}
                   {renderedFields.includes("name") && (
-                    <th className="font-medium p-2">Name</th>
+                    <th
+                      className={`font-medium p-2 ${mergedConfig.fieldsClassName?.find((f) => f.field === "name")?.className}`}
+                    >
+                      Name
+                    </th>
                   )}
                   {renderedFields.includes("files") && (
-                    <th className="font-medium p-2">Files</th>
+                    <th
+                      className={`font-medium p-2 ${mergedConfig.fieldsClassName?.find((f) => f.field === "files")?.className}`}
+                    >
+                      Files
+                    </th>
                   )}
                   {renderedFields.includes("date") && (
-                    <th className="font-medium p-2">Date</th>
+                    <th
+                      className={`font-medium p-2 ${mergedConfig.fieldsClassName?.find((f) => f.field === "date")?.className}`}
+                    >
+                      Date
+                    </th>
                   )}
                   {renderedFields.includes("tag") && (
-                    <th className="font-medium p-2">Tag</th>
+                    <th
+                      className={`font-medium p-2 ${mergedConfig.fieldsClassName?.find((f) => f.field === "tag")?.className}`}
+                    >
+                      Tag
+                    </th>
                   )}
                   {(renderedFields.includes("amount") ||
                     renderedFields.length == 0) && (
-                    <th className="font-medium p-2">Amount</th>
+                    <th
+                      className={`font-medium p-2 ${mergedConfig.fieldsClassName?.find((f) => f.field === "amount")?.className}`}
+                    >
+                      Amount
+                    </th>
                   )}
                 </tr>
               </thead>

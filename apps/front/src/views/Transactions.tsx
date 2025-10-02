@@ -228,32 +228,17 @@ const Transactions = () => {
             config={{
               selected,
               setSelected,
-              tableClassName: "mobile:hidden",
-              onTransactionClick: (transactionId) => {
-                showModal({
-                  type: "TransactionDetails",
-                  transactionId,
-                });
-              },
-            }}
-          />
-          <TransactionsTable
-            transactions={filterTransactions(
-              renderTransactions(account),
-              parseFilter(filter.trim(), account),
-            )}
-            config={{
-              fields: ["name", "date", "amount"],
-              selected,
-              setSelected,
-              tableClassName: "desktop:hidden",
-              onTransactionClick: (transactionId) => {
-                showModal({
-                  type: "TransactionDetails",
-                  transactionId,
-                });
-              },
               allowStats: true,
+              onTransactionClick: (transactionId) => {
+                showModal({
+                  type: "TransactionDetails",
+                  transactionId,
+                });
+              },
+              fieldsClassName: [
+                { field: "tag", className: "mobile:hidden" },
+                { field: "files", className: "mobile:hidden" },
+              ],
             }}
           />
         </div>
