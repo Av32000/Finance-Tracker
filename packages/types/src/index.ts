@@ -13,6 +13,8 @@ import {
   TransactionTag,
 } from "./account";
 
+import { WSEvent, WSEventType } from "./ws";
+
 import {
   ChartAvailableFields,
   ChartAvailableFieldsEnum,
@@ -72,4 +74,6 @@ export {
   TransactionsFilterSchema,
   TransactionTag,
   TransactionTagSchema,
+  WSEvent,
+  WSEventType,
 };
