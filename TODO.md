@@ -20,6 +20,7 @@
 - [ ] Server rework
 - [ ] Add animations
 - [x] Transaction Table stats
+- [ ] Transactions types icons
 
 # Small Fixes
 

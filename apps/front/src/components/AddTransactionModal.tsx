@@ -110,6 +110,7 @@ const AddTransactionModal = ({
             .filter((id): id is string => typeof id === "string"),
         );
         setAmount(editedTransaction.amount);
+        setDefered(editedTransaction.defered);
 
         if (editedTransaction.type === "internal") {
           setTargetAccount({

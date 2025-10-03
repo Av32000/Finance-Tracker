@@ -233,6 +233,27 @@ const Transactions = () => {
                 showModal({
                   type: "TransactionDetails",
                   transactionId,
+                  saveTransaction: SaveTransaction,
+                  editTransaction: (tId) => {
+                    showModal({
+                      type: "AddTransaction",
+                      saveTransaction: SaveTransaction,
+                      transactionId: tId,
+                    });
+                  },
+                  deleteTransaction: (tId) => {
+                    showModal({
+                      type: "Boolean",
+                      title: `Are you sure you want to delete this transaction ?`,
+                      confirmText: `Delete`,
+                      cancelText: "Cancel",
+                      callback: async () => {
+                        await DeleteTransaction(tId, account.id, fetchServer);
+                        await refreshAccount(account.id, setAccount);
+                        setSelected((prev) => prev.filter((s) => s !== tId));
+                      },
+                    });
+                  },
                 });
               },
               fieldsClassName: [

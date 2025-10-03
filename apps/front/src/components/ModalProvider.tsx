@@ -48,6 +48,14 @@ type ShowModalProps =
     }
   | {
       type: "TransactionDetails";
+      deleteTransaction?: (transactionId: string) => void;
+      editTransaction?: (transactionId: string) => void;
+      saveTransaction?: (
+        transaction: Omit<Transaction, "id">,
+        accountId: string,
+        fetchServer: FetchServerType,
+        transactionId?: string,
+      ) => Promise<string>;
       transactionId: string;
     };
 
@@ -151,6 +159,9 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
                     <TransactionModal
                       transactionId={modal.transactionId}
                       hideModal={hideModal}
+                      deleteTransaction={modal.deleteTransaction}
+                      saveTransaction={modal.saveTransaction}
+                      editTransaction={modal.editTransaction}
                     />
                   </div>
                 );
