@@ -41,6 +41,7 @@ const newAccountSchema = {
   id: 0,
   name: "",
   balance: 0,
+  virtualBalance: 0,
   transactions: [],
   periodicTransactions: [],
   settings: [],
@@ -96,6 +97,11 @@ export default class AccountsAPI {
 
           if (transaction.periodic === undefined) {
             transaction.periodic = null;
+            fix = true;
+          }
+
+          if (transaction.defered === undefined) {
+            transaction.defered = false;
             fix = true;
           }
 
@@ -478,15 +484,23 @@ export default class AccountsAPI {
 
   UpdateBalance(accountId: string) {
     let balance = 0;
+    let virtualBalance = 0;
     let account = this.accounts.find((a) => a.id === accountId);
     if (!account) return;
 
     account.transactions.forEach((t) => {
       const applyTransaction = (t: Transaction) => {
-        if (t.type === "classic") balance += t.amount;
-        else if (t.type === "internal") {
-          if (account.id === t.from.id) balance -= t.amount;
-          else if (account.id === t.to.id) balance += t.amount;
+        if (t.type === "classic") {
+          virtualBalance += t.amount;
+          if (!t.defered) balance += t.amount;
+        } else if (t.type === "internal") {
+          if (account.id === t.from.id) {
+            virtualBalance -= t.amount;
+            if (!t.defered) balance -= t.amount;
+          } else if (account.id === t.to.id) {
+            virtualBalance += t.amount;
+            if (!t.defered) balance += t.amount;
+          }
         }
       };
 
@@ -556,6 +570,7 @@ export default class AccountsAPI {
     });
 
     account.balance = parseFloat(balance.toFixed(2));
+    account.virtualBalance = parseFloat(virtualBalance.toFixed(2));
     this.ComputeCurrentMonthly(accountId);
     this.SaveAccounts();
   }

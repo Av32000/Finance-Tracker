@@ -9,6 +9,7 @@ import { z } from "zod";
 import { useBearStore } from "../GlobalState";
 import { FetchAccounts, FormatMoney, renderTransactions } from "../Utils";
 import FTButton from "./FTButton";
+import FTCheckbox from "./FTCheckbox";
 import { FileInput } from "./FTFileInput";
 import FTInput from "./FTInput";
 import FTSelect from "./FTSelect";
@@ -61,6 +62,7 @@ const AddTransactionModal = ({
   const [date, setDate] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [amount, setAmount] = useState(0);
+  const [defered, setDefered] = useState(false);
   const fileInput = useRef<HTMLInputElement | null>();
 
   // Internal
@@ -84,6 +86,7 @@ const AddTransactionModal = ({
     setDescription("");
     setDate("");
     setAmount(0);
+    setDefered(false);
     setTags([]);
     setStep(0);
     if (fileInput.current) {
@@ -207,6 +210,15 @@ const AddTransactionModal = ({
             </div>
 
             <div className="flex flex-row gap-3 items-center m-2">
+              <p className="text-text-color w-24">Defered : </p>
+              <FTCheckbox
+                checked={defered}
+                className="min-w-[218px]"
+                onChange={(e) => setDefered(e.target.checked)}
+              />
+            </div>
+
+            <div className="flex flex-row gap-3 items-center m-2">
               <p className="text-text-color w-24">Tag : </p>
               <TransactionTagsSelect
                 value={tags}
@@ -300,6 +312,7 @@ const AddTransactionModal = ({
                   description,
                   date: new Date(date).getTime(),
                   tags,
+                  defered,
                   amount,
                   periodic: null,
                   file: fileObject,

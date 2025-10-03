@@ -4,6 +4,7 @@ import { useBearStore } from "../GlobalState";
 import {
   FormatDateWithoutHours,
   FormatMoney,
+  getSetting,
   renderTransactions,
 } from "../Utils";
 import AccountManagerCard from "../components/AccountManagerCard";
@@ -80,9 +81,23 @@ const Home = () => {
               <img src="/components/banknote.svg" className="h-full" />
             </div>
             <div className="flex flex-col p-2">
-              <p className="text-text-color text-xs">Your Balance</p>
+              <p className="text-text-color text-xs">
+                Your Balance (
+                {getSetting("mainBalance", account) == 1 ? "cash" : "virtual"})
+              </p>
               <p className="text-active-text-color text-2xl">
-                {FormatMoney(account.balance)} €
+                {FormatMoney(
+                  getSetting("mainBalance", account) == 1
+                    ? account.balance
+                    : account.virtualBalance,
+                )}{" "}
+                €
+              </p>
+              <p className="text-xs text-text-color">
+                {getSetting("mainBalance", account) == 1
+                  ? "Virtual Balance: " + FormatMoney(account.virtualBalance)
+                  : "Cash Balance: " + FormatMoney(account.balance)}{" "}
+                €
               </p>
             </div>
           </div>

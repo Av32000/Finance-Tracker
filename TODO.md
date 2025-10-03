@@ -9,7 +9,7 @@
 - [ ] Add more CLI commands
 - [x] Add filters in transactions search
 - [x] Add click events to charts (Ex: Open transactions list with filters)
-- [ ] Deferred transactions
+- [x] Deferred transactions
 - [x] Multiple tags per transaction
 - [ ] New export types (PDF, CSV...)
 - [x] Periodic transactions

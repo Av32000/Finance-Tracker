@@ -785,8 +785,15 @@ fastify.register(
     api.post("/accounts/:accountId/settings", async (request, reply) => {
       const accountId = (request.params as any).accountId;
       const newSetting = request.body as any;
-      if (!accountId || !newSetting || !newSetting.name || !newSetting.value)
+
+      if (
+        !accountId ||
+        !newSetting ||
+        !newSetting.name ||
+        !newSetting.value === undefined
+      ) {
         throw new Error("Invalid Setting");
+      }
       accountsAPI.SetSetting(accountId, newSetting);
       reply.status(200);
     });

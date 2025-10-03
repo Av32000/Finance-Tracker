@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import AccountManagerCard from "../components/AccountManagerCard";
 import FTButton from "../components/FTButton";
 import FTInput from "../components/FTInput";
+import FTSelect from "../components/FTSelect";
 import { useModal } from "../components/ModalProvider";
 import TagsManager from "../components/TagsManager";
 import { useBearStore } from "../GlobalState";
+import { getSetting } from "../Utils";
 
 const importAccount = (
   successCallback: (response: Response) => void,
@@ -56,10 +58,12 @@ const Settings = () => {
   } = useBearStore();
   const [newAccountName, setNewAccountName] = useState("");
   const [newMonthly, setNewMonthly] = useState(0);
+  const [newMainBalance, setNewMainBalance] = useState(0);
   const { showModal } = useModal();
   const Reset = (account: Account) => {
     setNewAccountName(account.name);
     setNewMonthly(account.monthly);
+    setNewMainBalance(getSetting("mainBalance", account) || 0);
   };
   const [versionInfo, setVersionInfo] = useState<BuildInfo | null>(null);
 
@@ -100,6 +104,12 @@ const Settings = () => {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: newAccountName }),
+    });
+
+    await fetchServer("/accounts/" + account.id + "/settings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: "mainBalance", value: newMainBalance }),
     });
 
     await fetchServer("/accounts/" + account.id + "/monthly", {
@@ -150,7 +160,8 @@ const Settings = () => {
             </div>
             <div className="flex flex-row items-center gap-3">
               {newAccountName != account.name ||
-              newMonthly != account.monthly ? (
+              newMonthly != account.monthly ||
+              newMainBalance != (getSetting("mainBalance", account) || 0) ? (
                 <div className="mobile:mt-3 flex flex-row gap-3">
                   <FTButton className="h-10" onClick={() => Save(account)}>
                     Save Settings
@@ -200,6 +211,22 @@ const Settings = () => {
                     }}
                     className="flex-1"
                   />
+                </div>
+                <div className="flex flex-row items-center gap-3">
+                  <p className="text-active-text-color min-w-[120px]">
+                    Main Balance:
+                  </p>
+                  <FTSelect
+                    value={newMainBalance}
+                    onChange={(e) => {
+                      const nRegex = /^\d+$/;
+                      if (nRegex.test(e.target.value))
+                        setNewMainBalance(Number(e.target.value));
+                    }}
+                  >
+                    <option value={0}>Virtual Balance</option>
+                    <option value={1}>Cash Balance</option>
+                  </FTSelect>
                 </div>
               </div>
             </div>

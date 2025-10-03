@@ -174,6 +174,12 @@ const periodicRuleStringify = (transaction: Transaction): string => {
   return result;
 };
 
+function getSetting(settingName: string, account: Account) {
+  const setting = account.settings.find((s) => s.name === settingName);
+  if (!setting) return null;
+  return setting.value;
+}
+
 export {
   FetchAccounts,
   FormatDate,
@@ -181,6 +187,7 @@ export {
   FormatDateMonth,
   FormatDateWithoutHours,
   FormatMoney,
+  getSetting,
   periodicRuleStringify,
   renderTransactions,
 };

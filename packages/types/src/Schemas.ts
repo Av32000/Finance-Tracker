@@ -30,6 +30,7 @@ const BaseTransactionSchema = z.object({
   name: z.string(),
   description: z.string(),
   amount: z.number(),
+  defered: z.boolean(),
   date: z.number(),
   tags: z.array(z.string()),
   file: z
@@ -111,6 +112,7 @@ const AccountSchema = z.object({
   id: z.string(),
   name: z.string(),
   balance: z.number(),
+  virtualBalance: z.number(),
   transactions: z.array(TransactionSchema),
   monthly: z.number(),
   charts: z.array(ChartSchema),
