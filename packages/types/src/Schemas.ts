@@ -70,9 +70,8 @@ const TransactionSchema = z.discriminatedUnion("type", [
   }),
   BaseTransactionSchema.extend({
     type: z.literal("lend"),
-  }),
-  BaseTransactionSchema.extend({
-    type: z.literal("reimbursement"),
+    target: z.string(),
+    reimbursementTransaction: BaseTransactionSchema.nullable(),
   }),
   BaseTransactionSchema.extend({
     type: z.literal("internal"),

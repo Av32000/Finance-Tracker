@@ -128,23 +128,30 @@ const AddTransactionModal = ({
     }
   }, [transactionId, transaction, account]);
 
+  // Fetch accounts on mount to determine if "Internal" option should be available
   useEffect(() => {
-    if (type === "internal" && !accounts) {
-      FetchAccounts((accounts) => {
-        const validAccounts = accounts.filter((a) => a.id !== account?.id);
+    if (!accounts) {
+      FetchAccounts((fetchedAccounts) => {
+        const validAccounts = fetchedAccounts.filter(
+          (a) => a.id !== account?.id,
+        );
         setAccounts(validAccounts);
-        if (!targetAccount)
-          setTargetAccount({
-            id: validAccounts[0].id,
-            name: validAccounts[0].name,
-          });
       }, fetchServer);
     }
-  }, [type, accounts, fetchServer, targetAccount, account]);
+  }, [accounts, fetchServer, account]);
 
   useEffect(() => {
-    if (type === "internal" && accounts && !targetAccount) {
-      setTargetAccount({ id: accounts[0].id, name: accounts[0].name });
+    if (type === "internal" && accounts) {
+      if (accounts.length === 0) {
+        setType("classic");
+      } else {
+        if (!targetAccount) {
+          setTargetAccount({
+            id: accounts[0].id,
+            name: accounts[0].name,
+          });
+        }
+      }
     }
   }, [type, accounts, targetAccount]);
 
@@ -168,7 +175,9 @@ const AddTransactionModal = ({
                 options={[
                   { name: "Classic", value: "classic" },
                   { name: "Lend", value: "lend" },
-                  { name: "Internal", value: "internal" },
+                  ...(accounts && accounts.length > 0
+                    ? [{ name: "Internal", value: "internal" }]
+                    : []),
                 ]}
                 value={type}
                 onChange={(newType) => {
@@ -210,14 +219,16 @@ const AddTransactionModal = ({
               />
             </div>
 
-            <div className="flex flex-row gap-3 items-center m-2">
-              <p className="text-text-color w-24">Defered : </p>
-              <FTCheckbox
-                checked={defered}
-                className="min-w-[218px]"
-                onChange={(e) => setDefered(e.target.checked)}
-              />
-            </div>
+            {type != "lend" && (
+              <div className="flex flex-row gap-3 items-center m-2">
+                <p className="text-text-color w-24">Defered : </p>
+                <FTCheckbox
+                  checked={defered}
+                  className="min-w-[218px]"
+                  onChange={(e) => setDefered(e.target.checked)}
+                />
+              </div>
+            )}
 
             <div className="flex flex-row gap-3 items-center m-2">
               <p className="text-text-color w-24">Tag : </p>

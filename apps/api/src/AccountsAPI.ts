@@ -501,6 +501,11 @@ export default class AccountsAPI {
             virtualBalance += t.amount;
             if (!t.defered) balance += t.amount;
           }
+        } else if (t.type === "lend") {
+          balance += t.amount;
+          if (t.reimbursementTransaction != null) {
+            virtualBalance += t.amount + t.reimbursementTransaction.amount;
+          }
         }
       };
 
