@@ -1,4 +1,8 @@
-import { FetchServerType, Transaction } from "@finance-tracker/types";
+import {
+  FetchServerType,
+  Transaction,
+  TransactionTypes,
+} from "@finance-tracker/types";
 import { ReactNode, createContext, useContext, useState } from "react";
 import AddTransactionModal from "./AddTransactionModal";
 import FTBooleanModal from "./FTBooleanModal";
@@ -41,6 +45,7 @@ type ShowModalProps =
       ) => Promise<string>;
       transactionId?: string;
       transaction?: Transaction;
+      allowedTypes?: TransactionTypes[];
     }
   | {
       type: "AddScheduled";
@@ -150,6 +155,7 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
                       transactionId={modal.transactionId}
                       transaction={modal.transaction}
                       hideModal={hideModal}
+                      allowedTypes={modal.allowedTypes}
                     />
                   </div>
                 );

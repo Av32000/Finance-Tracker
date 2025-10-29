@@ -2,6 +2,7 @@ import {
   Account,
   FetchServerType,
   Transaction,
+  TransactionTypes,
   TransactionTypeSchema,
 } from "@finance-tracker/types";
 import { useEffect, useRef, useState } from "react";
@@ -40,6 +41,7 @@ const AddTransactionModal = ({
   hideModal,
   transactionId,
   transaction,
+  allowedTypes,
 }: {
   hideModal: () => void;
   saveTransaction: (
@@ -50,6 +52,7 @@ const AddTransactionModal = ({
   ) => Promise<string>;
   transactionId?: string;
   transaction?: Transaction;
+  allowedTypes?: TransactionTypes[];
 }) => {
   const { account, setAccount, refreshAccount, fetchServer } = useBearStore();
 
@@ -97,6 +100,34 @@ const AddTransactionModal = ({
     setStep(0);
     if (fileInput.current) {
       fileInput.current.value = "";
+    }
+  };
+
+  const getAllowedTypes = () => {
+    if (allowedTypes && allowedTypes.length > 0) {
+      return allowedTypes
+        .map((type) => ({
+          name: type.charAt(0).toUpperCase() + type.slice(1),
+          value: type.toLowerCase(),
+        }))
+        .filter((option) => {
+          // Filter out "internal" if there are no other accounts
+          if (
+            option.value === "internal" &&
+            (!accounts || accounts.length === 0)
+          ) {
+            return false;
+          }
+          return true;
+        });
+    } else {
+      return [
+        { name: "Classic", value: "classic" },
+        { name: "Lend", value: "lend" },
+        ...(accounts && accounts.length > 0
+          ? [{ name: "Internal", value: "internal" }]
+          : []),
+      ];
     }
   };
 
@@ -185,13 +216,7 @@ const AddTransactionModal = ({
           <>
             {!(transactionId || transaction) && (
               <FTTabSelector
-                options={[
-                  { name: "Classic", value: "classic" },
-                  { name: "Lend", value: "lend" },
-                  ...(accounts && accounts.length > 0
-                    ? [{ name: "Internal", value: "internal" }]
-                    : []),
-                ]}
+                options={getAllowedTypes()}
                 value={type}
                 onChange={(newType) => {
                   setType(newType as z.infer<typeof TransactionTypeSchema>);

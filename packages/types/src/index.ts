@@ -11,6 +11,7 @@ import {
   Setting,
   Transaction,
   TransactionTag,
+  TransactionTypes,
 } from "./account";
 
 import { WSEvent, WSEventType } from "./ws";
@@ -75,6 +76,7 @@ export {
   TransactionsFilterSchema,
   TransactionTag,
   TransactionTagSchema,
+  TransactionTypes,
   TransactionTypeSchema,
   WSEvent,
   WSEventType,

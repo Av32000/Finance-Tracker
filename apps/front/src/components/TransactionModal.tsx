@@ -5,6 +5,8 @@ import { FormatDate, renderTransactions } from "../Utils";
 import AmountTag from "./AmountTag";
 import FileTag from "./FileTag";
 import FTButton from "./FTButton";
+import { useModal } from "./ModalProvider";
+import TransactionsTable from "./TransactionsTable";
 import TransactionTagElement from "./TransactionTagElement";
 
 const TransactionModal = ({
@@ -26,6 +28,7 @@ const TransactionModal = ({
   transactionId: string;
 }) => {
   const { account, fetchServer } = useBearStore();
+  const { showModal } = useModal();
 
   const [transaction, setTransaction] = useState<Transaction>();
 
@@ -128,7 +131,61 @@ const TransactionModal = ({
                 Mark effective
               </FTButton>
             )}
+            {transaction.type === "lend" &&
+              !transaction.reimbursementTransaction &&
+              saveTransaction && (
+                <FTButton
+                  className="self-end mobile:self-start"
+                  onClick={() => {
+                    showModal({
+                      type: "AddTransaction",
+                      allowedTypes: ["classic"],
+                      saveTransaction: async (reimbursementTransaction) => {
+                        const updatedTransaction = {
+                          ...transaction,
+                          reimbursementTransaction: {
+                            id: transaction.id + "#r",
+                            ...reimbursementTransaction,
+                          },
+                        };
+
+                        return await saveTransaction(
+                          updatedTransaction,
+                          account!.id,
+                          fetchServer,
+                          transaction.id,
+                        );
+                      },
+                    });
+                  }}
+                >
+                  Add Reimbursement
+                </FTButton>
+              )}
           </div>
+          {transaction.type === "lend" &&
+            transaction.reimbursementTransaction && (
+              <div className="w-full flex flex-col justify-center">
+                <p className="text-active-text-color">Reimbursement:</p>
+                <TransactionsTable
+                  transactions={[
+                    transaction.reimbursementTransaction as Transaction,
+                  ]}
+                  config={{
+                    showHeader: false,
+                    fields: ["name", "date", "amount"],
+                    allowScroll: false,
+                    fieldsClassName: [
+                      { field: "name", className: "text-text-color px-0" },
+                      { field: "date", className: "mobile:hidden" },
+                      { field: "amount", className: "*:justify-end" },
+                    ],
+                    tableClassName:
+                      "!m-0 !w-full border p-2 border-solid border-text-color rounded-sm",
+                  }}
+                />
+              </div>
+            )}
         </div>
       </div>
     )
