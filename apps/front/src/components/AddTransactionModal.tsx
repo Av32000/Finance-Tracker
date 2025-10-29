@@ -72,6 +72,11 @@ const AddTransactionModal = ({
     name: string;
   } | null>(null);
 
+  // Lend
+  const [lendTarget, setLendTarget] = useState<string>("");
+  const [reimbursementTransaction, setReimbursementTransaction] =
+    useState<Transaction | null>(null);
+
   const adjustToLocalTime = (timestamp: number) => {
     const date = new Date(timestamp);
     const timezoneOffset = date.getTimezoneOffset() * 60000;
@@ -88,6 +93,7 @@ const AddTransactionModal = ({
     setAmount(0);
     setDefered(false);
     setTags([]);
+    setLendTarget("");
     setStep(0);
     if (fileInput.current) {
       fileInput.current.value = "";
@@ -123,6 +129,13 @@ const AddTransactionModal = ({
                 ? editedTransaction.to.name
                 : editedTransaction.from.name,
           });
+        }
+
+        if (editedTransaction.type === "lend") {
+          setLendTarget(editedTransaction.target);
+          setReimbursementTransaction(
+            (editedTransaction.reimbursementTransaction as Transaction) || null,
+          );
         }
       }
     }
@@ -294,6 +307,25 @@ const AddTransactionModal = ({
             </div>
           </div>
         )}
+        {step === 1 && type == "lend" && accounts && (
+          <div className="flex flex-col items-center">
+            <p className="text-text-color">
+              {amount > 0
+                ? `The following person lend you ${FormatMoney(amount)}€`
+                : `You lend ${FormatMoney(-amount)}€ to the following person`}
+            </p>
+            <div className="flex flex-row gap-3 items-center m-2">
+              <p className="text-text-color">
+                {amount > 0 ? "Lender" : "Borrower"} :
+              </p>
+              <FTInput
+                placeholder="Name"
+                value={lendTarget}
+                onChange={(e) => setLendTarget(e.target.value)}
+              />
+            </div>
+          </div>
+        )}
         <div className="flex flex-row gap-2">
           {step > 0 && (
             <FTButton onClick={() => setStep(step - 1)} className="m-2">
@@ -307,7 +339,11 @@ const AddTransactionModal = ({
 
               if (
                 type == "classic" ||
-                (type == "internal" && step === 1 && targetAccount && accounts)
+                (type == "internal" &&
+                  step === 1 &&
+                  targetAccount &&
+                  accounts) ||
+                (type == "lend" && step === 1 && lendTarget && accounts)
               ) {
                 let fileObject = null;
                 if (fileInput.current?.files) {
@@ -341,6 +377,12 @@ const AddTransactionModal = ({
                   }
                 }
 
+                if (transaction.type === "lend") {
+                  transaction.target = lendTarget;
+                  transaction.reimbursementTransaction =
+                    reimbursementTransaction || null;
+                }
+
                 await saveTransaction(
                   transaction,
                   account!.id,
@@ -349,12 +391,13 @@ const AddTransactionModal = ({
                 );
                 await refreshAccount(account!.id, setAccount);
                 closeModal();
-              } else if (type == "internal" && step == 0) {
+              } else if ((type == "internal" || type == "lend") && step == 0) {
                 setStep(1);
               }
             }}
           >
-            {type == "classic" || (type == "internal" && step === 1)
+            {type == "classic" ||
+            ((type == "internal" || type == "lend") && step === 1)
               ? "Save Transaction"
               : "Next Step"}
           </FTButton>

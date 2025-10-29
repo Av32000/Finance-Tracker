@@ -304,7 +304,7 @@ export default class AccountsAPI {
       ...transaction,
     } as Transaction;
 
-    if (newTransaction.type === "classic") {
+    if (newTransaction.type === "classic" || newTransaction.type === "lend") {
       const account = this.accounts.find((a) => a.id === accountId);
       if (!account) return;
 
