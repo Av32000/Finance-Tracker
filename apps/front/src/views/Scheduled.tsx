@@ -81,10 +81,10 @@ const Scheduled = () => {
       {account ? (
         <div className="bg-bg flex-1 h-screen flex flex-col desktop:relative">
           <div className="w-full p-4 flex flex-row justify-between mobile:flex-col mobile:items-center mobile:mt-2 mobile:w-screen">
-            <div className="flex items-start mobile:gap-2">
+            <div className="flex items-start mobile:mb-4 mobile:mt-2">
               <img
                 src="/pages/scheduled.svg"
-                className="w-6 m-2 mobile:my-1 mobile:mx-0"
+                className="w-6 desktop:m-2 mobile:mx-2 mobile:my-[4px]"
               />
               <div className="flex flex-col">
                 <h1 className="text-active-text-color text-2xl">Scheduled</h1>
