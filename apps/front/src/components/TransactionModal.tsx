@@ -164,9 +164,78 @@ const TransactionModal = ({
               )}
           </div>
           {transaction.type === "lend" &&
+            saveTransaction &&
             transaction.reimbursementTransaction && (
               <div className="w-full flex flex-col justify-center">
-                <p className="text-active-text-color">Reimbursement:</p>
+                <div className="flex flex-row gap-2 items-center mb-2">
+                  <p className="text-active-text-color">Reimbursement:</p>
+                  <div className="flex gap-2">
+                    <FTButton
+                      className="!p-0 h-5 w-5 flex items-center justify-center"
+                      onClick={() =>
+                        showModal({
+                          type: "AddTransaction",
+                          transaction: {
+                            ...transaction.reimbursementTransaction,
+                            type: "classic",
+                          } as Transaction,
+                          saveTransaction: async (updatedReimbursement) => {
+                            const updatedTransaction = {
+                              ...transaction,
+                              reimbursementTransaction: {
+                                id: transaction.reimbursementTransaction!.id,
+                                ...updatedReimbursement,
+                              },
+                            };
+
+                            return await saveTransaction(
+                              updatedTransaction,
+                              account!.id,
+                              fetchServer,
+                              transaction.id,
+                            );
+                          },
+                        })
+                      }
+                    >
+                      <img
+                        className="w-4"
+                        src="/components/edit.svg"
+                        style={{ filter: "brightness(0) invert(1)" }}
+                      />
+                    </FTButton>
+                    <FTButton
+                      className="!p-0 h-5 w-5 flex items-center justify-center bg-red"
+                      onClick={() =>
+                        showModal({
+                          type: "Boolean",
+                          title:
+                            "Are you sure you want to delete this reimbursement transaction?",
+                          confirmText: "Delete",
+                          callback: async () => {
+                            const updatedTransaction = {
+                              ...transaction,
+                              reimbursementTransaction: null,
+                            };
+
+                            await saveTransaction(
+                              updatedTransaction,
+                              account!.id,
+                              fetchServer,
+                              transaction.id,
+                            );
+                          },
+                        })
+                      }
+                    >
+                      <img
+                        className="w-4"
+                        src="/components/trash.svg"
+                        style={{ filter: "brightness(0) invert(1)" }}
+                      />
+                    </FTButton>
+                  </div>
+                </div>
                 <TransactionsTable
                   transactions={[
                     transaction.reimbursementTransaction as Transaction,

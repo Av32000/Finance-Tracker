@@ -83,8 +83,6 @@ export const ModalProvider = ({ children }: { children: ReactNode }) => {
     setModalStack((prev) => prev.slice(0, -1));
   };
 
-  // Removed modalData effect, not needed with stack rendering
-
   return (
     <ModalContext.Provider value={{ showModal, hideModal }}>
       {children}

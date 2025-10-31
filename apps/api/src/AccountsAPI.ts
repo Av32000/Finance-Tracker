@@ -505,6 +505,7 @@ export default class AccountsAPI {
           balance += t.amount;
           if (t.reimbursementTransaction != null) {
             virtualBalance += t.amount + t.reimbursementTransaction.amount;
+            balance += t.reimbursementTransaction.amount;
           }
         }
       };
