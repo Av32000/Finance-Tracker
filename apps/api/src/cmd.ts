@@ -245,7 +245,7 @@ export default class Cmd {
                           2 + (Math.floor(Math.random() * (250 - 10 + 1)) + 10),
                         )
                     : "";
-                const defered = Math.random() < 0.5;
+                const deferred = Math.random() < 0.5;
                 const date =
                   Math.floor(
                     Math.random() * (now + twoYears - (now - twoYears) + 1),
@@ -271,7 +271,7 @@ export default class Cmd {
                     name,
                     description,
                     amount,
-                    defered,
+                    deferred,
                     date,
                     tags: tag,
                     file,

@@ -35,6 +35,18 @@ function groupTransactions(
       case "id":
         groups.push({ value: transaction.id, transactions: [transaction] });
         break;
+      case "type": {
+        const group = groups.find((g) => g.value == transaction.type);
+        if (group) {
+          group.transactions.push(transaction);
+        } else {
+          groups.push({
+            value: transaction.type,
+            transactions: [transaction],
+          });
+        }
+        break;
+      }
       case "name": {
         const group = groups.find((g) => g.value == transaction.name);
         if (group) {
@@ -56,6 +68,19 @@ function groupTransactions(
         } else {
           groups.push({
             value: transaction.amount.toString(),
+            transactions: [transaction],
+          });
+        }
+        break;
+      }
+      case "deferred": {
+        const deferredValue = transaction.deferred ? "true" : "false";
+        const group = groups.find((g) => g.value == deferredValue);
+        if (group) {
+          group.transactions.push(transaction);
+        } else {
+          groups.push({
+            value: deferredValue,
             transactions: [transaction],
           });
         }
@@ -166,6 +191,7 @@ function groupTransactions(
 
   switch (groupBy) {
     case "amount":
+    case "deferred":
     case "date":
     case "hour":
     case "day":
@@ -177,6 +203,10 @@ function groupTransactions(
 
   for (const group of groups) {
     switch (groupBy) {
+      case "type":
+        group.value =
+          group.value.charAt(0).toUpperCase() + group.value.slice(1);
+        break;
       case "amount":
         group.value = FormatMoney(parseInt(group.value)) + " €";
         break;
@@ -317,6 +347,9 @@ export function buildFilterFromChartClick(
     case "id":
       result.push(`@id=${label}`);
       break;
+    case "type":
+      result.push(`@type="${label.toLowerCase()}"`);
+      break;
     case "name":
       result.push(`@name="${label}"`);
       break;
@@ -326,6 +359,10 @@ export function buildFilterFromChartClick(
     case "amount":
       result.push(`@amount=${label}`);
       break;
+    case "deferred": {
+      result.push(`@deferred=${label}`);
+      break;
+    }
     case "year": {
       result.push(`@year=${label}`);
       break;

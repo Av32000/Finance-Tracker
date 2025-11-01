@@ -31,6 +31,9 @@ export function filterTransactions(
           case "date":
             propsValue = transaction.date;
             break;
+          case "deferred":
+            propsValue = transaction.deferred ? "true" : "false";
+            break;
           case "hour":
             propsValue = new Date(transaction.date).getHours();
             break;
@@ -46,6 +49,9 @@ export function filterTransactions(
           case "tag":
             propsValue = transaction.tags;
             if (propsValue.length === 0) propsValue = ["no_tag"];
+            break;
+          case "type":
+            propsValue = transaction.type;
             break;
         }
 
@@ -100,11 +106,23 @@ export function filterTransactions(
             } else {
               return b.name.localeCompare(a.name);
             }
+          case "type":
+            if (filter.order == "asc") {
+              return a.type.localeCompare(b.type);
+            } else {
+              return b.type.localeCompare(a.type);
+            }
           case "amount":
             if (filter.order == "asc") {
               return a.amount - b.amount;
             } else {
               return b.amount - a.amount;
+            }
+          case "deferred":
+            if (filter.order == "asc") {
+              return a.deferred ? 1 : 0 - (b.deferred ? 1 : 0);
+            } else {
+              return b.deferred ? 1 : 0 - (a.deferred ? 1 : 0);
             }
           case "date":
             if (filter.order == "asc") {

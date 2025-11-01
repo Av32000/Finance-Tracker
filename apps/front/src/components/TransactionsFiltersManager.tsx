@@ -141,6 +141,27 @@ const FilterItem: React.FC<{
         updateFilter({ ...filter, value: account.tags[0].id });
       }
     }
+
+    if (filter.type == "property" && filter.field == "type") {
+      if (!["equals", "not_equals", "contains"].includes(filter.operator)) {
+        updateFilter({ ...filter, operator: "equals" });
+      }
+
+      const validTypes = ["classic", "lend", "internal"];
+      if (!validTypes.includes(filter.value)) {
+        updateFilter({ ...filter, value: "classic" });
+      }
+    }
+
+    if (filter.type == "property" && filter.field == "deferred") {
+      if (!["equals", "not_equals"].includes(filter.operator)) {
+        updateFilter({ ...filter, operator: "equals" });
+      }
+
+      if (filter.value !== "true" && filter.value !== "false") {
+        updateFilter({ ...filter, value: "false" });
+      }
+    }
   }, [account, updateFilter, filter, filter.field]);
 
   if (filter.type === "property") {
@@ -182,9 +203,11 @@ const FilterItem: React.FC<{
           >
             {availableOperators
               .filter((op) =>
-                filter.field == "tag"
+                filter.field == "tag" || filter.field == "type"
                   ? ["equals", "not_equals", "contains"].includes(op)
-                  : true,
+                  : filter.field == "deferred"
+                    ? ["equals", "not_equals"].includes(op)
+                    : true,
               )
               .map((operator) => (
                 <option
@@ -215,6 +238,45 @@ const FilterItem: React.FC<{
                   {tag.name}
                 </option>
               ))}
+            </FTSelect>
+          ) : filter.field == "type" ? (
+            <FTSelect
+              className="text-start mobile:w-full"
+              value={filter.value}
+              onChange={(e) =>
+                updateFilter({ ...filter, value: e.target.value })
+              }
+            >
+              <option
+                value="classic"
+                className="text-text-color bg-transparent"
+              >
+                Classic
+              </option>
+              <option value="lend" className="text-text-color bg-transparent">
+                Lend
+              </option>
+              <option
+                value="internal"
+                className="text-text-color bg-transparent"
+              >
+                Internal
+              </option>
+            </FTSelect>
+          ) : filter.field == "deferred" ? (
+            <FTSelect
+              className="text-start mobile:w-full"
+              value={filter.value}
+              onChange={(e) =>
+                updateFilter({ ...filter, value: e.target.value })
+              }
+            >
+              <option value="false" className="text-text-color bg-transparent">
+                False
+              </option>
+              <option value="true" className="text-text-color bg-transparent">
+                True
+              </option>
             </FTSelect>
           ) : (
             <>

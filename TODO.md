@@ -25,3 +25,4 @@
 # Small Fixes
 
 - [ ] AddTransactionModal Amount field
+- [ ] Balance Evolution don't compute lend correctly

@@ -100,8 +100,8 @@ export default class AccountsAPI {
             fix = true;
           }
 
-          if (transaction.defered === undefined) {
-            transaction.defered = false;
+          if (transaction.deferred === undefined) {
+            transaction.deferred = false;
             fix = true;
           }
 
@@ -492,14 +492,14 @@ export default class AccountsAPI {
       const applyTransaction = (t: Transaction) => {
         if (t.type === "classic") {
           virtualBalance += t.amount;
-          if (!t.defered) balance += t.amount;
+          if (!t.deferred) balance += t.amount;
         } else if (t.type === "internal") {
           if (account.id === t.from.id) {
             virtualBalance -= t.amount;
-            if (!t.defered) balance -= t.amount;
+            if (!t.deferred) balance -= t.amount;
           } else if (account.id === t.to.id) {
             virtualBalance += t.amount;
-            if (!t.defered) balance += t.amount;
+            if (!t.deferred) balance += t.amount;
           }
         } else if (t.type === "lend") {
           balance += t.amount;

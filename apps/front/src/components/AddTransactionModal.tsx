@@ -65,7 +65,7 @@ const AddTransactionModal = ({
   const [date, setDate] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [amount, setAmount] = useState(0);
-  const [defered, setDefered] = useState(false);
+  const [deferred, setdeferred] = useState(false);
   const fileInput = useRef<HTMLInputElement | null>();
 
   // Internal
@@ -94,7 +94,7 @@ const AddTransactionModal = ({
     setDescription("");
     setDate("");
     setAmount(0);
-    setDefered(false);
+    setdeferred(false);
     setTags([]);
     setLendTarget("");
     setStep(0);
@@ -147,7 +147,7 @@ const AddTransactionModal = ({
             .filter((id): id is string => typeof id === "string"),
         );
         setAmount(editedTransaction.amount);
-        setDefered(editedTransaction.defered);
+        setdeferred(editedTransaction.deferred);
 
         if (editedTransaction.type === "internal") {
           setTargetAccount({
@@ -259,11 +259,11 @@ const AddTransactionModal = ({
 
             {type != "lend" && (
               <div className="flex flex-row gap-3 items-center m-2">
-                <p className="text-text-color w-24">Defered : </p>
+                <p className="text-text-color w-24">deferred : </p>
                 <FTCheckbox
-                  checked={defered}
+                  checked={deferred}
                   className="min-w-[218px]"
-                  onChange={(e) => setDefered(e.target.checked)}
+                  onChange={(e) => setdeferred(e.target.checked)}
                 />
               </div>
             )}
@@ -385,7 +385,7 @@ const AddTransactionModal = ({
                   description,
                   date: new Date(date).getTime(),
                   tags,
-                  defered,
+                  deferred,
                   amount,
                   periodic: null,
                   file: fileObject,

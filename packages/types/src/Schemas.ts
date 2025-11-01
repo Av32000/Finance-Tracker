@@ -30,7 +30,7 @@ const BaseTransactionSchema = z.object({
   name: z.string(),
   description: z.string(),
   amount: z.number(),
-  defered: z.boolean(),
+  deferred: z.boolean(),
   date: z.number(),
   tags: z.array(z.string()),
   file: z

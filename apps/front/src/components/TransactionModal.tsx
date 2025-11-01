@@ -115,11 +115,11 @@ const TransactionModal = ({
                 {transaction.file && <FileTag file={transaction.file} />}
               </span>
             </div>
-            {transaction.defered && saveTransaction && (
+            {transaction.deferred && saveTransaction && (
               <FTButton
                 className="self-end mobile:self-start"
                 onClick={() => {
-                  const newTransaction = { ...transaction, defered: false };
+                  const newTransaction = { ...transaction, deferred: false };
                   saveTransaction(
                     newTransaction,
                     account!.id,

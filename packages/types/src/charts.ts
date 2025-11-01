@@ -10,6 +10,8 @@ export type ChartType = z.infer<typeof ChartTypeEnum>;
 
 export const ChartAvailableFieldsEnum = z.enum([
   "id",
+  "type",
+  "deferred",
   "name",
   "amount",
   "date",
